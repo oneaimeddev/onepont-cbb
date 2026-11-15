@@ -4,8 +4,9 @@ import { useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Brand } from "./brand";
+import { Icon, type IconName } from "./icon";
 
-type NavigationItem = { href: string; title: string; isAvailable?: boolean };
+type NavigationItem = { href: string; title: string; icon: IconName; isAvailable?: boolean };
 
 export function WorkspaceShell({ children, session, navigation }: {
   children: React.ReactNode;
@@ -31,8 +32,9 @@ export function WorkspaceShell({ children, session, navigation }: {
       <a className="skip-link" href="#conteudo">Ir para o conteúdo</a>
       <div className="mobile-toolbar">
         <Link href="/" aria-label="Prontuário CBB, início"><Brand /></Link>
-        <button ref={menuButton} className="outline" type="button" aria-expanded={navigationOpen}
+        <button ref={menuButton} className="ghost" type="button" aria-expanded={navigationOpen}
           aria-controls="workspace-sidebar" onClick={() => setNavigationOpen(!navigationOpen)}>
+          <Icon name={navigationOpen ? "close" : "menu"} />
           {navigationOpen ? "Fechar menu" : "Menu"}
         </button>
       </div>
@@ -43,8 +45,11 @@ export function WorkspaceShell({ children, session, navigation }: {
             <Link key={item.href} href={item.href === "/" && athletePath ? `/?atleta=${athletePath[1]}` : item.href}
               prefetch={false} aria-current={current?.href === item.href ? (pathname === item.href ? "page" : "location") : undefined}
               onClick={() => { if (navigationOpen) closeNavigation(); }}>
-              {item.title}
-              {item.isAvailable === false && <small className="status-tag">Indisponível</small>}
+              <Icon name={item.icon} />
+              <span className="nav-label">{item.title}</span>
+              {item.isAvailable === false && (
+                <small className="status-tag" title="Indisponível"><Icon name="lock" size={14} /><span className="tag-text">Indisponível</span></small>
+              )}
             </Link>
           ))}
         </nav>
@@ -53,7 +58,7 @@ export function WorkspaceShell({ children, session, navigation }: {
       <div className="workspace-body">
         <header className="workspace-header">
           <span>{current?.title ?? "Prontuário CBB"}</span>
-          <small>Ambiente de demonstração</small>
+          <small className="env-pill">Ambiente de demonstração</small>
         </header>
         {children}
       </div>

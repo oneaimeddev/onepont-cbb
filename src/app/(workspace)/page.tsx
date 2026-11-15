@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { Avatar } from "../../components/avatar";
+import { Icon } from "../../components/icon";
 import { WorkspaceArea } from "../../components/workspace-area";
 import { MessageComposer } from "../../features/chat/message-composer";
 import { sections } from "../../features/sections";
@@ -12,14 +14,23 @@ export default async function ChatPage({ searchParams }: {
   const { atleta } = await searchParams;
   const active = typeof atleta === "string" ? (await getAthlete(atleta, "chat")).athlete : null;
   const activeName = active && (active.social_name || active.full_name);
+  const activeDetails = active ? [active.team, active.category].filter(Boolean) : [];
   return (
-    <WorkspaceArea context={active && (
+    <WorkspaceArea context={active && activeName && (
       <>
         <h2>Atleta em contexto</h2>
-        <strong>{activeName}</strong>
+        <div className="context-athlete">
+          <Avatar name={activeName} />
+          <div>
+            <strong>{activeName}</strong>
+            {activeDetails.length > 0 && <span className="meta-list">{activeDetails.map((item) => <span key={item}>{item}</span>)}</span>}
+          </div>
+        </div>
         <p className="record-id">{active.id}</p>
-        <Link className="clinical-link" href={`/atletas/${active.id}`} prefetch={false}>Voltar ao perfil</Link>
-        <Link className="clinical-link" href="/" prefetch={false}>Encerrar contexto</Link>
+        <div className="context-actions">
+          <Link className="outline" href={`/atletas/${active.id}`} prefetch={false}>Voltar ao perfil</Link>
+          <Link className="ghost-link" href="/" prefetch={false}>Encerrar contexto</Link>
+        </div>
       </>
     )}>
       <main id="conteudo" tabIndex={-1} className="conversation">
@@ -36,11 +47,13 @@ export default async function ChatPage({ searchParams }: {
                 <li key={slug}>
                   {sections[slug].isAvailable ? (
                     <Link href={`/${slug}`} prefetch={false}>
+                      <span className="task-icon"><Icon name={sections[slug].icon} /></span>
                       <strong>{sections[slug].title}</strong>
                       <span>{sections[slug].description}</span>
                     </Link>
                   ) : (
                     <div className="is-unavailable">
+                      <span className="task-icon"><Icon name="lock" /></span>
                       <strong>{sections[slug].title}</strong>
                       <span>{sections[slug].description}</span>
                       <span className="status-tag">Indisponível</span>

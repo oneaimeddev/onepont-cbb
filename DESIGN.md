@@ -64,6 +64,32 @@ Nessas superfícies, usar HTML semântico, estado explícito, leitura temporal c
 autoria e confirmação de sucesso respaldada pelo backend.
 O chat permanece indisponível até a implementação de sua integração.
 
+## Restilização do workspace
+
+O azul-marinho do login passou a estruturar o produto autenticado. A sidebar e a
+barra móvel usam #102849 com o filete amarelo institucional no topo. O conteúdo
+permanece em superfícies claras. No azul-marinho, o item ativo combina fundo
+#224270, peso 600, ícone e barra lateral verde #4cc883.
+
+Tokens adicionados em src/app/globals.css: raio de 12 px para superfícies,
+sombras leves (shadow-sm e shadow-md), transições de 150 ms e etiquetas de
+status (pill) em verde, amarelo e vermelho suaves, com texto de contraste
+superior a 6:1. Transições respeitam prefers-reduced-motion.
+
+Componentes compartilhados: Icon (SVG próprio, aria-hidden), Avatar (iniciais),
+EmptyState e Brand. O chat usa blocos de ação com ícone. O composer fica elevado,
+com foco no contorno inteiro, e acompanha a rolagem apenas acima de 700 px.
+O painel de contexto exibe o cartão do atleta. A lista de atletas usa linhas
+inteiramente clicáveis com o nome como único link. O perfil tem cabeçalho com
+avatar, abas sublinhadas e dados em grade. A linha do tempo distingue Rascunho
+e Finalizado por texto, cor e marcador. A auditoria exibe o resultado em etiqueta.
+Campos opcionais do cadastro são indicados e o formulário oferece Cancelar.
+
+Na sidebar desktop, módulos indisponíveis mostram um cadeado com texto
+acessível. No celular, a etiqueta “Indisponível” aparece por extenso.
+Capturas em docs/visual/ui-refresh, geradas por scripts/capture-workspace.mjs,
+que cria atleta e registros fictícios temporários e os remove ao final.
+
 ## Verificação
 
 Capturas em docs/visual/before e docs/visual/after, desktop 1440 × 1000 e celular

@@ -11,7 +11,10 @@ export default async function LoginPage({
   const { erro, perfil, saida } = await searchParams;
   return (
     <main className="login-page">
-      <div className="login-brand"><Brand /></div>
+      <div className="login-brand">
+        <Brand />
+        <p className="login-tagline">Acompanhamento clínico multiprofissional de atletas.</p>
+      </div>
       <section className="login-panel">
         <h1>Acesso profissional</h1>
         <p>Entre com sua conta individual de demonstração.</p>
