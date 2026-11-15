@@ -79,6 +79,7 @@ test("busca, seleção, timeline, troca, cadastro e auditoria do atleta", async 
   await expect(page.getByText("Nascimento", { exact: true })).toHaveCount(0);
   await page.getByRole("link", { name: "Linha do tempo" }).click();
   await expect(page.locator(".clinical-list summary")).toHaveText(["Evento recente", "Evento anterior"]);
+  await expect(page.locator(".timeline .pill")).toHaveText(["Finalizado", "Finalizado"]);
   await page.getByText("Evento recente", { exact: true }).click();
   await expect(page.locator("details[open]").getByText("Conteúdo DEMO", { exact: true })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
@@ -102,6 +103,11 @@ test("busca, seleção, timeline, troca, cadastro e auditoria do atleta", async 
   await page.getByRole("link", { name: "Abrir no chat" }).click();
   await expect(page.getByRole("complementary", { name: "Contexto da tarefa" })).toContainText(emptyAthlete);
 
+  await page.goto("/atletas/novo");
+  await expect(page.getByLabel("Nome social (opcional)")).toBeVisible();
+  await expect(page.getByLabel("Nome completo")).toHaveAttribute("required", "");
+  await page.getByRole("link", { name: "Cancelar", exact: true }).click();
+  await expect(page).toHaveURL(/\/atletas$/);
   await page.goto("/atletas/novo");
   await page.getByLabel("Nome completo").fill("Atleta criado no teste");
   const creationId = await page.locator('input[name="creation_id"]').inputValue();
