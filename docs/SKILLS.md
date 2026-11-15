@@ -12,6 +12,7 @@ São instruções e recursos de desenvolvimento. A aplicação não as importa.
 | vercel-composition-patterns | composition-patterns | APIs e composição de componentes |
 | impeccable | impeccable | Crítica e polimento visual específicos |
 | webapp-testing | webapp-testing | Inspeção por navegador |
+| ui-ux-pro-max | ui-ux-pro-max | Decisões de UI, UX, paleta, tipografia e revisão visual |
 
 Fontes fixadas nesta instalação
 
@@ -35,3 +36,13 @@ As recomendações visuais se sobrepõem. Escolha uma direção por tarefa e use
 DESIGN.md como referência para resolver diferenças de estilo.
 Os exemplos externos ficam excluídos do lint e do TypeScript da aplicação.
 As skills estarão disponíveis para descoberta na próxima interação do Codex.
+
+## Instalação de 14/11/2026
+
+`frontend-design`, `web-design-guidelines` e `ui-ux-pro-max` foram instaladas
+com `npx skills add` para Cursor e Codex, na pasta compartilhada
+`.agents/skills`. As duas primeiras já estavam no projeto e o conteúdo
+permaneceu o mesmo. `ui-ux-pro-max` é nova e veio de
+nextlevelbuilder/ui-ux-pro-max-skill. A procedência dessas três fica em
+`skills-lock.json`. Ela consulta dados locais e não substitui `DESIGN.md`
+quando houver conflito de estilo.
