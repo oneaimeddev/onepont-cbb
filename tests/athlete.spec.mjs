@@ -147,7 +147,7 @@ test("busca, seleção, timeline, troca, cadastro e auditoria do atleta", async 
   await page.getByLabel("E-mail").fill(auditor.email);
   await page.getByLabel("Senha").fill(auditor.password);
   await page.getByRole("button", { name: "Entrar" }).click();
-  await expect(page.getByRole("heading", { name: "Como podemos ajudar?" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Como posso ajudar você hoje?" })).toBeVisible();
   expect((await page.goto(`/atletas/${athlete}?aba=timeline`)).status()).toBe(404);
   expect((await page.goto(`/?atleta=${emptyAthlete}`)).status()).toBe(404);
   await page.goto("/auditoria");

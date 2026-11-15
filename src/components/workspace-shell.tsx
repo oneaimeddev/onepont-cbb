@@ -25,6 +25,8 @@ export function WorkspaceShell({ children, session, navigation }: {
     menuButton.current?.focus();
   }
 
+  if (pathname === "/") return children;
+
   return (
     <div className="workspace-shell" onKeyDown={(event) => {
       if (event.key === "Escape" && navigationOpen) closeNavigation();

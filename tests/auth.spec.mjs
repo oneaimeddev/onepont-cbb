@@ -53,33 +53,32 @@ test("backend rejeita acesso anônimo e as duas interfaces exigem login", async 
 test("login individual, navegação nos dois modos e logout em tela móvel", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await signIn(page, await createAccount(true));
-  await expect(page.getByRole("heading", { name: "Como podemos ajudar?" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Como posso ajudar você hoje?" })).toBeVisible();
   await expect(page.getByLabel("Mensagem", { exact: true })).toBeDisabled();
   await expect(page.getByRole("button", { name: "Enviar", exact: true })).toBeDisabled();
   await expect(page.getByRole("complementary", { name: "Contexto da tarefa" })).toHaveCount(0);
   const tasks = page.getByRole("navigation", { name: "Tarefas clínicas" });
   await expect(tasks.getByRole("link")).toHaveCount(3);
-  await expect(tasks.getByRole("link", { name: /Nova evolução/ })).toHaveCount(1);
+  await expect(tasks.getByRole("link", { name: /Criar evolução/ })).toHaveCount(1);
 
-  const menu = page.getByRole("button", { name: "Menu", exact: true });
-  await menu.click();
-  await expect(page.getByText("Profissional DEMO")).toBeVisible();
+  const account = page.getByRole("button", { name: "Conta de Profissional DEMO" });
+  await account.click();
+  await expect(page.getByRole("menu", { name: "Conta" }).getByText("Profissional DEMO")).toBeVisible();
   await page.keyboard.press("Escape");
-  await expect(menu).toHaveAttribute("aria-expanded", "false");
-  await expect(menu).toBeFocused();
-  await menu.click();
-  await expect(page.getByRole("navigation", { name: "Navegação do workspace" })
-    .getByRole("link", { name: /^Nova evolução/ })).toBeVisible();
+  await expect(account).toHaveAttribute("aria-expanded", "false");
+  await expect(account).toBeFocused();
+  await account.click();
   const response = await page.request.get("/api/profile");
   expect(response.status()).toBe(200);
   expect(await response.json()).toMatchObject({ can_read_audit: true, profession: "Medicina esportiva" });
-  await page.getByRole("link", { name: "Auditoria" }).click();
+  await page.getByRole("menuitem", { name: "Auditoria" }).click();
   await expect(page.getByRole("heading", { name: "Auditoria" })).toBeVisible();
+  const menu = page.getByRole("button", { name: "Menu", exact: true });
   await expect(menu).toHaveAttribute("aria-expanded", "false");
   await menu.click();
   await page.getByRole("link", { name: "Chat", exact: true }).click();
-  await expect(page.getByRole("heading", { name: "Como podemos ajudar?" })).toBeVisible();
-  await page.getByRole("navigation", { name: "Tarefas clínicas" }).getByRole("link", { name: /^Prontuários/ }).click();
+  await expect(page.getByRole("heading", { name: "Como posso ajudar você hoje?" })).toBeVisible();
+  await page.getByRole("navigation", { name: "Tarefas clínicas" }).getByRole("link", { name: "Consultar prontuários" }).click();
   await expect(page.getByRole("heading", { name: "Prontuários" })).toBeVisible();
   await menu.click();
   await expect(page.getByRole("navigation", { name: "Navegação do workspace" }).getByRole("link", { name: "Prontuários", exact: true })).toHaveAttribute("aria-current", "page");
@@ -90,7 +89,7 @@ test("login individual, navegação nos dois modos e logout em tela móvel", asy
 
 test("sem permissão a auditoria fica oculta e a URL direta recebe 404", async ({ page }) => {
   await signIn(page, await createAccount(false));
-  await expect(page.getByRole("heading", { name: "Como podemos ajudar?" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Como posso ajudar você hoje?" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Auditoria" })).toHaveCount(0);
   expect((await page.goto("/auditoria")).status()).toBe(404);
 });
