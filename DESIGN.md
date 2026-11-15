@@ -48,7 +48,11 @@ aria-current. O conteúdo das páginas e a sessão são compostos como children.
 WorkspaceArea aceita um contexto opcional. A coluna aparece somente quando há
 conteúdo, e passa abaixo da tarefa em até 1000 px.
 MessageComposer apresenta o estado indisponível do assistente com descrição
-associada ao campo e botão de envio desabilitado.
+associada ao campo e botão de envio desabilitado. A descrição fica dentro do
+composer, junto ao botão, em uma única mensagem.
+Módulos sem implementação exibem a etiqueta “Indisponível” na sidebar. Nas
+sugestões do chat, esses módulos não são links. A abertura do chat cita o
+atleta quando há contexto ativo.
 SubmitButton informa envio em andamento e bloqueia submissão duplicada.
 Inputs têm rótulos, autocomplete e foco visível.
 Erros de autenticação ficam associados aos campos e anunciados por role=alert.
