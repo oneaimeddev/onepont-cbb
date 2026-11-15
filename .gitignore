@@ -1,0 +1,11 @@
+node_modules/
+.next/
+.env*
+!.env.example
+supabase/.temp/
+supabase/.branches/
+*.tsbuildinfo
+next-env.d.ts
+/Prontuario-CBB-Inicio-Desenvolvimento-v0.1.zip
+/test-results/
+/playwright-report/
