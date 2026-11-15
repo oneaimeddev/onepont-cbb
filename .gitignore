@@ -9,3 +9,6 @@ next-env.d.ts
 /Prontuario-CBB-Inicio-Desenvolvimento-v0.1.zip
 /test-results/
 /playwright-report/
+
+__pycache__/
+*.pyc
