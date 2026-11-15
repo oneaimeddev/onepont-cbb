@@ -1,3 +1,4 @@
+import { AthleteCatalog } from "../../../features/athletes/catalog";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { availableSections } from "../../../features/sections";
@@ -12,6 +13,7 @@ export default async function TraditionalPage({ params }: {
   const { section } = await params;
   const current = availableSections(profile.can_read_audit).find(([slug]) => slug === section);
   if (!current) notFound();
+  if (section === "evolucoes") return <AthleteCatalog title="Selecionar atleta para evolução" action="/atletas" />;
 
   return (
     <WorkspaceArea>

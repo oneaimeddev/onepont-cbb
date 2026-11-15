@@ -42,6 +42,7 @@ async function signIn(page, account) {
 test("backend rejeita acesso anônimo e as duas interfaces exigem login", async ({ page }) => {
   const response = await page.request.get("/api/profile");
   expect(response.status()).toBe(401);
+  expect((await page.request.get(`/api/atletas/${randomUUID()}/foto`)).status()).toBe(401);
   expect(response.headers()["cache-control"]).toBe("private, no-store");
   for (const path of ["/", "/prontuarios", "/auditoria"]) {
     await page.goto(path);
@@ -57,9 +58,9 @@ test("login individual, navegação nos dois modos e logout em tela móvel", asy
   await expect(page.getByRole("button", { name: "Enviar", exact: true })).toBeDisabled();
   await expect(page.getByRole("complementary", { name: "Contexto da tarefa" })).toHaveCount(0);
   const tasks = page.getByRole("navigation", { name: "Tarefas clínicas" });
-  await expect(tasks.getByRole("link")).toHaveCount(2);
-  await expect(tasks.getByRole("link", { name: /Nova evolução/ })).toHaveCount(0);
-  await expect(tasks.getByRole("listitem").filter({ hasText: "Nova evolução" })).toContainText("Indisponível");
+  await expect(tasks.getByRole("link")).toHaveCount(3);
+  await expect(tasks.getByRole("link", { name: /Nova evolução/ })).toHaveCount(1);
+
   const menu = page.getByRole("button", { name: "Menu", exact: true });
   await menu.click();
   await expect(page.getByText("Profissional DEMO")).toBeVisible();
@@ -68,7 +69,7 @@ test("login individual, navegação nos dois modos e logout em tela móvel", asy
   await expect(menu).toBeFocused();
   await menu.click();
   await expect(page.getByRole("navigation", { name: "Navegação do workspace" })
-    .getByRole("link", { name: /^Nova evolução/ })).toContainText("Indisponível");
+    .getByRole("link", { name: /^Nova evolução/ })).toBeVisible();
   const response = await page.request.get("/api/profile");
   expect(response.status()).toBe(200);
   expect(await response.json()).toMatchObject({ can_read_audit: true, profession: "Medicina esportiva" });

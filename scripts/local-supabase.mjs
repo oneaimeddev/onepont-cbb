@@ -12,7 +12,7 @@ const publishableKey = status.PUBLISHABLE_KEY ?? status.ANON_KEY;
 if (!publishableKey) throw new Error("A chave publicável local está indisponível.");
 
 if (process.argv.includes("--env")) {
-  writeFileSync(".env.local", `NEXT_PUBLIC_SUPABASE_URL=${url.origin}\nNEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=${publishableKey}\n`, {
+  writeFileSync(".env.local", `NEXT_PUBLIC_SUPABASE_URL=${url.origin}\nNEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=${publishableKey}\nSUPABASE_SERVICE_ROLE_KEY=${status.SERVICE_ROLE_KEY ?? status.SECRET_KEY}\n`, {
     flag: "wx",
     mode: 0o600,
   });

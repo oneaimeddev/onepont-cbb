@@ -6,6 +6,11 @@ function initials(name: string) {
   return (first + last).toLocaleUpperCase("pt-BR");
 }
 
-export function Avatar({ name, size = "md" }: { name: string; size?: "sm" | "md" | "lg" }) {
+export function Avatar({ name, size = "md", athleteId, photoVersion }: { name: string; size?: "sm" | "md" | "lg"; athleteId?: string; photoVersion?: string | null }) {
+  if (athleteId && photoVersion) {
+    // Authenticated image requests must carry the browser session.
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img className={`avatar avatar-${size}`} src={`/api/atletas/${athleteId}/foto?v=${photoVersion}`} alt="" width={72} height={72} />;
+  }
   return <span className={`avatar avatar-${size}`} aria-hidden="true">{initials(name)}</span>;
 }

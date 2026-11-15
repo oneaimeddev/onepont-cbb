@@ -1,5 +1,8 @@
+import { editAthlete } from "./edit-actions";
+import { SubmitButton } from "../../../../components/submit-button";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { PhotoEditor } from "../../../../features/athletes/photo-editor";
 import { Avatar } from "../../../../components/avatar";
 import { EmptyState } from "../../../../components/empty-state";
 import { Icon } from "../../../../components/icon";
@@ -8,15 +11,22 @@ import { eventDate, getAthlete } from "../../../../features/athletes/data";
 
 export default async function AthletePage({ params, searchParams }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ aba?: string | string[] }>;
+  searchParams: Promise<{ aba?: string | string[]; retorno?: string; erro?: string; salvo?: string }>;
 }) {
   const { id } = await params;
-  const { aba = "visao-geral" } = await searchParams;
+  const { aba = "visao-geral", retorno, erro, salvo } = await searchParams;
   if (aba !== "visao-geral" && aba !== "timeline" && aba !== "cadastro") notFound();
 
-  const { athlete, can_read_records, records } = await getAthlete(id, aba === "timeline" ? "timeline" : "profile");
+  const { athlete, can_read_records, records, can_edit, can_write, sports, counts, recent_records } = await getAthlete(id, aba === "timeline" ? "timeline" : "profile");
   const name = athlete.social_name || athlete.full_name;
   const base = `/atletas/${athlete.id}`;
+  const returnTo = retorno && /^\/(atletas|prontuarios)(\?|$)/.test(retorno) ? retorno : "/atletas";
+  const backQuery = "&retorno=" + encodeURIComponent(returnTo);
+  const age = athlete.birth_date ? (() => {
+    const today = new Date().toLocaleDateString("sv-SE", { timeZone: "America/Sao_Paulo" });
+    const years = Number(today.slice(0,4)) - Number(athlete.birth_date.slice(0,4));
+    return years - (today.slice(5) < athlete.birth_date.slice(5) ? 1 : 0);
+  })() : null;
   const fields = [
     ["Nome completo", athlete.full_name],
     ["Nome social", athlete.social_name],
@@ -27,7 +37,9 @@ export default async function AthletePage({ params, searchParams }: {
     ["Origem do cadastro", athlete.source === "manual" ? "Manual" : "Demonstração"],
     ...(aba === "cadastro" ? [["Identificador CBB", athlete.external_cbb_id]] : []),
   ];
-  const headerDetails = [athlete.team, athlete.category].filter(Boolean);
+  const activeSports = sports.filter((sport) => sport.starts_on <= new Date().toISOString().slice(0,10) && (!sport.ends_on || sport.ends_on >= new Date().toISOString().slice(0,10)));
+  const headerDetails = [...new Set([age === null ? null : `${age} anos`, athlete.team, athlete.category,
+    ...activeSports.flatMap((sport) => [sport.club, sport.category, sport.division, sport.modality])].filter(Boolean))];
   const tabs = [
     { value: "visao-geral", title: "Visão geral", href: base },
     ...(can_read_records ? [{ value: "timeline", title: "Linha do tempo", href: base + "?aba=timeline" }] : []),
@@ -37,10 +49,10 @@ export default async function AthletePage({ params, searchParams }: {
   return (
     <WorkspaceArea>
       <main id="conteudo" tabIndex={-1} className="traditional-content clinical-page">
-        <Link className="back-link" href="/atletas" prefetch={false}><Icon name="back" size={18} />Trocar atleta</Link>
+        <Link className="back-link" href={returnTo} prefetch={false}><Icon name="back" size={18} />Trocar atleta</Link>
         <header className="clinical-header athlete-header">
           <div className="athlete-identity">
-            <Avatar name={name} size="lg" />
+            <Avatar name={name} size="lg" athleteId={athlete.id} photoVersion={athlete.photo_version} />
             <div>
               <h1>{name}</h1>
               <span className="meta-list">
@@ -52,24 +64,30 @@ export default async function AthletePage({ params, searchParams }: {
           </div>
           <Link className="button" href={`/?atleta=${athlete.id}`} prefetch={false}><Icon name="chat" size={18} />Abrir no chat</Link>
         </header>
+        {can_write && <Link className="outline" href={base + "/evolucao"} prefetch={false}>Iniciar atendimento</Link>}
         <nav className="athlete-tabs" aria-label="Seções do atleta">
           {tabs.map((tab) => (
-            <Link key={tab.value} href={tab.href} aria-current={aba === tab.value ? "page" : undefined} prefetch={false}>
+            <Link key={tab.value} href={tab.href + (tab.href.includes("?") ? backQuery : "?retorno=" + encodeURIComponent(returnTo))} aria-current={aba === tab.value ? "page" : undefined} prefetch={false}>
               {tab.title}
             </Link>
           ))}
         </nav>
+        {erro && <p role="alert">Não foi possível salvar. Confira os dados e as permissões.</p>}
+        {salvo && <p role="status">Cadastro salvo.</p>}
         {aba === "timeline" ? (
           <section aria-labelledby="timeline-title">
             <h2 id="timeline-title">Linha do tempo</h2>
             {records?.length ? (
               <ol className="clinical-list timeline">
                 {records.map((record) => (
-                  <li key={record.id} className={record.status === "draft" ? "is-draft" : undefined}>
+                  <li id={`registro-${record.id}`} key={record.id} className={record.status === "draft" ? "is-draft" : undefined}>
                     <div className="timeline-entry">
                       <details>
                         <summary><Icon name="chevron" size={16} />{record.title}</summary>
                         <p className="record-body">{record.body}</p>
+                        {can_write && record.is_author && record.status === "draft" && <Link className="clinical-link" prefetch={false} href={base + "/evolucao?registro=" + record.id}>Revisar rascunho</Link>}
+                        {record.encounter_id && <small className="record-id">Atendimento {record.encounter_id}</small>}
+                        {record.encounter_status && <p>Atendimento {record.encounter_status === "open" ? "aberto" : "encerrado"}</p>}
                       </details>
                       <span className={record.status === "draft" ? "pill pill-draft" : "pill pill-success"}>
                         {record.status === "draft" ? "Rascunho" : "Finalizado"}
@@ -92,11 +110,45 @@ export default async function AthletePage({ params, searchParams }: {
         ) : (
           <section aria-labelledby="athlete-data-title">
             <h2 id="athlete-data-title">{aba === "cadastro" ? "Dados cadastrais" : "Identificação e contexto esportivo"}</h2>
+            {aba === "visao-geral" && counts && <dl className="athlete-facts">
+              <div><dt>Atendimentos autorizados</dt><dd>{counts.encounters}</dd></div>
+              <div><dt>Evoluções autorizadas</dt><dd>{counts.evolutions}</dd></div>
+            </dl>}
             <dl className="athlete-facts">
               {fields.filter(([, value]) => value).map(([label, value]) => (
                 <div key={label}><dt>{label}</dt><dd>{value}</dd></div>
               ))}
             </dl>
+            {aba === "visao-geral" && !!recent_records?.length && <section className="sport-history">
+              <h2>Atividades recentes</h2>
+              <ul className="clinical-list">{recent_records.map((record) => <li key={record.id}>
+                <Link className="clinical-link" prefetch={false} href={base + "?aba=timeline" + backQuery + "#registro-" + record.id}>{record.title}</Link>
+                <span className="meta-list"><span>{record.specialty}</span><span>{record.author_name}</span>
+                  <time dateTime={record.occurred_at}>{eventDate.format(new Date(record.occurred_at))}</time>
+                  <span>{record.status === "draft" ? "Rascunho" : "Finalizado"}</span>
+                </span>
+              </li>)}</ul>
+            </section>}
+            {sports.length > 0 && <section className="sport-history"><h2>Vínculos esportivos</h2>
+              <ul className="clinical-list">{sports.map((sport) => <li key={sport.id}>
+                <strong>{sport.category} · {sport.modality} · {sport.division}</strong>
+                <p>{sport.club} · Temporada {sport.season}</p>
+                <small>{sport.starts_on} — {sport.ends_on ?? "Em vigor"}</small>
+              </li>)}</ul></section>}
+            {aba === "cadastro" && can_edit && <>
+              <form action={editAthlete} className="athlete-form">
+                <h2>Editar cadastro</h2>
+                <input type="hidden" name="id" value={id} />
+                <label>Nome completo<input name="name" required maxLength={160} defaultValue={athlete.full_name} /></label>
+                <label>Nome social<input name="social" maxLength={160} defaultValue={athlete.social_name ?? ""} /></label>
+                <label>Nascimento<input type="date" name="birth" defaultValue={athlete.birth_date ?? ""} /></label>
+                <label>Clube cadastral<input name="club" maxLength={120} defaultValue={athlete.team ?? ""} /></label>
+                <label>Categoria cadastral<input name="category" maxLength={120} defaultValue={athlete.category ?? ""} /></label>
+                <label>Status<select name="status" defaultValue={athlete.status}><option value="active">Ativo</option><option value="inactive">Inativo</option></select></label>
+                <SubmitButton pendingLabel="Salvando…">Salvar cadastro</SubmitButton>
+              </form>
+              <PhotoEditor athleteId={id} />
+            </>}
           </section>
         )}
       </main>

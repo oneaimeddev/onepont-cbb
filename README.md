@@ -73,10 +73,12 @@ npm test
 npm audit --omit=dev
 ```
 
-Os testes usam contas temporárias próprias e as removem ao terminar. O contrato de
-auditoria está em `src/features/audit/contract.ts`. A gravação de eventos acompanha
-as operações clínicas nas fases B/C. O chat, os prontuários e evoluções nesta fase
-fornecem a navegação inicial. O escudo fornecido e a paleta do projeto estão documentados em DESIGN.md.
+Os testes usam contas temporárias próprias e as removem ao terminar. Para a suíte
+do Handoff 004, aplique as migrations e gere a seed `cbb-qa-1` com 5.000 atletas
+antes de executar `npm test` (comandos abaixo). O contrato de auditoria está em
+`src/features/audit/contract.ts`. Atendimentos e evoluções já permitem salvar
+rascunhos, revisar e finalizar mediante confirmação. O assistente de IA permanece
+indisponível. O escudo fornecido e a paleta estão documentados em DESIGN.md.
 O shell usa Tailwind e componentes locais, com a adoção de shadcn/ui adiada até
 haver componentes compartilhados que precisem dele.
 
@@ -101,3 +103,38 @@ Em **Buscar atleta**, abra **Atleta DEMO Aurora** para ver dois registros
 sintéticos persistidos. **Atleta DEMO Horizonte** demonstra a linha do tempo vazia.
 O cadastro manual fica disponível para a conta escolhida. A auditoria é acessível
 com um perfil criado com a opção `auditor`.
+
+## Handoff 004 e homologação local
+
+O gerador exige o Supabase local e recusa NODE_ENV=production. Crie uma conta
+individual com demo:user e senha fornecida pela entrada padrão. Use o e-mail
+da conta como terceiro argumento para conceder permissões explícitas apenas
+aos atletas da massa indicada.
+
+```bash
+node scripts/qa-athletes.mjs 500 cbb-qa-1 medico.demo@example.com
+node scripts/qa-athletes.mjs 5000 cbb-qa-1 medico.demo@example.com
+node scripts/qa-athletes.mjs reset cbb-qa-1
+```
+
+O reset remove os atletas, registros e vínculos da seed indicada. Os eventos de
+auditoria permanecem. Fotos são imagens abstratas sintéticas. Para o upload,
+configure SUPABASE_SERVICE_ROLE_KEY apenas no servidor, com o segredo do projeto
+Supabase correspondente. O endpoint verifica sessão e vínculo antes da gravação.
+Em instalações novas, `npm run demo:env` já escreve essa variável no arquivo local
+ignorado pelo Git. O comando não sobrescreve configurações existentes.
+
+Ao informar a conta, o gerador também prepara 12 atendimentos/evoluções fictícios,
+concede auditoria e cadastro, e habilita edição, escrita e finalização para os
+atletas daquela seed e para novos cadastros dessa conta. Não concede acesso
+universal a outros atletas. O reset não revoga as permissões globais da conta.
+Utilize contas individuais exclusivamente locais e nunca reutilize credenciais
+de produção. Nenhum gerador roda no build ou na inicialização da aplicação.
+
+Para demonstrar: entre com a conta provisionada, selecione um atleta da massa,
+abra **Dados cadastrais** para editar ou adicionar uma foto e use **Iniciar
+atendimento** para salvar, revisar e finalizar uma evolução. O atendimento é
+persistido junto com o primeiro rascunho. A foto é adicionada após o cadastro.
+
+O relatório de entrega, a matriz QA e as limitações estão em
+`docs/HANDOFF-004-RESULTADO.md`. As capturas estão em `docs/visual/handoff-004/`.

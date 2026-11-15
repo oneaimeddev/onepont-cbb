@@ -6,11 +6,20 @@ import { requireProfile } from "../../../lib/profile";
 import { supabaseServer } from "../../../lib/supabase";
 
 const operationLabels: Record<string, string> = {
+  "photo.read": "Consulta de fotografia",
+  "photo.replace": "Fotografia salva",
+  "photo.remove": "Fotografia removida",
+  "athlete.edit": "Cadastro atualizado",
+  "clinical_record.draft_saved": "Rascunho salvo",
+  "clinical_record.finalized": "Evolução finalizada",
+  "clinical_record.save": "Tentativa de alteração clínica",
+  "qa.permissions.provisioned": "Permissões de homologação concedidas",
   "athlete.list": "Consulta ao catálogo",
   "athlete.create": "Cadastro de atleta",
   "athlete.view": "Consulta ao perfil",
   "athlete.context.open": "Abertura de contexto no chat",
   "clinical_record.timeline.read": "Consulta à linha do tempo",
+  "clinical_record.summary.read": "Consulta às atividades recentes",
   "audit.list": "Consulta à auditoria",
 };
 

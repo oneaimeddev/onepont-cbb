@@ -12,7 +12,8 @@ export default async function ChatPage({ searchParams }: {
 }) {
   await requireProfile();
   const { atleta } = await searchParams;
-  const active = typeof atleta === "string" ? (await getAthlete(atleta, "chat")).athlete : null;
+  const context = typeof atleta === "string" ? await getAthlete(atleta, "chat") : null;
+  const active = context?.athlete ?? null;
   const activeName = active && (active.social_name || active.full_name);
   const activeDetails = active ? [active.team, active.category].filter(Boolean) : [];
   return (
@@ -20,7 +21,7 @@ export default async function ChatPage({ searchParams }: {
       <>
         <h2>Atleta em contexto</h2>
         <div className="context-athlete">
-          <Avatar name={activeName} />
+          <Avatar name={activeName} athleteId={active.id} photoVersion={active.photo_version} />
           <div>
             <strong>{activeName}</strong>
             {activeDetails.length > 0 && <span className="meta-list">{activeDetails.map((item) => <span key={item}>{item}</span>)}</span>}
@@ -29,6 +30,8 @@ export default async function ChatPage({ searchParams }: {
         <p className="record-id">{active.id}</p>
         <div className="context-actions">
           <Link className="outline" href={`/atletas/${active.id}`} prefetch={false}>Voltar ao perfil</Link>
+          {context?.can_write && <Link className="outline" href={`/atletas/${active.id}/evolucao`} prefetch={false}>Registrar evolução</Link>}
+          {context?.can_read_records && <Link className="ghost-link" href={`/atletas/${active.id}?aba=timeline`} prefetch={false}>Consultar atendimentos e evoluções</Link>}
           <Link className="ghost-link" href="/" prefetch={false}>Encerrar contexto</Link>
         </div>
       </>
