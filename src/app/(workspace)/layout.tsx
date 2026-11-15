@@ -9,7 +9,7 @@ export default async function WorkspaceLayout({ children }: { children: React.Re
   const navigation = [
     { href: "/", title: "Chat" },
     ...availableSections(profile.can_read_audit).map(([slug, section]) => ({
-      href: `/${slug}`, title: section.title,
+      href: `/${slug}`, title: section.title, isAvailable: section.isAvailable,
     })),
   ];
   return (

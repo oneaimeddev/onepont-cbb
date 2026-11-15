@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Brand } from "./brand";
 
-type NavigationItem = { href: string; title: string };
+type NavigationItem = { href: string; title: string; isAvailable?: boolean };
 
 export function WorkspaceShell({ children, session, navigation }: {
   children: React.ReactNode;
@@ -44,6 +44,7 @@ export function WorkspaceShell({ children, session, navigation }: {
               prefetch={false} aria-current={current?.href === item.href ? (pathname === item.href ? "page" : "location") : undefined}
               onClick={() => { if (navigationOpen) closeNavigation(); }}>
               {item.title}
+              {item.isAvailable === false && <small className="status-tag">Indisponível</small>}
             </Link>
           ))}
         </nav>
