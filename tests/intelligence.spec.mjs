@@ -125,6 +125,56 @@ test("agente consulta só o autorizado e a interface tradicional segue sem o pro
     headers: { origin: "https://example.invalid" },
   });
   expect(foreignOrigin.status()).toBe(403);
+
+  await expect(page.getByRole("heading", { name: "Como posso ajudar você hoje?" })).toBeVisible();
+  const long = "registro autorizado ".repeat(24);
+  const stored = Array.from({ length: 8 }, (_, index) => ([
+    { id: `user-${index}`, role: "user", text: index === 0 ? "Pergunta antiga **literal**" : `Pergunta ${index} ${long}`, athletes: [], navigation: null },
+    { id: `assistant-${index}`, role: "assistant", text: index === 0 ? "**Negrito**\n\n- um item" : `Resposta ${index}\n\n${long}`, athletes: [], navigation: null },
+  ])).flat();
+  stored.push({
+    id: "assistant-card",
+    role: "assistant",
+    text: "Encontrei este atleta autorizado.",
+    athletes: [{ id: marina, name: "Marina Costa", facts: ["Sub-19"] }],
+    navigation: null,
+  });
+  await page.evaluate((value) => {
+    sessionStorage.setItem("cbb-intelligence-turns:v1", JSON.stringify({ v: 1, turns: value }));
+  }, stored);
+  await page.reload();
+  await expect(page.getByRole("heading", { name: "Como posso ajudar você hoje?" })).toBeHidden();
+  const log = page.getByRole("region", { name: "Histórico da conversa" });
+  await expect(log).toBeVisible();
+  await expect(page.locator(".ia-prose strong")).toHaveText("Negrito");
+  await expect(page.locator(".ia-prose li")).toHaveText("um item");
+  await expect(page.locator(".ia-turn-user").first()).toContainText("**literal**");
+  await expect(page.locator(".ia-turn-user strong")).toHaveCount(0);
+  await expect(log.getByRole("button", { name: /Marina Costa/ })).toBeVisible();
+  await expect(log).not.toContainText('{"athletes"');
+  const viewport = page.viewportSize();
+  const box = await page.getByRole("button", { name: "Enviar", exact: true }).boundingBox();
+  expect(box).not.toBeNull();
+  expect(box.y).toBeGreaterThan((viewport?.height ?? 720) * 0.45);
+  expect(box.y + box.height).toBeLessThanOrEqual((viewport?.height ?? 720) + 1);
+  const scrolled = await log.evaluate((node) => {
+    const before = node.scrollTop;
+    node.scrollTop = 0;
+    return { before, overflows: node.scrollHeight > node.clientHeight + 8, top: node.scrollTop };
+  });
+  expect(scrolled.overflows).toBe(true);
+  expect(scrolled.before).toBeGreaterThan(40);
+  expect(scrolled.top).toBe(0);
+  await expect(log.getByText("Pergunta antiga **literal**")).toBeVisible();
+  expect(await log.evaluate((node) => node.scrollTop)).toBe(0);
+  await page.setViewportSize({ width: 390, height: 844 });
+  const mobile = await page.getByRole("button", { name: "Enviar", exact: true }).boundingBox();
+  expect(mobile).not.toBeNull();
+  expect(mobile.y + mobile.height).toBeLessThanOrEqual(845);
+  await expect(page.getByRole("button", { name: "Nova conversa" })).toBeVisible();
+  await page.getByRole("button", { name: "Nova conversa" }).click();
+  await expect(page.getByRole("heading", { name: "Como posso ajudar você hoje?" })).toBeVisible();
+  await expect(page.getByRole("navigation", { name: "Tarefas clínicas" })).toBeVisible();
 });
 
 test.afterAll(async () => {

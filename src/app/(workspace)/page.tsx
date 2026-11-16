@@ -34,6 +34,8 @@ export default async function ChatPage({ searchParams }: {
   const givenName = profile.display_name.trim().split(/\s+/)[0] || profile.display_name;
 
   return (
+    <>
+    <script dangerouslySetInnerHTML={{ __html: "try{var raw=sessionStorage.getItem('cbb-intelligence-turns:v1');if(raw)document.documentElement.dataset.iaRestored='true';}catch(error){document.documentElement.dataset.iaStorage='off';}" }} />
     <IntelligenceHome
       fonts={chatFonts}
       greeting={greetingFor(givenName)}
@@ -70,5 +72,6 @@ export default async function ChatPage({ searchParams }: {
         </aside>
       ) : null}
     />
+    </>
   );
 }

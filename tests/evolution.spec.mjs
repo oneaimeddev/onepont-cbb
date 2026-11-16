@@ -126,35 +126,49 @@ test("foto privada, edição, rascunho, revisão, finalização e bloqueios",asy
  expect(JSON.stringify(audit.data)).not.toContain("Conteúdo sintético");
 });
 
-test("diretório paginado com 5000 atletas e busca normalizada",async({page},testInfo)=>{
+test("diretório paginado da seleção fictícia e busca normalizada",async({page},testInfo)=>{
  const qa=await user();
+ const roster=Number(sql("select count(*) from clinical.athletes where qa_batch='qa004:cbb-qa-1';"));
+ const sub19Women=Number(sql(`select count(*) from clinical.athletes a
+  join clinical.sport_links l on l.athlete_id=a.id and l.ends_on is null
+  join clinical.sport_options o on o.id=l.option_id
+  where a.qa_batch='qa004:cbb-qa-1' and o.category='Sub-19' and o.division='Feminino';`));
+ expect(sub19Women).toBeGreaterThanOrEqual(14);
+ expect(sub19Women).toBeLessThanOrEqual(15);
  sql(`insert into clinical.athlete_access(athlete_id,professional_id,can_read_records)
- select id,'${qa.id}',true from clinical.athletes where qa_batch='qa004:cbb-qa-1' order by id limit 500;`);
- expect((await qa.client.rpc("athlete_directory",{filters:{}})).data.total).toBe(500);
+ select id,'${qa.id}',true from clinical.athletes where qa_batch='qa004:cbb-qa-1' order by full_name limit 25;`);
+ expect((await qa.client.rpc("athlete_directory",{filters:{}})).data.total).toBe(25);
  await page.goto("/login");
  await page.getByLabel("E-mail").fill(qa.email);
  await page.getByLabel("Senha",{exact:true}).fill(qa.password);
  await page.getByRole("button",{name:"Entrar",exact:true}).click();
  await page.waitForURL("/");
  await page.goto("/atletas");
- await expect(page.getByText("500 atletas",{exact:true})).toBeVisible();
- await page.getByRole("link",{name:"Próxima",exact:true}).click();
- await expect(page.getByText("Página 2 de 20",{exact:true})).toBeVisible();
+ await expect(page.getByText("25 atletas",{exact:true})).toBeVisible();
  sql(`insert into clinical.athlete_access(athlete_id,professional_id,can_read_records)
  select id,'${qa.id}',true from clinical.athletes where qa_batch='qa004:cbb-qa-1' on conflict do nothing;`);
  const start=performance.now();
  const first=await qa.client.rpc("athlete_directory",{filters:{}});
  const elapsed=performance.now()-start;
- expect(first.error).toBeNull(); expect(first.data.total).toBe(5000); expect(first.data.athletes).toHaveLength(25);
+ expect(first.error).toBeNull(); expect(first.data.total).toBe(roster); expect(first.data.athletes).toHaveLength(25);
  const second=await qa.client.rpc("athlete_directory",{filters:{page:"2"}});
  expect(second.data.athletes.map(a=>a.id).some(id=>first.data.athletes.some(a=>a.id===id))).toBe(false);
- const search=await qa.client.rpc("athlete_directory",{filters:{q:"  alvaro    demo "}});
- expect(search.data.total).toBeGreaterThan(0);
- const option=first.data.options.find(o=>o.club);
+ const search=await qa.client.rpc("athlete_directory",{filters:{q:"  marina    costa "}});
+ expect(search.data.total).toBe(1);
+ expect(search.data.athletes[0].full_name).toBe("Marina Costa");
+ const women=await qa.client.rpc("athlete_directory",{filters:{category:"Sub-19",division:"Feminino"}});
+ expect(women.data.total).toBe(sub19Women);
+ for(const a of women.data.athletes) expect(a.sports).toContainEqual(expect.objectContaining({category:"Sub-19",division:"Feminino"}));
+ const option=first.data.options.find(o=>o.club&&o.division==="Feminino");
  const filtered=await qa.client.rpc("athlete_directory",{filters:option});
  expect(filtered.error).toBeNull(); expect(filtered.data.total).toBeGreaterThan(0);
  for(const a of filtered.data.athletes) expect(a.sports).toContainEqual(expect.objectContaining(option));
- await page.goto("/atletas?q=homonimo&status=active&page=2");
+ const pages=Math.ceil(roster/25);
+ await page.goto("/atletas");
+ await expect(page.getByText(`${roster} atletas`,{exact:true})).toBeVisible();
+ await page.getByRole("link",{name:"Próxima",exact:true}).click();
+ await expect(page.getByText(`Página 2 de ${pages}`,{exact:true})).toBeVisible();
+ await page.goto("/atletas?q=a&status=active&page=2");
  await expect(page.locator(".athlete-list > li")).toHaveCount(25);
  const ids=await page.locator(".athlete-list .record-id").allTextContents();
  expect(new Set(ids).size).toBe(25);
@@ -162,7 +176,7 @@ test("diretório paginado com 5000 atletas e busca normalizada",async({page},tes
  await page.locator(".athlete-row-main a").first().click();
  await page.getByRole("link",{name:"Dados cadastrais",exact:true}).click();
  await page.getByRole("link",{name:"Trocar atleta",exact:true}).click();
- await expect(page).toHaveURL(/\/atletas\?q=homonimo/);
+ await expect(page).toHaveURL(/\/atletas\?q=a/);
  expect(new URL(page.url()).searchParams.get("q")).toBe(original.searchParams.get("q"));
  expect(new URL(page.url()).searchParams.get("status")).toBe("active");
  expect(new URL(page.url()).searchParams.get("page")).toBe("2");
@@ -170,6 +184,6 @@ test("diretório paginado com 5000 atletas e busca normalizada",async({page},tes
  await page.setViewportSize({width:390,height:844});
  await page.screenshot({path:testInfo.outputPath("directory-mobile.png"),fullPage:true});
  expect(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth)).toBe(false);
- await testInfo.attach("performance",{body:JSON.stringify({count:5000,pageSize:25,rpcMs:elapsed,payloadBytes:JSON.stringify(first.data).length}),contentType:"application/json"});
+ await testInfo.attach("performance",{body:JSON.stringify({count:roster,pageSize:25,rpcMs:elapsed,payloadBytes:JSON.stringify(first.data).length}),contentType:"application/json"});
  console.log("Directory QA",JSON.stringify({rpcMs:Math.round(elapsed),payloadBytes:JSON.stringify(first.data).length}));
 });

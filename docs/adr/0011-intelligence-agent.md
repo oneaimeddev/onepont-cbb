@@ -1,6 +1,6 @@
 # 0011. Um agente sobre as RPCs clínicas
 
-A Home CBB Intelligence conversa com um único modelo, configurado por `CBB_INTELLIGENCE_API_KEY`. Sem a chave, o compositor permanece desabilitado.
+A Home CBB Intelligence conversa com um único modelo, configurado por `CBB_INTELLIGENCE_API_KEY`. Sem a chave, o compositor permanece desabilitado. Um identificador que começa com `gemini` usa a API Gemini; os demais usam Chat Completions compatível com a OpenAI. `CBB_INTELLIGENCE_BASE_URL` substitui esse destino.
 
 O modelo só consulta dados por três ferramentas: `searchAthletes`, `getAthleteSummary` e `navigateToAthlete`. Elas usam a sessão autenticada e as funções `agent_athlete_directory` e `agent_athlete_workspace`, que chamam as RPCs já existentes. A origem `ai_chat` / `agent_tool` é gravada no servidor, dentro dessas funções. Não há parâmetro de origem aceito do navegador ou do modelo.
 

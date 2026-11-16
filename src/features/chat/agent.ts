@@ -1,6 +1,7 @@
 import "server-only";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createOpenAI } from "@ai-sdk/openai";
-import { APICallError, generateText, stepCountIs, tool } from "ai";
+import { APICallError, streamText, stepCountIs, tool } from "ai";
 import { z } from "zod";
 import { supabaseServer } from "../../lib/supabase";
 import { intelligenceModel } from "./config";
@@ -51,11 +52,36 @@ function unavailable(reason: "confirm" | "reject" | "denied") {
   return { status: "unavailable" as const };
 }
 
-export async function replyToProfessional(input: unknown): Promise<AgentReply | { error: "unavailable" | "invalid" | "limit" | "provider" }> {
+function presentationFrom(steps: ReadonlyArray<{ toolResults: ReadonlyArray<{ toolName: string; output: unknown }> }>): Pick<AgentReply, "athletes" | "navigation"> {
+  let athletes: AthleteCard[] = [];
+  let navigation: AgentReply["navigation"] = null;
+  for (const step of steps) {
+    for (const item of step.toolResults) {
+      const output = item.output as { status?: string; athletes?: unknown; athlete?: unknown; href?: unknown };
+      if (item.toolName === "searchAthletes" && output.status === "ok") athletes = presentedAthletes(output.athletes);
+      if (output.status === "confirm") athletes = presentedAthletes(output.athletes);
+      if (item.toolName === "navigateToAthlete" && output.status === "ok") {
+        const athlete = presentedAthletes([output.athlete])[0];
+        const link = athlete ? presentedNavigation({ id: athlete.id, href: output.href, name: athlete.name }) : null;
+        if (athlete && link) {
+          navigation = link;
+          athletes = [athlete];
+        }
+      }
+    }
+  }
+  return { athletes, navigation };
+}
+
+function replyText(textReply: string, athletes: AthleteCard[]) {
+  return textReply || (athletes.length ? "Encontrei estes atletas autorizados." : "Não há informação autorizada suficiente para responder.");
+}
+
+async function prepareConversation(input: unknown) {
   const model = intelligenceModel();
-  if (!model) return { error: "unavailable" };
+  if (!model) return { error: "unavailable" as const };
   const parsed = requestSchema.safeParse(input);
-  if (!parsed.success || parsed.data.messages.at(-1)?.role !== "user") return { error: "invalid" };
+  if (!parsed.success || parsed.data.messages.at(-1)?.role !== "user") return { error: "invalid" as const };
   const contextAthleteId = parsed.data.contextAthleteId && uuidPattern.test(parsed.data.contextAthleteId)
     ? parsed.data.contextAthleteId
     : null;
@@ -141,9 +167,11 @@ export async function replyToProfessional(input: unknown): Promise<AgentReply | 
     },
   });
 
-  try {
-    const result = await generateText({
-      model: createOpenAI({ apiKey: model.apiKey, baseURL: model.baseURL }).chat(model.model),
+  return {
+    request: {
+      model: model.provider === "google"
+        ? createGoogleGenerativeAI({ apiKey: model.apiKey }).chat(model.model)
+        : createOpenAI({ apiKey: model.apiKey, baseURL: model.baseURL }).chat(model.model),
       system: [
         "Você é o CBB Intelligence, assistente do prontuário de um profissional autenticado.",
         "Responda em português, somente com fatos devolvidos pelas ferramentas.",
@@ -159,34 +187,47 @@ export async function replyToProfessional(input: unknown): Promise<AgentReply | 
       tools: { searchAthletes, getAthleteSummary, navigateToAthlete },
       stopWhen: stepCountIs(5),
       maxRetries: 1,
-      timeout: 25_000,
-      providerOptions: { openai: { store: false } },
-    });
-    let athletes: AthleteCard[] = [];
-    let navigation: AgentReply["navigation"] = null;
-    for (const step of result.steps) {
-      for (const item of step.toolResults) {
-        const output = item.output as { status?: string; athletes?: unknown; athlete?: unknown; href?: unknown };
-        if (item.toolName === "searchAthletes" && output.status === "ok") athletes = presentedAthletes(output.athletes);
-        if (output.status === "confirm") athletes = presentedAthletes(output.athletes);
-        if (item.toolName === "navigateToAthlete" && output.status === "ok") {
-          const athlete = presentedAthletes([output.athlete])[0];
-          const link = athlete ? presentedNavigation({ id: athlete.id, href: output.href, name: athlete.name }) : null;
-          if (athlete && link) {
-            navigation = link;
-            athletes = [athlete];
-          }
+      timeout: 60_000,
+      providerOptions: model.provider === "openai" ? { openai: { store: false } } : undefined,
+    },
+  };
+}
+
+function failureCode(error: unknown) {
+  return APICallError.isInstance(error) && error.statusCode === 429 ? "limit" as const : "provider" as const;
+}
+
+export async function openIntelligenceStream(input: unknown): Promise<{ stream: ReadableStream<Uint8Array> } | { error: "unavailable" | "invalid" | "limit" | "provider" }> {
+  const prepared = await prepareConversation(input);
+  if (prepared.error) return { error: prepared.error };
+  const encoder = new TextEncoder();
+  const stream = new ReadableStream<Uint8Array>({
+    async start(controller) {
+      const send = (event: string, data: unknown) => {
+        try {
+          controller.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`));
+        } catch (error) {
+          if (error instanceof TypeError) return;
+          throw error;
+        }
+      };
+      try {
+        const result = streamText(prepared.request);
+        for await (const delta of result.textStream) {
+          if (delta) send("delta", { text: delta });
+        }
+        const view = presentationFrom(await result.steps);
+        send("done", { text: replyText((await result.text).trim(), view.athletes), ...view });
+      } catch (error) {
+        send("error", { error: failureCode(error) });
+      } finally {
+        try {
+          controller.close();
+        } catch (error) {
+          if (!(error instanceof TypeError)) throw error;
         }
       }
-    }
-    const textReply = result.text.trim();
-    return {
-      text: textReply || (athletes.length ? "Encontrei estes atletas autorizados." : "Não há informação autorizada suficiente para responder."),
-      athletes,
-      navigation,
-    };
-  } catch (error) {
-    if (APICallError.isInstance(error) && error.statusCode === 429) return { error: "limit" };
-    return { error: "provider" };
-  }
+    },
+  });
+  return { stream };
 }

@@ -74,8 +74,8 @@ npm audit --omit=dev
 ```
 
 Os testes usam contas temporárias próprias e as removem ao terminar. Para a suíte
-do Handoff 004, aplique as migrations e gere a seed `cbb-qa-1` com 5.000 atletas
-antes de executar `npm test` (comandos abaixo). O contrato de auditoria está em
+do Handoff 004, aplique as migrations e gere o elenco `cbb-qa-1` antes de
+executar `npm test` (comandos abaixo). O contrato de auditoria está em
 `src/features/audit/contract.ts`. Atendimentos e evoluções já permitem salvar
 rascunhos, revisar e finalizar mediante confirmação. O assistente de IA permanece
 indisponível. O escudo fornecido e a paleta estão documentados em DESIGN.md.
@@ -112,13 +112,17 @@ da conta como terceiro argumento para conceder permissões explícitas apenas
 aos atletas da massa indicada.
 
 ```bash
-node scripts/qa-athletes.mjs 500 cbb-qa-1 medico.demo@example.com
-node scripts/qa-athletes.mjs 5000 cbb-qa-1 medico.demo@example.com
+node scripts/qa-athletes.mjs roster cbb-qa-1
 node scripts/qa-athletes.mjs reset cbb-qa-1
 ```
 
-O reset remove os atletas, registros e vínculos da seed indicada. Os eventos de
-auditoria permanecem. Fotos são imagens abstratas sintéticas. Para o upload,
+O elenco tem 14 ou 15 atletas fictícios em cada categoria e naipe, com nomes
+femininos no feminino, nomes masculinos no masculino e clubes reais de basquete
+brasileiro. Também cria, se ainda não existirem, uma conta local de ortopedia,
+cardiologia, fisioterapia e psicologia. A senha das contas novas aparece só na
+saída do comando e não fica no repositório. O reset remove os atletas, registros
+e vínculos da seed indicada. As contas e os eventos de auditoria permanecem.
+Fotos são imagens abstratas sintéticas. Para o upload,
 configure SUPABASE_SERVICE_ROLE_KEY apenas no servidor, com o segredo do projeto
 Supabase correspondente. O endpoint verifica sessão e vínculo antes da gravação.
 Em instalações novas, `npm run demo:env` já escreve essa variável no arquivo local

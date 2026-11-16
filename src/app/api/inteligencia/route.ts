@@ -1,6 +1,6 @@
 import { getAccess } from "../../../lib/profile";
 import { supabaseServer } from "../../../lib/supabase";
-import { replyToProfessional } from "../../../features/chat/agent";
+import { openIntelligenceStream } from "../../../features/chat/agent";
 
 const hits = new Map<string, number[]>();
 
@@ -37,10 +37,16 @@ export async function POST(request: Request) {
   if (!withinLimit(data.user.id)) return Response.json({ error: "limit", text: errors.limit }, { status: 429 });
   let body: unknown;
   try { body = await request.json(); } catch { return Response.json({ error: "invalid", text: errors.invalid }, { status: 400 }); }
-  const reply = await replyToProfessional(body);
+  const reply = await openIntelligenceStream(body);
   if ("error" in reply) {
     const status = reply.error === "limit" ? 429 : reply.error === "invalid" ? 400 : reply.error === "provider" ? 502 : 503;
     return Response.json({ error: reply.error, text: errors[reply.error] }, { status });
   }
-  return Response.json(reply);
+  return new Response(reply.stream, {
+    headers: {
+      "content-type": "text/event-stream; charset=utf-8",
+      "cache-control": "no-cache, no-transform",
+      "x-accel-buffering": "no",
+    },
+  });
 }
