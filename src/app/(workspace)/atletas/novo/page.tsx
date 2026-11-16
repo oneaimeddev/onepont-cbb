@@ -26,7 +26,7 @@ export default async function NewAthletePage({ searchParams }: {
         </div>
       </header>
       {erro && <p role="alert">Não foi possível salvar o cadastro. Confira os dados e tente novamente.</p>}
-      <form action={createAthlete} className="athlete-form panel">
+      <form action={createAthlete} className="athlete-form composer-panel">
         <p>Após salvar, abra Dados cadastrais para adicionar a foto do atleta.</p>
         <input type="hidden" name="creation_id" value={randomUUID()} />
         <label>Nome completo<input name="name" required maxLength={160} autoComplete="off" /></label>

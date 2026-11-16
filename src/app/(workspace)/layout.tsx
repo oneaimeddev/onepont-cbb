@@ -2,6 +2,7 @@ import { WorkspaceShell } from "../../components/workspace-shell";
 import { SubmitButton } from "../../components/submit-button";
 import { Avatar } from "../../components/avatar";
 import { Icon } from "../../components/icon";
+import { chatFonts } from "../../features/chat/fonts";
 import { availableSections } from "../../features/sections";
 import { requireProfile } from "../../lib/profile";
 import { logout } from "../login/actions";
@@ -15,7 +16,7 @@ export default async function WorkspaceLayout({ children }: { children: React.Re
     })),
   ];
   return (
-    <WorkspaceShell navigation={navigation} session={
+    <WorkspaceShell fonts={chatFonts} navigation={navigation} session={
       <div className="account">
         <Avatar name={profile.display_name} size="sm" />
         <span><strong>{profile.display_name}</strong><small>{profile.profession}</small></span>

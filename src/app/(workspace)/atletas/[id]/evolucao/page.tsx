@@ -22,15 +22,15 @@ export default async function EvolutionPage({ params, searchParams }: {
       <Link className="back-link" href={`/atletas/${id}`}>Voltar ao atleta</Link>
       <h1>{record ? "Revisar evolução" : "Iniciar atendimento"}</h1>
       <div className="evolution-context">
-        <p>{context.athlete.full_name}</p>
-        <p>{record?.author_name ?? profile.display_name} · {record?.specialty ?? profile.profession}</p>
-        <small className="record-id">Atleta {id}</small>
-        {record?.encounter_id && <small className="record-id">Atendimento {record.encounter_id}</small>}
+        <p>{context.athlete.social_name || context.athlete.full_name}</p>
+        <p>{record?.author_name ?? profile.display_name}, {record?.specialty ?? profile.profession}</p>
+        <small className="record-id sr-only">Atleta {id}</small>
+        {record?.encounter_id && <small className="record-id sr-only">Atendimento {record.encounter_id}</small>}
       </div>
       {erro && <p role="alert">Não foi possível salvar. O registro ou suas permissões podem ter mudado. Recarregue e confira os dados.</p>}
       {record?.status === "finalized" ? <p>Registro finalizado.</p> : (
         <>
-          <form action={saveEvolution} className="athlete-form" key={record?.version ?? "new"}>
+          <form action={saveEvolution} className="athlete-form composer-panel" key={record?.version ?? "new"}>
             <input type="hidden" name="athlete" value={id} />
             <input type="hidden" name="request" value={randomUUID()} />
             <input type="hidden" name="record" value={record?.id ?? ""} />

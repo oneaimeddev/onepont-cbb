@@ -1,15 +1,39 @@
-import { editAthlete } from "./edit-actions";
-import { SubmitButton } from "../../../../components/submit-button";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { PhotoEditor } from "../../../../features/athletes/photo-editor";
 import { Avatar } from "../../../../components/avatar";
 import { EmptyState } from "../../../../components/empty-state";
 import { Icon } from "../../../../components/icon";
+import { SubmitButton } from "../../../../components/submit-button";
 import { WorkspaceArea } from "../../../../components/workspace-area";
 import { AccessPanel } from "../../../../features/athletes/access-panel";
-import { accessRoster, eventDate, loadAthlete, searchProfessionals } from "../../../../features/athletes/data";
+import { accessRoster, loadAthlete, searchProfessionals } from "../../../../features/athletes/data";
+import { PhotoEditor } from "../../../../features/athletes/photo-editor";
 import { requireProfile } from "../../../../lib/profile";
+import { editAthlete } from "./edit-actions";
+
+const dayKey = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo", year: "numeric", month: "2-digit", day: "2-digit" });
+const monthName = new Intl.DateTimeFormat("pt-BR", { timeZone: "America/Sao_Paulo", month: "long", year: "numeric" });
+
+function recordWhen(iso: string) {
+  const key = dayKey.format(new Date(iso));
+  const label = monthName.format(new Date(iso));
+  return {
+    monthId: key.slice(0, 7),
+    monthLabel: label.charAt(0).toLocaleUpperCase("pt-BR") + label.slice(1),
+    day: String(Number(key.slice(8))),
+  };
+}
+
+function groupsOf<T extends { occurred_at: string }>(records: T[]) {
+  const groups: { id: string; label: string; records: T[] }[] = [];
+  for (const record of records) {
+    const when = recordWhen(record.occurred_at);
+    const current = groups.at(-1);
+    if (current?.id === when.monthId) current.records.push(record);
+    else groups.push({ id: when.monthId, label: when.monthLabel, records: [record] });
+  }
+  return groups;
+}
 
 export default async function AthletePage({ params, searchParams }: {
   params: Promise<{ id: string }>;
@@ -39,10 +63,10 @@ export default async function AthletePage({ params, searchParams }: {
       <WorkspaceArea>
         <main id="conteudo" tabIndex={-1} className="traditional-content clinical-page">
           <Link className="back-link" href="/atletas" prefetch={false}><Icon name="back" size={18} />Trocar atleta</Link>
-          <header className="clinical-header athlete-header">
+          <header className="record-mast">
             <div>
-              <h1>{managedName}</h1>
-              <p className="record-id">ID {roster.athlete.id}</p>
+              <h1 className="athlete-name">{managedName}</h1>
+              <p className="record-id sr-only">ID {roster.athlete.id}</p>
             </div>
           </header>
           <AccessPanel athleteId={roster.athlete.id} links={roster.links} matches={matches} term={term} notice={accessNotice} />
@@ -55,126 +79,144 @@ export default async function AthletePage({ params, searchParams }: {
   const name = athlete.social_name || athlete.full_name;
   const base = `/atletas/${athlete.id}`;
   const returnTo = retorno && /^\/(atletas|prontuarios)(\?|$)/.test(retorno) ? retorno : "/atletas";
-  const backQuery = "&retorno=" + encodeURIComponent(returnTo);
+  const today = new Date().toLocaleDateString("sv-SE", { timeZone: "America/Sao_Paulo" });
   const age = athlete.birth_date ? (() => {
-    const today = new Date().toLocaleDateString("sv-SE", { timeZone: "America/Sao_Paulo" });
-    const years = Number(today.slice(0,4)) - Number(athlete.birth_date.slice(0,4));
+    const years = Number(today.slice(0, 4)) - Number(athlete.birth_date.slice(0, 4));
     return years - (today.slice(5) < athlete.birth_date.slice(5) ? 1 : 0);
   })() : null;
-  const fields = [
+  const activeSports = sports.filter((sport) => sport.starts_on <= today && (!sport.ends_on || sport.ends_on >= today));
+  const current = activeSports[0];
+  const lede = [current?.division, current?.club].filter(Boolean).join(", ");
+  const spec = [
     ["Nome completo", athlete.full_name],
-    ["Nome social", athlete.social_name],
-    ["Nascimento", athlete.birth_date?.split("-").reverse().join("/")],
-    ["Clube / equipe", athlete.team],
-    ["Categoria", athlete.category],
-    ["Status cadastral", athlete.status === "active" ? "Ativo" : "Inativo"],
-    ["Origem do cadastro", athlete.source === "manual" ? "Manual" : "Demonstração"],
-    ...(aba === "cadastro" ? [["Identificador CBB", athlete.external_cbb_id]] : []),
-  ];
-  const activeSports = sports.filter((sport) => sport.starts_on <= new Date().toISOString().slice(0,10) && (!sport.ends_on || sport.ends_on >= new Date().toISOString().slice(0,10)));
-  const headerDetails = [...new Set([age === null ? null : `${age} anos`, athlete.team, athlete.category,
-    ...activeSports.flatMap((sport) => [sport.club, sport.category, sport.division, sport.modality])].filter(Boolean))];
+    ["Categoria", current?.category ?? athlete.category],
+    ["Clube", current?.club ?? athlete.team],
+    ["Idade", age === null ? null : `${age} anos`],
+  ].filter((entry): entry is [string, string] => Boolean(entry[1]));
   const tabs = [
-    { value: "visao-geral", title: "Visão geral", href: base },
-    ...(can_read_records ? [{ value: "timeline", title: "Linha do tempo", href: base + "?aba=timeline" }] : []),
-    { value: "cadastro", title: "Dados cadastrais", href: base + "?aba=cadastro" },
-    ...(roster ? [{ value: "acesso", title: "Acesso", href: base + "?aba=acesso" }] : []),
-  ];
+    ["visao-geral", "Visão geral"],
+    ...(can_read_records ? [["timeline", "Linha do tempo"] as const] : []),
+    ["cadastro", "Dados cadastrais"],
+    ...(roster ? [["acesso", "Acesso"] as const] : []),
+  ] as const;
+  const history = records ?? [];
+
+  function tabHref(value: string) {
+    const next = new URLSearchParams();
+    if (value !== "visao-geral") next.set("aba", value);
+    next.set("retorno", returnTo);
+    return `${base}?${next}`;
+  }
 
   return (
     <WorkspaceArea>
       <main id="conteudo" tabIndex={-1} className="traditional-content clinical-page">
         <Link className="back-link" href={returnTo} prefetch={false}><Icon name="back" size={18} />Trocar atleta</Link>
-        <header className="clinical-header athlete-header">
-          <div className="athlete-identity">
-            <Avatar name={name} size="lg" athleteId={athlete.id} photoVersion={athlete.photo_version} />
-            <div>
-              <h1>{name}</h1>
-              <span className="meta-list">
-                {headerDetails.map((item) => <span key={item}>{item}</span>)}
-                {athlete.status === "inactive" && <span className="pill">Inativo</span>}
-              </span>
-              <p className="record-id">ID {athlete.id}</p>
+        <header className="record-mast">
+          <Avatar name={name} size="lg" athleteId={athlete.id} photoVersion={athlete.photo_version} />
+          <div>
+            <div className="record-mast-top">
+              <div>
+                <h1 className="athlete-name">{name}</h1>
+                {lede && <p className="record-lede">{lede}</p>}
+                {athlete.status !== "active" && <span className="pill">Inativo</span>}
+              </div>
+              <div className="record-actions">
+                {can_write && <Link className="button" href={`${base}/evolucao`} prefetch={false}>Iniciar atendimento</Link>}
+                <Link className="outline" href={`/?atleta=${athlete.id}`} prefetch={false}>Abrir no chat</Link>
+              </div>
             </div>
+            <dl className="record-spec">
+              {spec.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}
+            </dl>
           </div>
-          <Link className="button" href={`/?atleta=${athlete.id}`} prefetch={false}><Icon name="chat" size={18} />Abrir no chat</Link>
         </header>
-        {can_write && <Link className="outline" href={base + "/evolucao"} prefetch={false}>Iniciar atendimento</Link>}
-        <nav className="athlete-tabs" aria-label="Seções do atleta">
-          {tabs.map((tab) => (
-            <Link key={tab.value} href={tab.href + (tab.href.includes("?") ? backQuery : "?retorno=" + encodeURIComponent(returnTo))} aria-current={aba === tab.value ? "page" : undefined} prefetch={false}>
-              {tab.title}
-            </Link>
-          ))}
-        </nav>
+        <p className="record-id sr-only">ID {athlete.id}</p>
         {aba !== "acesso" && erro && <p role="alert">Não foi possível salvar. Confira os dados e as permissões.</p>}
         {aba !== "acesso" && salvo && <p role="status">Cadastro salvo.</p>}
+        <nav className="athlete-tabs" aria-label="Seções do atleta">
+          {tabs.map(([value, label]) => (
+            <Link key={value} href={tabHref(value)} prefetch={false} aria-current={aba === value ? "page" : undefined}>{label}</Link>
+          ))}
+        </nav>
+
         {aba === "acesso" && roster ? (
           <AccessPanel athleteId={athlete.id} links={roster.links} matches={matches} term={term} notice={accessNotice} />
-        ) : aba === "timeline" ? (
-          <section aria-labelledby="timeline-title">
-            <h2 id="timeline-title">Linha do tempo</h2>
-            {records?.length ? (
-              <ol className="clinical-list timeline">
-                {records.map((record) => (
-                  <li id={`registro-${record.id}`} key={record.id} className={record.status === "draft" ? "is-draft" : undefined}>
-                    <div className="timeline-entry">
-                      <details>
-                        <summary><Icon name="chevron" size={16} />{record.title}</summary>
-                        <p className="record-body">{record.body}</p>
-                        {can_write && record.is_author && record.status === "draft" && <Link className="clinical-link" prefetch={false} href={base + "/evolucao?registro=" + record.id}>Revisar rascunho</Link>}
-                        {record.encounter_id && <small className="record-id">Atendimento {record.encounter_id}</small>}
-                        {record.encounter_status && <p>Atendimento {record.encounter_status === "open" ? "aberto" : "encerrado"}</p>}
-                      </details>
-                      <span className={record.status === "draft" ? "pill pill-draft" : "pill pill-success"}>
-                        {record.status === "draft" ? "Rascunho" : "Finalizado"}
-                      </span>
-                    </div>
-                    <span className="meta-list">
-                      <span>{record.specialty}</span>
-                      <span>{record.author_name}</span>
-                      <time dateTime={record.occurred_at}>{eventDate.format(new Date(record.occurred_at))}</time>
-                    </span>
-                  </li>
-                ))}
-              </ol>
-            ) : (
+        ) : null}
+
+        {aba === "visao-geral" && (
+          <div className="record-work">
+            <section aria-labelledby="historico-recente">
+              <h2 id="historico-recente">Histórico clínico</h2>
+              {recent_records?.length ? (
+                <ol className="timeline">
+                  {recent_records.map((record) => (
+                    <li key={record.id}>
+                      <div className="timeline-head">
+                        <time className="timeline-day" dateTime={record.occurred_at}>{recordWhen(record.occurred_at).day}</time>
+                        <Link href={`${base}?aba=timeline&retorno=${encodeURIComponent(returnTo)}#registro-${record.id}`} prefetch={false}>{record.title}</Link>
+                        <p className="timeline-byline">{record.author_name}, {record.specialty}</p>
+                        <span className={record.status === "draft" ? "pill pill-draft" : "pill pill-success"}>{record.status === "draft" ? "Rascunho" : "Finalizado"}</span>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+              ) : <p className="muted">Nenhum registro recente disponível para este perfil.</p>}
+            </section>
+            <aside className="record-context">
+              <h2>Contexto esportivo</h2>
+              {activeSports.length === 0 ? <p>Nenhum vínculo esportivo vigente.</p> : (
+                <ul className="season-lines">
+                  {activeSports.map((sport) => (
+                    <li key={sport.id}>
+                      <strong>{[sport.category, sport.division].filter(Boolean).join(", ") || "Vínculo vigente"}</strong>
+                      <span>{[sport.club, sport.modality].filter(Boolean).join(", ")}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {counts && <p>{counts.evolutions} evoluções autorizadas</p>}
+            </aside>
+          </div>
+        )}
+
+        {aba === "timeline" && (
+          <section aria-labelledby="linha-do-tempo">
+            <h2 id="linha-do-tempo">Linha do tempo</h2>
+            {history.length === 0 ? (
               <EmptyState icon="records" title="Nenhum registro disponível para este perfil.">
                 <p>Os registros autorizados para o seu perfil aparecem aqui, do mais recente ao mais antigo.</p>
               </EmptyState>
-            )}
+            ) : groupsOf(history).map((group) => (
+              <section key={group.id} aria-label={group.label}>
+                <h3 className="timeline-month">{group.label}</h3>
+                <ol className="clinical-list timeline">
+                  {group.records.map((record) => (
+                    <li id={`registro-${record.id}`} key={record.id} className={record.status === "draft" ? "is-draft" : undefined}>
+                      <div className="timeline-head">
+                        <time className="timeline-day" dateTime={record.occurred_at}>{recordWhen(record.occurred_at).day}</time>
+                        <details>
+                          <summary>{record.title}</summary>
+                          <p className="record-body">{record.body}</p>
+                          {can_write && record.is_author && record.status === "draft" && <Link className="clinical-link" prefetch={false} href={`${base}/evolucao?registro=${record.id}`}>Revisar rascunho</Link>}
+                          {record.encounter_status && <p>Atendimento {record.encounter_status === "open" ? "aberto" : "encerrado"}</p>}
+                        </details>
+                        <p className="timeline-byline">{record.author_name}, {record.specialty}</p>
+                        <span className={record.status === "draft" ? "pill pill-draft" : "pill pill-success"}>{record.status === "draft" ? "Rascunho" : "Finalizado"}</span>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+              </section>
+            ))}
           </section>
-        ) : (
-          <section aria-labelledby="athlete-data-title">
-            <h2 id="athlete-data-title">{aba === "cadastro" ? "Dados cadastrais" : "Identificação e contexto esportivo"}</h2>
-            {aba === "visao-geral" && counts && <dl className="athlete-facts">
-              <div><dt>Atendimentos autorizados</dt><dd>{counts.encounters}</dd></div>
-              <div><dt>Evoluções autorizadas</dt><dd>{counts.evolutions}</dd></div>
-            </dl>}
-            <dl className="athlete-facts">
-              {fields.filter(([, value]) => value).map(([label, value]) => (
-                <div key={label}><dt>{label}</dt><dd>{value}</dd></div>
-              ))}
-            </dl>
-            {aba === "visao-geral" && !!recent_records?.length && <section className="sport-history">
-              <h2>Atividades recentes</h2>
-              <ul className="clinical-list">{recent_records.map((record) => <li key={record.id}>
-                <Link className="clinical-link" prefetch={false} href={base + "?aba=timeline" + backQuery + "#registro-" + record.id}>{record.title}</Link>
-                <span className="meta-list"><span>{record.specialty}</span><span>{record.author_name}</span>
-                  <time dateTime={record.occurred_at}>{eventDate.format(new Date(record.occurred_at))}</time>
-                  <span>{record.status === "draft" ? "Rascunho" : "Finalizado"}</span>
-                </span>
-              </li>)}</ul>
-            </section>}
-            {sports.length > 0 && <section className="sport-history"><h2>Vínculos esportivos</h2>
-              <ul className="clinical-list">{sports.map((sport) => <li key={sport.id}>
-                <strong>{sport.category} · {sport.modality} · {sport.division}</strong>
-                <p>{sport.club} · Temporada {sport.season}</p>
-                <small>{sport.starts_on} — {sport.ends_on ?? "Em vigor"}</small>
-              </li>)}</ul></section>}
-            {aba === "cadastro" && can_edit && <>
-              <form action={editAthlete} className="athlete-form">
-                <h2>Editar cadastro</h2>
+        )}
+
+        {aba === "cadastro" && (
+          <section aria-labelledby="dados-cadastrais">
+            <h2 id="dados-cadastrais">Dados cadastrais</h2>
+            {can_edit && (
+              <form action={editAthlete} className="athlete-form composer-panel">
                 <input type="hidden" name="id" value={id} />
                 <label>Nome completo<input name="name" required maxLength={160} defaultValue={athlete.full_name} /></label>
                 <label>Nome social<input name="social" maxLength={160} defaultValue={athlete.social_name ?? ""} /></label>
@@ -184,8 +226,21 @@ export default async function AthletePage({ params, searchParams }: {
                 <label>Status<select name="status" defaultValue={athlete.status}><option value="active">Ativo</option><option value="inactive">Inativo</option></select></label>
                 <SubmitButton pendingLabel="Salvando…">Salvar cadastro</SubmitButton>
               </form>
-              <PhotoEditor athleteId={id} />
-            </>}
+            )}
+            {can_edit && <PhotoEditor athleteId={id} />}
+            {sports.length > 0 && (
+              <section className="sport-history" aria-labelledby="historico-esportivo">
+                <h2 id="historico-esportivo">Histórico esportivo</h2>
+                <ul className="season-lines">
+                  {sports.map((sport) => (
+                    <li key={sport.id}>
+                      <strong>{[sport.category, sport.modality, sport.division].filter(Boolean).join(", ")}</strong>
+                      <span>{sport.club}, temporada {sport.season}</span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
           </section>
         )}
       </main>

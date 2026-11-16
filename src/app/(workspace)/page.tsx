@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Avatar } from "../../components/avatar";
 import { SubmitButton } from "../../components/submit-button";
+import { intelligenceEnabled } from "../../features/chat/config";
 import { IntelligenceHome } from "../../features/chat/intelligence-home";
 import { chatFonts } from "../../features/chat/fonts";
 import { getAthlete } from "../../features/athletes/data";
@@ -42,6 +43,7 @@ export default async function ChatPage({ searchParams }: {
         initials: initials(profile.display_name),
         canReadAudit: profile.can_read_audit,
       }}
+      enabled={intelligenceEnabled()}
       signOut={(
         <form action={logout}>
           <SubmitButton className="ia-signout" pendingLabel="Saindo…">Sair</SubmitButton>
@@ -50,7 +52,7 @@ export default async function ChatPage({ searchParams }: {
       context={active && activeName ? (
         <aside className="context-panel" aria-label="Contexto da tarefa">
           <h2>Atleta em contexto</h2>
-          <p>{activeName} está em contexto. Quando o assistente estiver disponível, a conversa usará apenas as informações autorizadas para o seu perfil.</p>
+          <p>{activeName} está em contexto. {intelligenceEnabled() ? "A conversa usa apenas as informações autorizadas para o seu perfil." : "Quando o assistente estiver disponível, a conversa usará apenas as informações autorizadas para o seu perfil."}</p>
           <div className="context-athlete">
             <Avatar name={activeName} athleteId={active.id} photoVersion={active.photo_version} />
             <div>

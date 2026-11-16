@@ -8,6 +8,20 @@ import { requireProfile } from "../../lib/profile";
 import { openAthleteAccess } from "./access-actions";
 import { directory } from "./data";
 
+const filterLabels = { category: "Categoria", division: "Naipe", modality: "Modalidade", club: "Clube" } as const;
+
+function athleteFacts(athlete: { team: string | null; category: string | null; sports?: { category: string; division: string; modality: string; club: string | null }[] }) {
+  const sports = athlete.sports ?? [];
+  if (sports.length === 0) return [athlete.category, athlete.team].filter((item): item is string => Boolean(item));
+  const values: string[] = [];
+  for (const sport of sports) {
+    for (const value of [sport.category, sport.division, sport.modality, sport.club]) {
+      if (value && !values.includes(value)) values.push(value);
+    }
+  }
+  return values.slice(0, 4);
+}
+
 export async function AthleteCatalog({ title, action, query, params = {} }: {
   title: string;
   action: "/atletas" | "/prontuarios";
@@ -15,51 +29,60 @@ export async function AthleteCatalog({ title, action, query, params = {} }: {
   params?: Record<string, string | string[] | undefined>;
 }) {
   const search = typeof query === "string" ? query.trim().slice(0, 160) : "";
-  const filters: Record<string,string> = { q: search };
+  const filters: Record<string, string> = { q: search };
   for (const key of ["category", "division", "modality", "club", "status", "page"]) {
-    if (typeof params[key] === "string") filters[key] = params[key] as string;
+    if (typeof params[key] === "string") filters[key] = params[key];
   }
   if (!/^\d+$/.test(filters.page ?? "")) filters.page = "1";
   const profile = await requireProfile();
   const { athletes: visible, can_create, total, page, options } = await directory(filters);
   const returnTo = action + "?" + new URLSearchParams(filters);
+  const activeFilters = ["category", "division", "modality", "club", "status"].filter((key) => filters[key]).length;
   function pageLink(next: number) {
     return action + "?" + new URLSearchParams({ ...filters, page: String(next) });
   }
+  const lede = title.startsWith("Selecionar")
+    ? "Escolha o atleta para registrar o atendimento."
+    : action === "/prontuarios"
+      ? "Abra o histórico autorizado do atleta."
+      : "Encontre o atleta pelo nome e abra o perfil.";
 
   return (
     <WorkspaceArea>
       <main id="conteudo" tabIndex={-1} className="traditional-content clinical-page">
-        <header className="clinical-header">
+        <header className="clinical-header directory-intro">
           <div>
             <h1>{title}</h1>
-            <p>Atletas aos quais seu perfil tem acesso.</p>
+            <p>{lede}</p>
           </div>
           {can_create && (
             <Link href="/atletas/novo" prefetch={false} className="button"><Icon name="plus" size={18} />Cadastrar atleta</Link>
           )}
         </header>
-        <form action={action} className="athlete-search" role="search">
-          <label htmlFor="athlete-search">Nome ou identificador interno</label>
-          <div>
+        <form action={action} className="directory-search" role="search">
+          <label htmlFor="athlete-search">Nome do atleta</label>
+          <div className="search-row">
             <span className="search-field">
               <Icon name="search" size={18} />
               <input type="search" id="athlete-search" name="q" defaultValue={search} maxLength={160} />
             </span>
-            <button className="outline">Buscar</button>
+            <button className="directory-submit">Buscar</button>
           </div>
-          <div className="directory-filters">
-            {(["category", "division", "modality", "club"] as const).map((key) => (
-              <label key={key}>{({ category: "Categoria", division: "Naipe", modality: "Modalidade", club: "Clube" })[key]}
-                <select name={key} defaultValue={filters[key] ?? ""}>
-                  <option value="">Todos</option>
-                  {[...new Set(options.map((option) => option[key]).filter(Boolean))].sort().map((value) => <option key={value} value={value!}>{value}</option>)}
-                </select>
-              </label>
-            ))}
-            <label>Status<select name="status" defaultValue={filters.status ?? ""}><option value="">Todos</option><option value="active">Ativo</option><option value="inactive">Inativo</option></select></label>
-            <Link className="clinical-link" href={action} prefetch={false}>Limpar filtros</Link>
-          </div>
+          <details className="directory-filters" open={activeFilters > 0}>
+            <summary>{activeFilters === 1 ? "1 filtro ativo" : activeFilters > 1 ? `${activeFilters} filtros ativos` : "Filtros"}</summary>
+            <div className="filter-grid">
+              {(["category", "division", "modality", "club"] as const).map((key) => (
+                <label key={key}>{filterLabels[key]}
+                  <select name={key} defaultValue={filters[key] ?? ""}>
+                    <option value="">Todos</option>
+                    {[...new Set(options.map((option) => option[key]).filter(Boolean))].sort().map((value) => <option key={value} value={value!}>{value}</option>)}
+                  </select>
+                </label>
+              ))}
+              <label>Status<select name="status" defaultValue={filters.status ?? ""}><option value="">Todos</option><option value="active">Ativo</option><option value="inactive">Inativo</option></select></label>
+              <Link className="clinical-link" href={action} prefetch={false}>Limpar filtros</Link>
+            </div>
+          </details>
         </form>
         {action === "/atletas" && profile.can_manage_access && (
           <form action={openAthleteAccess} className="athlete-form">
@@ -70,7 +93,7 @@ export async function AthleteCatalog({ title, action, query, params = {} }: {
         )}
         {visible.length === 0 ? (
           <EmptyState icon="search" title={search ? "Nenhum atleta corresponde à busca." : "Nenhum atleta disponível para este perfil."}>
-            <p>{search ? "Confira a grafia ou busque pelo identificador interno." : "Atletas aparecem aqui quando seu perfil recebe acesso a eles."}</p>
+            <p>{search ? "Confira a grafia ou busque pelo nome." : "Atletas aparecem aqui quando seu perfil recebe acesso a eles."}</p>
           </EmptyState>
         ) : (
           <>
@@ -80,15 +103,14 @@ export async function AthleteCatalog({ title, action, query, params = {} }: {
             <ul className="clinical-list athlete-list">
               {visible.map((athlete) => {
                 const name = athlete.social_name || athlete.full_name;
-                const details = [...new Set([athlete.team, athlete.category, ...(athlete.sports ?? []).flatMap((sport) => [sport.category, sport.division, sport.modality, sport.club])].filter(Boolean))];
+                const facts = athleteFacts(athlete);
                 return (
                   <li key={athlete.id}>
                     <Avatar name={name} athleteId={athlete.id} photoVersion={athlete.photo_version} />
                     <div className="athlete-row-main">
                       <Link href={`/atletas/${athlete.id}?retorno=${encodeURIComponent(returnTo)}`} prefetch={false}>{name}</Link>
-                      {details.length > 0 && <span className="meta-list">{details.map((item) => <span key={item}>{item}</span>)}</span>}
-                      <small className="record-id">{athlete.id}</small>
-                      {athlete.birth_date && <small>Nascimento {athlete.birth_date.split("-").reverse().join("/")}</small>}
+                      {facts.length > 0 && <span className="directory-facts">{facts.map((item) => <span key={item}>{item}</span>)}</span>}
+                      <span className="record-id sr-only">{athlete.id}</span>
                     </div>
                     {athlete.status === "inactive" && <span className="pill">Inativo</span>}
                     <Icon name="chevron" size={18} />

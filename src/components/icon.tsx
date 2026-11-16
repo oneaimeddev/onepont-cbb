@@ -11,6 +11,7 @@ const paths = {
   plus: <path d="M12 5v14M5 12h14" />,
   lock: <><rect x="5" y="10.5" width="14" height="9.5" rx="2" /><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5" /></>,
   menu: <path d="M4 7h16M4 12h16M4 17h16" />,
+  rail: <><rect x="3.5" y="4.5" width="17" height="15" rx="2" /><path d="M9 4.5v15" /></>,
   close: <path d="m6 6 12 12M18 6 6 18" />,
   info: <><circle cx="12" cy="12" r="8.5" /><path d="M12 11v5M12 8h.01" /></>,
   clip: <path d="m15.5 8.5-6.2 6.2a2.2 2.2 0 0 1-3.1-3.1l6.4-6.4a3.4 3.4 0 0 1 4.8 4.8l-6.5 6.5a4.6 4.6 0 0 1-6.5-6.5L11 3.4" />,

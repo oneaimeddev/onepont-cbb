@@ -260,6 +260,16 @@ button.ia-attach:disabled:hover { border-color: #e1e7f0; color: #6d7c90; backgro
   white-space: nowrap;
   border: 0;
 }
+.ia-log { display: grid; gap: .85rem; width: min(760px, 100%); margin-top: 1.25rem; text-align: left; }
+.ia-turn p, .ia-pending { margin: 0; color: var(--ink); font-size: .9375rem; line-height: 1.5; }
+.ia-turn-user p { color: var(--navy); font-weight: 500; }
+.ia-pending { color: var(--quiet); }
+.ia-cards { display: grid; gap: .5rem; margin: .15rem 0 0; padding: 0; list-style: none; }
+.ia-card { display: flex; align-items: center; justify-content: space-between; gap: .75rem; min-height: 64px; padding: .7rem .9rem; border: 1px solid var(--ia-line); border-radius: 14px; background: #fff; }
+.ia-card button { display: grid; gap: .15rem; min-height: 44px; padding: 0; border: 0; background: transparent; color: var(--navy); text-align: left; }
+.ia-card button span, .ia-card a { color: var(--quiet); font-size: .8125rem; font-weight: 400; }
+.ia-card a { color: var(--ia-blue); font-weight: 500; white-space: nowrap; }
+.ia-open { color: var(--ia-blue); font-weight: 500; }
 p.ia-status {
   margin: 0.45rem 0.55rem 0.2rem;
   color: var(--quiet);
@@ -309,6 +319,8 @@ p.ia-status {
   .ia-rail nav { flex-direction: row; margin-top: 0; }
   .ia-user > button strong, .ia-user > button small { display: none; }
   .ia-hero h1 { font-size: 2rem; }
+  .ia-card { flex-direction: column; align-items: stretch; }
+  .ia-card a { white-space: normal; }
   .ia-canvas { justify-content: flex-start; padding-top: 2.5rem; }
 }
 @media (prefers-reduced-motion: no-preference) {

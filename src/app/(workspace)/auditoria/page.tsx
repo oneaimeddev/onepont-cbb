@@ -56,7 +56,7 @@ export default async function AuditPage() {
               </div>
               <span className="meta-list">
                 <time dateTime={event.occurred_at}>{eventDate.format(new Date(event.occurred_at))}</time>
-                <span>{event.origin_channel === "traditional_ui" ? "Interface tradicional" : event.origin_channel}</span>
+                <span>{event.origin_channel === "ai_chat" ? "CBB Intelligence" : event.origin_channel === "traditional_ui" ? "Interface tradicional" : event.origin_channel}</span>
               </span>
               <small className="record-id">Usuário {event.actor_user_id}</small>
               {event.athlete_id && <small className="record-id">Atleta {event.athlete_id}</small>}

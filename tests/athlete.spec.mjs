@@ -71,7 +71,7 @@ test("busca, seleção, timeline, troca, cadastro e auditoria do atleta", async 
   await page.getByLabel("Senha").fill(professional.password);
   await page.getByRole("button", { name: "Entrar" }).click();
   await page.getByRole("navigation", { name: "Tarefas clínicas" }).getByRole("link", { name: /^Buscar atleta/ }).click();
-  await page.getByLabel("Nome ou identificador interno").fill("Cadastro sintético");
+  await page.getByLabel("Nome do atleta").fill("Cadastro sintético");
   await page.getByRole("button", { name: "Buscar", exact: true }).click();
   await expect(page.getByRole("link", { name: "Atleta DEMO Vazio" })).toHaveCount(0);
   await page.getByRole("link", { name: "Atleta DEMO Teste" }).click();

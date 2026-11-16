@@ -118,3 +118,22 @@ Histórico e contexto de atleta dependem de persistência e autorização.
 
 As capturas do Handoff 002 estão em docs/visual/handoff-002. A série anterior
 continua em docs/visual/after para comparação.
+
+## Design sprint 002
+
+A operação tradicional deixa a sidebar azul-marinha e passa a usar a mesma
+linguagem da Home: faixa clara de 80 px, escudo oficial, Geist Sans e títulos
+em Geist Serif. A faixa expande para mostrar os rótulos. O diretório prioriza
+nome, foto e dados esportivos. O registro do sprint está em
+docs/design-sprint-002.md.
+
+## Clinical Design North Star
+
+A direção visual das telas convencionais foi aprovada em 15/11/2026.
+A referência permanece isolada em `/design-lab/clinical-north-star`.
+Ela ainda não está integrada ao prontuário real.
+
+Padrões, restrições de sigilo e o plano de aproveitamento estão em
+docs/design-lab/clinical-north-star.md. A captura aprovada está em
+docs/visual/design-sprint-002-1/perfil-longitudinal-1440x900.png.
+A Home CBB Intelligence continua sendo a entrada aprovada.

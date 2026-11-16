@@ -1,20 +1,22 @@
 "use client";
 
 import { useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Brand } from "./brand";
 import { Icon, type IconName } from "./icon";
 
 type NavigationItem = { href: string; title: string; icon: IconName; isAvailable?: boolean };
 
-export function WorkspaceShell({ children, session, navigation }: {
+export function WorkspaceShell({ children, session, navigation, fonts }: {
   children: React.ReactNode;
   session: React.ReactNode;
   navigation: NavigationItem[];
+  fonts: string;
 }) {
   const pathname = usePathname();
   const [navigationOpen, setNavigationOpen] = useState(false);
+  const [isWide, setIsWide] = useState(false);
   const menuButton = useRef<HTMLButtonElement>(null);
   const athletePath = pathname.match(/^\/atletas\/([0-9a-f-]{36})$/i);
   const current = navigation.find((item) => item.href === pathname)
@@ -28,26 +30,20 @@ export function WorkspaceShell({ children, session, navigation }: {
   if (pathname === "/") return children;
 
   return (
-    <div className="workspace-shell" onKeyDown={(event) => {
+    <div className={`${fonts} workspace-shell${isWide ? " is-wide" : ""}`} onKeyDown={(event) => {
       if (event.key === "Escape" && navigationOpen) closeNavigation();
     }}>
       <a className="skip-link" href="#conteudo">Ir para o conteúdo</a>
-      <div className="mobile-toolbar">
-        <Link href="/" aria-label="Prontuário CBB, início"><Brand /></Link>
-        <button ref={menuButton} className="ghost" type="button" aria-expanded={navigationOpen}
-          aria-controls="workspace-sidebar" onClick={() => setNavigationOpen(!navigationOpen)}>
-          <Icon name={navigationOpen ? "close" : "menu"} />
-          {navigationOpen ? "Fechar menu" : "Menu"}
-        </button>
-      </div>
       <aside id="workspace-sidebar" className={navigationOpen ? "workspace-sidebar is-open" : "workspace-sidebar"}>
-        <Link className="sidebar-brand" href="/" aria-label="Prontuário CBB, início"><Brand /></Link>
+        <Link className="sidebar-brand" href="/" aria-label="Prontuário CBB, início">
+          <Image src="/brand/cbb.png" width={697} height={869} alt="" className="brand-mark" priority />
+        </Link>
         <nav aria-label="Navegação do workspace">
           {navigation.map((item) => (
             <Link key={item.href} href={item.href === "/" && athletePath ? `/?atleta=${athletePath[1]}` : item.href}
               prefetch={false} aria-current={current?.href === item.href ? (pathname === item.href ? "page" : "location") : undefined}
               onClick={() => { if (navigationOpen) closeNavigation(); }}>
-              <Icon name={item.icon} />
+              <Icon name={item.icon} size={18} />
               <span className="nav-label">{item.title}</span>
               {item.isAvailable === false && (
                 <small className="status-tag" title="Indisponível"><Icon name="lock" size={14} /><span className="tag-text">Indisponível</span></small>
@@ -55,12 +51,25 @@ export function WorkspaceShell({ children, session, navigation }: {
             </Link>
           ))}
         </nav>
-        <div className="sidebar-session">{session}</div>
+        <button type="button" className="rail-toggle" aria-expanded={isWide} aria-controls="workspace-sidebar" onClick={() => setIsWide((value) => !value)}>
+          <Icon name="rail" size={18} />
+          <span className="nav-label">{isWide ? "Recolher" : "Expandir"}</span>
+        </button>
       </aside>
       <div className="workspace-body">
         <header className="workspace-header">
-          <span>{current?.title ?? "Prontuário CBB"}</span>
-          <small className="env-pill">Ambiente de demonstração</small>
+          <div className="workspace-mast">
+            <Link className="mast-mark" href="/" aria-label="Prontuário CBB, início">
+              <Image src="/brand/cbb.png" width={697} height={869} alt="" className="brand-mark" priority />
+            </Link>
+            <p className="workspace-product">Prontuário<small>Demonstração</small></p>
+            <button ref={menuButton} className="ghost menu-button" type="button" aria-expanded={navigationOpen}
+              aria-controls="workspace-sidebar" onClick={() => setNavigationOpen((value) => !value)}>
+              <Icon name={navigationOpen ? "close" : "menu"} />
+              {navigationOpen ? "Fechar menu" : "Menu"}
+            </button>
+          </div>
+          {session}
         </header>
         {children}
       </div>

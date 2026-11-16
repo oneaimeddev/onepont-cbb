@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { SubmitButton } from "../../components/submit-button";
 import { Brand } from "../../components/brand";
+import { chatFonts } from "../../features/chat/fonts";
 import { login, logout } from "./actions";
 
 export default async function LoginPage({
@@ -10,7 +11,7 @@ export default async function LoginPage({
 }) {
   const { erro, perfil, saida } = await searchParams;
   return (
-    <main className="login-page">
+    <main className={`login-page ${chatFonts}`}>
       <div className="login-brand">
         <Brand />
         <p className="login-tagline">Acompanhamento clínico multiprofissional de atletas.</p>

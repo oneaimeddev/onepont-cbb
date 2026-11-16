@@ -62,6 +62,7 @@ try {
     ]) {
       await page.goto(base + path);
       await page.evaluate(() => document.fonts.ready);
+      if (name === "atletas" || name === "evolucoes") await page.locator(".athlete-list").waitFor();
       if (name === "timeline") await page.locator("summary").first().click();
       await page.screenshot({ path: `${destination}/${name}-${size}.png`, fullPage: true });
       if (await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)) throw new Error(`Overflow em ${name} ${size}`);
