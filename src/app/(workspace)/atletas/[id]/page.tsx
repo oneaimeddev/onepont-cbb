@@ -7,17 +7,51 @@ import { Avatar } from "../../../../components/avatar";
 import { EmptyState } from "../../../../components/empty-state";
 import { Icon } from "../../../../components/icon";
 import { WorkspaceArea } from "../../../../components/workspace-area";
-import { eventDate, getAthlete } from "../../../../features/athletes/data";
+import { AccessPanel } from "../../../../features/athletes/access-panel";
+import { accessRoster, eventDate, loadAthlete, searchProfessionals } from "../../../../features/athletes/data";
+import { requireProfile } from "../../../../lib/profile";
 
 export default async function AthletePage({ params, searchParams }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ aba?: string | string[]; retorno?: string; erro?: string; salvo?: string }>;
+  searchParams: Promise<{ aba?: string | string[]; retorno?: string; erro?: string; salvo?: string; aviso?: string; q?: string | string[] }>;
 }) {
   const { id } = await params;
-  const { aba = "visao-geral", retorno, erro, salvo } = await searchParams;
-  if (aba !== "visao-geral" && aba !== "timeline" && aba !== "cadastro") notFound();
+  const query = await searchParams;
+  const aba = (Array.isArray(query.aba) ? query.aba[0] : query.aba) ?? "visao-geral";
+  const { retorno, erro, salvo, aviso } = query;
+  const term = ((Array.isArray(query.q) ? query.q[0] : query.q) ?? "").trim().slice(0, 80);
+  const profile = await requireProfile();
+  const sections = ["visao-geral", "timeline", "cadastro", ...(profile.can_manage_access ? ["acesso"] : [])];
+  if (!sections.includes(aba)) notFound();
 
-  const { athlete, can_read_records, records, can_edit, can_write, sports, counts, recent_records } = await getAthlete(id, aba === "timeline" ? "timeline" : "profile");
+  const workspace = await loadAthlete(id, aba === "timeline" ? "timeline" : "profile");
+  const roster = profile.can_manage_access ? await accessRoster(id) : null;
+  const matches = roster && term.length >= 2 ? await searchProfessionals(term) : [];
+  const accessNotice = erro ? "Não foi possível alterar o acesso."
+    : aviso === "existe" ? "Este profissional já acompanha o atleta."
+    : salvo === "concedido" ? "Acesso concedido."
+    : salvo === "revogado" ? "Acesso revogado."
+    : null;
+  if (!workspace) {
+    if (!roster || (aba !== "acesso" && aba !== "visao-geral")) notFound();
+    const managedName = roster.athlete.social_name || roster.athlete.full_name;
+    return (
+      <WorkspaceArea>
+        <main id="conteudo" tabIndex={-1} className="traditional-content clinical-page">
+          <Link className="back-link" href="/atletas" prefetch={false}><Icon name="back" size={18} />Trocar atleta</Link>
+          <header className="clinical-header athlete-header">
+            <div>
+              <h1>{managedName}</h1>
+              <p className="record-id">ID {roster.athlete.id}</p>
+            </div>
+          </header>
+          <AccessPanel athleteId={roster.athlete.id} links={roster.links} matches={matches} term={term} notice={accessNotice} />
+        </main>
+      </WorkspaceArea>
+    );
+  }
+
+  const { athlete, can_read_records, records, can_edit, can_write, sports, counts, recent_records } = workspace;
   const name = athlete.social_name || athlete.full_name;
   const base = `/atletas/${athlete.id}`;
   const returnTo = retorno && /^\/(atletas|prontuarios)(\?|$)/.test(retorno) ? retorno : "/atletas";
@@ -44,6 +78,7 @@ export default async function AthletePage({ params, searchParams }: {
     { value: "visao-geral", title: "Visão geral", href: base },
     ...(can_read_records ? [{ value: "timeline", title: "Linha do tempo", href: base + "?aba=timeline" }] : []),
     { value: "cadastro", title: "Dados cadastrais", href: base + "?aba=cadastro" },
+    ...(roster ? [{ value: "acesso", title: "Acesso", href: base + "?aba=acesso" }] : []),
   ];
 
   return (
@@ -72,9 +107,11 @@ export default async function AthletePage({ params, searchParams }: {
             </Link>
           ))}
         </nav>
-        {erro && <p role="alert">Não foi possível salvar. Confira os dados e as permissões.</p>}
-        {salvo && <p role="status">Cadastro salvo.</p>}
-        {aba === "timeline" ? (
+        {aba !== "acesso" && erro && <p role="alert">Não foi possível salvar. Confira os dados e as permissões.</p>}
+        {aba !== "acesso" && salvo && <p role="status">Cadastro salvo.</p>}
+        {aba === "acesso" && roster ? (
+          <AccessPanel athleteId={athlete.id} links={roster.links} matches={matches} term={term} notice={accessNotice} />
+        ) : aba === "timeline" ? (
           <section aria-labelledby="timeline-title">
             <h2 id="timeline-title">Linha do tempo</h2>
             {records?.length ? (

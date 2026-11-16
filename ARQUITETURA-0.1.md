@@ -2,6 +2,8 @@
 
 **Status:** ADR inicial / base para implementação. **Data:** 14/11/2026.
 
+O estado executável está em `docs/arquitetura-estado.md`. A ADR-010, em `docs/adr/0010-postgresql-clinical-boundary.md`, mantém as funções PostgreSQL como fronteira clínica e adia a reestruturação em camadas.
+
 ## 1. Decisões arquiteturais
 
 | ADR | Decisão | Racional | Reversibilidade |

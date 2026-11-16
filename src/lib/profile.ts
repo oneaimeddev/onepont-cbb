@@ -11,7 +11,7 @@ export const getAccess = cache(async () => {
 
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
-    .select("display_name, profession, can_read_audit")
+    .select("display_name, profession, can_read_audit, can_manage_access")
     .eq("id", data.user.id)
     .maybeSingle();
 

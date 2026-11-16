@@ -3,6 +3,9 @@ import { Avatar } from "../../components/avatar";
 import { EmptyState } from "../../components/empty-state";
 import { Icon } from "../../components/icon";
 import { WorkspaceArea } from "../../components/workspace-area";
+import { SubmitButton } from "../../components/submit-button";
+import { requireProfile } from "../../lib/profile";
+import { openAthleteAccess } from "./access-actions";
 import { directory } from "./data";
 
 export async function AthleteCatalog({ title, action, query, params = {} }: {
@@ -17,6 +20,7 @@ export async function AthleteCatalog({ title, action, query, params = {} }: {
     if (typeof params[key] === "string") filters[key] = params[key] as string;
   }
   if (!/^\d+$/.test(filters.page ?? "")) filters.page = "1";
+  const profile = await requireProfile();
   const { athletes: visible, can_create, total, page, options } = await directory(filters);
   const returnTo = action + "?" + new URLSearchParams(filters);
   function pageLink(next: number) {
@@ -57,6 +61,13 @@ export async function AthleteCatalog({ title, action, query, params = {} }: {
             <Link className="clinical-link" href={action} prefetch={false}>Limpar filtros</Link>
           </div>
         </form>
+        {action === "/atletas" && profile.can_manage_access && (
+          <form action={openAthleteAccess} className="athlete-form">
+            <h2>Gerenciar acesso</h2>
+            <label>Identificador do atleta<input name="athlete" required spellCheck={false} pattern="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}" /></label>
+            <SubmitButton pendingLabel="Abrindo…">Abrir vínculos</SubmitButton>
+          </form>
+        )}
         {visible.length === 0 ? (
           <EmptyState icon="search" title={search ? "Nenhum atleta corresponde à busca." : "Nenhum atleta disponível para este perfil."}>
             <p>{search ? "Confira a grafia ou busque pelo identificador interno." : "Atletas aparecem aqui quando seu perfil recebe acesso a eles."}</p>

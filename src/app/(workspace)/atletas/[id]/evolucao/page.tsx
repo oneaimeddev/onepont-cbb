@@ -37,7 +37,14 @@ export default async function EvolutionPage({ params, searchParams }: {
             <input type="hidden" name="version" value={record?.version ?? 0} />
             <label>Tipo ou título da evolução<input name="title" maxLength={160} required defaultValue={record?.title} /></label>
             <label htmlFor="evolution-body">Conteúdo</label><textarea id="evolution-body" name="body" maxLength={20000} required defaultValue={record?.body} rows={8} />
-            <label className="check-label"><input type="checkbox" name="restricted" value="yes" defaultChecked={record?.is_restricted ?? true} />Restringir o registro ao autor</label>
+            {record?.is_restricted ? (
+              <>
+                <input type="hidden" name="restricted" value="yes" />
+                <p>Este registro permanece restrito ao autor.</p>
+              </>
+            ) : (
+              <label className="check-label"><input type="checkbox" name="restricted" value="yes" defaultChecked={record?.is_restricted ?? true} />Restringir o registro ao autor</label>
+            )}
             <SubmitButton pendingLabel="Salvando…">Salvar rascunho</SubmitButton>
           </form>
           {record && context.can_finalize && (

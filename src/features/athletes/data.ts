@@ -51,14 +51,50 @@ export async function listAthletes(search = "") {
   return data as { can_create: boolean; athletes: AthleteSummary[] };
 }
 
-export async function getAthlete(id: string, view: "profile" | "timeline" | "chat") {
+export type AthleteWorkspace = { athlete: Athlete; can_read_records: boolean; can_edit: boolean; can_write: boolean; can_finalize: boolean; sports: SportLink[]; counts: { evolutions: number; encounters: number } | null; records: ClinicalRecord[] | null; recent_records: Pick<ClinicalRecord, "id" | "title" | "specialty" | "author_name" | "status" | "occurred_at">[] | null };
+
+export async function loadAthlete(id: string, view: "profile" | "timeline" | "chat") {
   await requireProfile();
-  if (!uuidPattern.test(id)) notFound();
+  if (!uuidPattern.test(id)) return null;
   const client = await supabaseServer();
   const { data, error } = await client.rpc("athlete_workspace", { target: id, view_name: view });
   if (error) throw new Error("Falha ao consultar o atleta.");
+  return data as AthleteWorkspace | null;
+}
+
+export async function getAthlete(id: string, view: "profile" | "timeline" | "chat") {
+  const data = await loadAthlete(id, view);
   if (!data) notFound();
-  return data as { athlete: Athlete; can_read_records: boolean; can_edit: boolean; can_write: boolean; can_finalize: boolean; sports: SportLink[]; counts: { evolutions: number; encounters: number } | null; records: ClinicalRecord[] | null; recent_records: Pick<ClinicalRecord, "id" | "title" | "specialty" | "author_name" | "status" | "occurred_at">[] | null };
+  return data;
+}
+
+export type AccessLink = {
+  professional_id: string;
+  display_name: string;
+  profession: string;
+  can_read_records: boolean;
+  can_edit: boolean;
+  can_write: boolean;
+  can_finalize: boolean;
+  granted_by_name: string | null;
+  granted_at: string | null;
+};
+
+export async function accessRoster(athleteId: string) {
+  await requireProfile();
+  if (!uuidPattern.test(athleteId)) return null;
+  const client = await supabaseServer();
+  const { data, error } = await client.rpc("athlete_access_manage", { target: athleteId });
+  if (error) throw new Error("Falha ao consultar os vínculos.");
+  return data as { athlete: { id: string; full_name: string; social_name: string | null }; links: AccessLink[] } | null;
+}
+
+export async function searchProfessionals(term: string) {
+  await requireProfile();
+  const client = await supabaseServer();
+  const { data, error } = await client.rpc("professional_search", { term });
+  if (error) throw new Error("Falha ao consultar profissionais.");
+  return (data ?? []) as { id: string; display_name: string; profession: string }[];
 }
 
 

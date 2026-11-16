@@ -21,6 +21,10 @@ const operationLabels: Record<string, string> = {
   "clinical_record.timeline.read": "Consulta à linha do tempo",
   "clinical_record.summary.read": "Consulta às atividades recentes",
   "audit.list": "Consulta à auditoria",
+  "athlete_access.grant": "Acesso profissional concedido",
+  "athlete_access.revoke": "Acesso profissional revogado",
+  "athlete_access.list": "Consulta aos vínculos",
+  "athlete_access.search": "Busca de profissionais",
 };
 
 const outcomes = { success: "Concluída", denied: "Negada", failed: "Falhou" };
@@ -56,6 +60,7 @@ export default async function AuditPage() {
               </span>
               <small className="record-id">Usuário {event.actor_user_id}</small>
               {event.athlete_id && <small className="record-id">Atleta {event.athlete_id}</small>}
+              {event.operation.startsWith("athlete_access.") && event.resource_id && <small className="record-id">Profissional {event.resource_id}</small>}
             </li>
           ))}
         </ol>
