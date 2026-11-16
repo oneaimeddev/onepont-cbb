@@ -6,7 +6,9 @@ import { Icon } from "../../../../components/icon";
 import { SubmitButton } from "../../../../components/submit-button";
 import { WorkspaceArea } from "../../../../components/workspace-area";
 import { AccessPanel } from "../../../../features/athletes/access-panel";
-import { accessRoster, loadAthlete, searchProfessionals } from "../../../../features/athletes/data";
+import { accessRoster, eventDate, loadAthlete, searchProfessionals } from "../../../../features/athletes/data";
+import { documentKinds, statusLabels } from "../../../../features/documents/content";
+import { listDocuments, medicalCapability } from "../../../../features/documents/data";
 import { PhotoEditor } from "../../../../features/athletes/photo-editor";
 import { requireProfile } from "../../../../lib/profile";
 import { editAthlete } from "./edit-actions";
@@ -45,7 +47,8 @@ export default async function AthletePage({ params, searchParams }: {
   const { retorno, erro, salvo, aviso } = query;
   const term = ((Array.isArray(query.q) ? query.q[0] : query.q) ?? "").trim().slice(0, 80);
   const profile = await requireProfile();
-  const sections = ["visao-geral", "timeline", "cadastro", ...(profile.can_manage_access ? ["acesso"] : [])];
+  const capability = await medicalCapability();
+  const sections = ["visao-geral", "timeline", "cadastro", ...(capability.enabled ? ["documentos"] : []), ...(profile.can_manage_access ? ["acesso"] : [])];
   if (!sections.includes(aba)) notFound();
 
   const workspace = await loadAthlete(id, aba === "timeline" ? "timeline" : "profile");
@@ -97,9 +100,13 @@ export default async function AthletePage({ params, searchParams }: {
     ["visao-geral", "Visão geral"],
     ...(can_read_records ? [["timeline", "Linha do tempo"] as const] : []),
     ["cadastro", "Dados cadastrais"],
+    ...(capability.enabled && can_read_records ? [["documentos", "Documentos"] as const] : []),
     ...(roster ? [["acesso", "Acesso"] as const] : []),
   ] as const;
   const history = records ?? [];
+  if (aba === "documentos" && !can_read_records) notFound();
+  const documents = aba === "documentos" ? await listDocuments(athlete.id) : null;
+  if (aba === "documentos" && !documents) notFound();
 
   function tabHref(value: string) {
     const next = new URLSearchParams();
@@ -123,6 +130,8 @@ export default async function AthletePage({ params, searchParams }: {
               </div>
               <div className="record-actions">
                 {can_write && <Link className="button" href={`${base}/evolucao`} prefetch={false}>Iniciar atendimento</Link>}
+                {capability.enabled && can_read_records && <Link className="outline" href={`${base}/documentos/nova?tipo=prescricao`} prefetch={false}>Nova prescrição</Link>}
+                {capability.enabled && can_read_records && <Link className="outline" href={`${base}/documentos/nova?tipo=cirurgia`} prefetch={false}>Novo pedido cirúrgico</Link>}
                 <Link className="outline" href={`/?atleta=${athlete.id}`} prefetch={false}>Abrir no chat</Link>
               </div>
             </div>
@@ -209,6 +218,33 @@ export default async function AthletePage({ params, searchParams }: {
                 </ol>
               </section>
             ))}
+          </section>
+        )}
+
+        {aba === "documentos" && documents && (
+          <section aria-labelledby="documentos-clinicos">
+            <div className="record-mast-top">
+              <h2 id="documentos-clinicos">Documentos</h2>
+              <div className="record-actions">
+                <Link className="outline" href={`${base}/documentos/nova?tipo=prescricao`} prefetch={false}>Nova prescrição</Link>
+                <Link className="outline" href={`${base}/documentos/nova?tipo=cirurgia`} prefetch={false}>Novo pedido cirúrgico</Link>
+              </div>
+            </div>
+            <p>Rascunhos privados deste médico. Nenhum documento desta lista é emitido ou assinado.</p>
+            {documents.length === 0 ? (
+              <EmptyState icon="records" title="Nenhum rascunho deste atleta.">
+                <p>Uma prescrição ou um pedido cirúrgico preparado aqui fica vinculado a este atleta e a você.</p>
+              </EmptyState>
+            ) : (
+              <ol className="clinical-list">
+                {documents.map((document) => (
+                  <li key={document.id}>
+                    <Link href={`${base}/documentos/${document.id}`} prefetch={false}>{documentKinds[document.document_type].title}</Link>
+                    <p>{statusLabels[document.status]} · <time dateTime={document.updated_at}>{eventDate.format(new Date(document.updated_at))}</time></p>
+                  </li>
+                ))}
+              </ol>
+            )}
           </section>
         )}
 

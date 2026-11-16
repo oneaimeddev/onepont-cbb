@@ -1,0 +1,40 @@
+.document-mast { display: grid; gap: .35rem; margin-bottom: 1.25rem; }
+.document-mast .record-mast-top { justify-content: flex-start; align-items: center; gap: .75rem; }
+.document-type { margin: 0; color: var(--ink); font-weight: 600; }
+.document-editor { display: grid; gap: 1rem; max-width: 46rem; }
+.document-editor fieldset { margin: 0; }
+.document-editor label { display: grid; gap: .35rem; font-weight: 600; color: var(--ink); }
+.document-editor textarea { min-height: 4.5rem; resize: vertical; }
+.document-item {
+  display: grid; gap: .85rem; padding: 1rem; border: 1px solid var(--line);
+  border-radius: 14px; background: var(--paper);
+}
+.document-item legend { font-weight: 600; color: var(--cbb-navy); padding: 0 .25rem; }
+.document-grid { display: grid; gap: .85rem; grid-template-columns: 1fr 1fr; }
+.document-grid .is-wide { grid-column: 1 / -1; }
+.document-actions { display: flex; flex-wrap: wrap; gap: .75rem; align-items: center; }
+.document-pending { margin: 0; padding-left: 1.1rem; }
+.document-sheet {
+  display: grid; gap: 1rem; max-width: 42rem; padding: 1.5rem;
+  border: 1px solid var(--line); border-radius: 16px; background: var(--paper);
+  box-shadow: var(--shadow-sm);
+}
+.document-banner {
+  margin: 0; padding: .75rem 1rem; border-radius: 10px;
+  background: var(--yellow-soft); color: var(--yellow-ink); font-weight: 700;
+  letter-spacing: .02em;
+}
+.document-sheet h1 { margin: 0; }
+.document-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem 1.25rem; margin: 0; }
+.document-facts div { display: grid; gap: .15rem; }
+.document-facts dt { color: var(--muted); font-size: .85rem; }
+.document-facts dd { margin: 0; color: var(--ink); }
+.document-medication { display: grid; gap: .25rem; padding-top: .75rem; border-top: 1px solid var(--line); }
+.document-medication h2 { margin: 0; font-family: var(--font-geist), sans-serif; font-size: 1.05rem; }
+.document-missing { color: var(--muted); }
+
+@media (max-width: 720px) {
+  .document-grid, .document-facts { grid-template-columns: 1fr; }
+  .document-actions { align-items: stretch; }
+  .document-actions :is(button, a) { justify-content: center; }
+}

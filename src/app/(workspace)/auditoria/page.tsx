@@ -25,6 +25,14 @@ const operationLabels: Record<string, string> = {
   "athlete_access.revoke": "Acesso profissional revogado",
   "athlete_access.list": "Consulta aos vínculos",
   "athlete_access.search": "Busca de profissionais",
+  "document.list": "Consulta aos documentos",
+  "document.read": "Consulta ao documento",
+  "document.draft_created": "Rascunho de documento criado",
+  "document.draft_saved": "Rascunho de documento salvo",
+  "document.ready_for_review": "Documento apresentado para revisão",
+  "document.save": "Tentativa de alteração de documento",
+  "medical_author.grant": "Habilitação médica concedida",
+  "medical_author.revoke": "Habilitação médica revogada",
 };
 
 const outcomes = { success: "Concluída", denied: "Negada", failed: "Falhou" };
