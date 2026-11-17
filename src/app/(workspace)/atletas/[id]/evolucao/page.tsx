@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import { notFound } from "next/navigation";
 import { getAthlete } from "../../../../../features/athletes/data";
 import { SubmitButton } from "../../../../../components/submit-button";
+import { ClinicalDraftWatch } from "../../../../../features/clinical/draft-watch";
 import { saveEvolution } from "./actions";
 import { requireProfile } from "../../../../../lib/profile";
 
@@ -29,7 +30,7 @@ export default async function EvolutionPage({ params, searchParams }: {
       </div>
       {erro && <p role="alert">Não foi possível salvar. O registro ou suas permissões podem ter mudado. Recarregue e confira os dados.</p>}
       {record?.status === "finalized" ? <p>Registro finalizado.</p> : (
-        <>
+        <ClinicalDraftWatch>
           <form action={saveEvolution} className="athlete-form composer-panel" key={record?.version ?? "new"}>
             <input type="hidden" name="athlete" value={id} />
             <input type="hidden" name="request" value={randomUUID()} />
@@ -62,7 +63,7 @@ export default async function EvolutionPage({ params, searchParams }: {
               <SubmitButton pendingLabel="Finalizando…">Confirmar finalização</SubmitButton>
             </form>
           )}
-        </>
+        </ClinicalDraftWatch>
       )}
     </main>
   );

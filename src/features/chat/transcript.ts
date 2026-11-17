@@ -1,8 +1,16 @@
-import { presentedAthletes, presentedNavigation, type PresentedAthlete } from "./guards";
+import { presentedDraft, type ClinicalDraft } from "./clinical-draft";
+import { presentedDocument, storedDocument, type DocumentDraft } from "./document-draft";
+import { presentedReadings, type ReadingBoard } from "./document-resolution";
+import { presentedAthletes, presentedNavigation, presentedSearch, type PresentedAthlete, type PresentedSearch } from "./guards";
 
 const storageKey = "cbb-intelligence-turns:v1";
 const scrollKey = "cbb-intelligence-scroll:v1";
 const maxTurns = 40;
+const emptySnapshot = JSON.stringify({ v: 1, turns: [] });
+let activeInDocument = false;
+let followServer = true;
+let memorySnapshot = emptySnapshot;
+let serverSnapshot = emptySnapshot;
 
 export type ChatTurn = {
   id: string;
@@ -10,17 +18,37 @@ export type ChatTurn = {
   text: string;
   athletes: PresentedAthlete[];
   navigation: { id: string; href: string; name: string } | null;
+  search: PresentedSearch | null;
+  draft: ClinicalDraft | null;
+  document: DocumentDraft | null;
+  readings: ReadingBoard | null;
 };
+
+export function turnCarriesContent(turn: Pick<ChatTurn, "text" | "athletes" | "navigation" | "draft" | "document" | "readings">) {
+  return Boolean(turn.text.trim() || turn.athletes.length > 0 || turn.navigation || turn.draft || turn.document || turn.readings);
+}
+
+export function conversationTurn(turn: ChatTurn): ChatTurn {
+  const draft = !turn.draft || (turn.draft.state !== "saved" && turn.draft.state !== "finalized") || !turn.draft.recordId
+    ? null
+    : { ...turn.draft, body: "", missing: [], error: null };
+  const document = turn.document ? storedDocument(turn.document) : null;
+  return { ...turn, draft, document };
+}
 
 function storedTurn(value: unknown): ChatTurn | null {
   if (!value || typeof value !== "object") return null;
   const row = value as Record<string, unknown>;
   if ((row.role !== "user" && row.role !== "assistant") || typeof row.id !== "string" || typeof row.text !== "string") return null;
   const text = row.text.slice(0, 4000);
-  const athletes = presentedAthletes(row.athletes).slice(0, 25);
+  const athletes = presentedAthletes(row.athletes).slice(0, 100);
   const navigation = presentedNavigation(row.navigation);
+  const search = presentedSearch(row.search);
+  const draft = row.role === "assistant" ? presentedDraft(row.draft) : null;
+  const document = row.role === "assistant" ? presentedDocument(row.document) : null;
+  const readings = row.role === "assistant" ? presentedReadings(row.readings) : null;
   if (row.role === "user" && !text.trim()) return null;
-  return { id: row.id.slice(0, 80), role: row.role, text, athletes, navigation };
+  return { id: row.id.slice(0, 80), role: row.role, text, athletes, navigation, search, draft, document, readings };
 }
 
 export function turnsFrom(raw: string): ChatTurn[] {
@@ -39,12 +67,8 @@ export function turnsFrom(raw: string): ChatTurn[] {
 }
 
 export function loadTurns(): ChatTurn[] {
-  try {
-    return turnsFrom(sessionStorage.getItem(storageKey) ?? "");
-  } catch (error) {
-    if (error instanceof DOMException) return [];
-    throw error;
-  }
+  if (!followServer) return turnsFrom(memorySnapshot);
+  return turnsFrom(serverSnapshot);
 }
 
 const listeners = new Set<() => void>();
@@ -60,17 +84,53 @@ export function subscribeTurns(listener: () => void) {
   };
 }
 
-export function turnSnapshot() {
+export function transcriptIsActive() {
+  return activeInDocument;
+}
+
+export function transcriptFollowsServer() {
+  return followServer;
+}
+
+export function discardInactiveTranscript() {
+  if (activeInDocument) return;
   try {
-    return sessionStorage.getItem(storageKey) ?? "";
+    sessionStorage.removeItem(storageKey);
+    sessionStorage.removeItem(scrollKey);
   } catch (error) {
-    if (error instanceof DOMException) return "";
+    if (error instanceof DOMException) return;
     throw error;
   }
 }
 
-export function turnServerSnapshot() {
-  return "";
+export function conversationSnapshot(turns: ChatTurn[]) {
+  const stored = turns.slice(-maxTurns).flatMap((turn) => {
+    const next = storedTurn(turn);
+    return next ? [next] : [];
+  });
+  return stored.length === 0 ? emptySnapshot : JSON.stringify({ v: 1, turns: stored });
+}
+
+export function rememberServerSnapshot(value: string) {
+  serverSnapshot = value || emptySnapshot;
+}
+
+export function readConversationSnapshot(propSnapshot: string) {
+  return followServer ? propSnapshot || emptySnapshot : memorySnapshot;
+}
+
+export function adoptStoredTranscript() {
+  let raw = "";
+  try {
+    raw = sessionStorage.getItem(storageKey) ?? "";
+  } catch (error) {
+    if (!(error instanceof DOMException)) throw error;
+  }
+  const turns = turnsFrom(raw);
+  followServer = false;
+  activeInDocument = turns.some((turn) => turn.role === "user");
+  memorySnapshot = conversationSnapshot(turns);
+  publish();
 }
 
 export function replaceTurns(turns: ChatTurn[]) {
@@ -79,17 +139,18 @@ export function replaceTurns(turns: ChatTurn[]) {
 }
 
 export function saveTurns(turns: ChatTurn[]) {
+  const snapshot = conversationSnapshot(turns);
+  const stored = turnsFrom(snapshot);
+  followServer = false;
+  activeInDocument = stored.length > 0;
+  memorySnapshot = snapshot;
   try {
-    if (turns.length === 0) {
+    if (stored.length === 0) {
       sessionStorage.removeItem(storageKey);
       sessionStorage.removeItem(scrollKey);
       return;
     }
-    const stored = turns.slice(-maxTurns).flatMap((turn) => {
-      const next = storedTurn(turn);
-      return next ? [next] : [];
-    });
-    sessionStorage.setItem(storageKey, JSON.stringify({ v: 1, turns: stored }));
+    sessionStorage.setItem(storageKey, snapshot);
   } catch (error) {
     if (error instanceof DOMException) return;
     throw error;
@@ -106,6 +167,12 @@ export function loadScroll() {
     if (error instanceof DOMException) return null;
     throw error;
   }
+}
+
+if (typeof window !== "undefined") {
+  window.addEventListener("cbb-intelligence-adopt", () => {
+    adoptStoredTranscript();
+  });
 }
 
 export function saveScroll(value: number) {

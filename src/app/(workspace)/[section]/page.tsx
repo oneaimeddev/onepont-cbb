@@ -6,14 +6,18 @@ import { requireProfile } from "../../../lib/profile";
 import { EmptyState } from "../../../components/empty-state";
 import { WorkspaceArea } from "../../../components/workspace-area";
 
-export default async function TraditionalPage({ params }: {
+export default async function TraditionalPage({ params, searchParams }: {
   params: Promise<{ section: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const profile = await requireProfile();
   const { section } = await params;
   const current = availableSections(profile.can_read_audit).find(([slug]) => slug === section);
   if (!current) notFound();
-  if (section === "evolucoes") return <AthleteCatalog title="Selecionar atleta para evolução" action="/atletas" />;
+  if (section === "evolucoes") {
+    const query = await searchParams;
+    return <AthleteCatalog action="/evolucoes" intent="evolution" query={query.q} params={query} />;
+  }
 
   return (
     <WorkspaceArea>

@@ -1,0 +1,848 @@
+{
+  "model": "models/gemini-3.5-transcribe-live",
+  "vad": {
+    "startOfSpeechSensitivity": "START_SENSITIVITY_LOW",
+    "endOfSpeechSensitivity": "END_SENSITIVITY_LOW",
+    "prefixPaddingMs": 300,
+    "silenceDurationMs": 1000
+  },
+  "pauseMs": 1800,
+  "noise": 0,
+  "turns": [
+    {
+      "expected": "Abra a Lara Menezes.",
+      "finals": [
+        "Abra a Lara Menezes."
+      ],
+      "joined": "Abra a Lara Menezes.",
+      "interimCount": 5,
+      "firstInterimMs": 886,
+      "finalAfterSpeechEndMs": 1151,
+      "wer": 0
+    },
+    {
+      "expected": "Quais foram as últimas evoluções dela?",
+      "finals": [
+        "Quais foram as últimas evoluções dela?"
+      ],
+      "joined": "Quais foram as últimas evoluções dela?",
+      "interimCount": 7,
+      "firstInterimMs": 1088,
+      "finalAfterSpeechEndMs": 998,
+      "wer": 0
+    },
+    {
+      "expected": "E nos últimos seis meses?",
+      "finals": [
+        "E nos últimos seis meses?"
+      ],
+      "joined": "E nos últimos seis meses?",
+      "interimCount": 5,
+      "firstInterimMs": 1360,
+      "finalAfterSpeechEndMs": 1090,
+      "wer": 0
+    },
+    {
+      "expected": "Agora veja a fisioterapia.",
+      "finals": [
+        "Agora, veja a fisioterapia."
+      ],
+      "joined": "Agora, veja a fisioterapia.",
+      "interimCount": 6,
+      "firstInterimMs": 925,
+      "finalAfterSpeechEndMs": 1145,
+      "wer": 0
+    },
+    {
+      "expected": "E o que mudou depois da entorse de tornozelo direito?",
+      "finals": [
+        "E o que mudou depois da entorse de tornozelo direito?"
+      ],
+      "joined": "E o que mudou depois da entorse de tornozelo direito?",
+      "interimCount": 9,
+      "firstInterimMs": 1053,
+      "finalAfterSpeechEndMs": 921,
+      "wer": 0
+    },
+    {
+      "expected": "Ela nega dor noturna e não teve edema.",
+      "finals": [
+        "Ela nega dor noturna e não teve edema."
+      ],
+      "joined": "Ela nega dor noturna e não teve edema.",
+      "interimCount": 9,
+      "firstInterimMs": 1246,
+      "finalAfterSpeechEndMs": 933,
+      "wer": 0
+    },
+    {
+      "expected": "Usou dipirona 500 mg de 8 em 8 horas por 3 dias.",
+      "finals": [
+        "Usou dipirona 500 mg de 8 em 8 horas por 3 dias."
+      ],
+      "joined": "Usou dipirona 500 mg de 8 em 8 horas por 3 dias.",
+      "interimCount": 11,
+      "firstInterimMs": 919,
+      "finalAfterSpeechEndMs": 1028,
+      "wer": 0
+    },
+    {
+      "expected": "O teste de gaveta anterior foi negativo no joelho esquerdo.",
+      "finals": [
+        "O teste de gaveta anterior foi negativo no joelho esquerdo."
+      ],
+      "joined": "O teste de gaveta anterior foi negativo no joelho esquerdo.",
+      "interimCount": 11,
+      "firstInterimMs": 880,
+      "finalAfterSpeechEndMs": 998,
+      "wer": 0
+    },
+    {
+      "expected": "O atendimento foi em 10 de novembro de 2026.",
+      "finals": [
+        "O atendimento foi em 10 de novembro de 2026."
+      ],
+      "joined": "O atendimento foi em 10 de novembro de 2026.",
+      "interimCount": 10,
+      "firstInterimMs": 973,
+      "finalAfterSpeechEndMs": 907,
+      "wer": 0
+    },
+    {
+      "expected": "Atleta relata melhora da dorsiflexão, mantém bandagem funcional e crioterapia após o treino.",
+      "finals": [
+        "Atleta relata melhora da dorsiflexão.",
+        "Mantém bandagem funcional e crioterapia após o treino."
+      ],
+      "joined": "Atleta relata melhora da dorsiflexão. Mantém bandagem funcional e crioterapia após o treino.",
+      "interimCount": 17,
+      "firstInterimMs": 1556,
+      "finalAfterSpeechEndMs": 1057,
+      "wer": 0
+    },
+    {
+      "expected": "Faça uma evolução com essas informações.",
+      "finals": [
+        "Faça uma evolução com essas informações."
+      ],
+      "joined": "Faça uma evolução com essas informações.",
+      "interimCount": 7,
+      "firstInterimMs": 1266,
+      "finalAfterSpeechEndMs": 932,
+      "wer": 0
+    },
+    {
+      "expected": "Pode salvar isso.",
+      "finals": [
+        "Pode salvar isso."
+      ],
+      "joined": "Pode salvar isso.",
+      "interimCount": 4,
+      "firstInterimMs": 950,
+      "finalAfterSpeechEndMs": 1036,
+      "wer": 0
+    }
+  ],
+  "events": [
+    {
+      "at": 1968,
+      "kind": "vad",
+      "text": "ACTIVITY_START"
+    },
+    {
+      "at": 2408,
+      "kind": "interim",
+      "text": "A"
+    },
+    {
+      "at": 2767,
+      "kind": "interim",
+      "text": "Abra a"
+    },
+    {
+      "at": 3261,
+      "kind": "interim",
+      "text": "Abra a Lara"
+    },
+    {
+      "at": 3824,
+      "kind": "interim",
+      "text": "Abra a Lara Menezes."
+    },
+    {
+      "at": 4290,
+      "kind": "interim",
+      "text": "Abra a Lara Menezes."
+    },
+    {
+      "at": 4784,
+      "kind": "final",
+      "text": "Abra a Lara Menezes."
+    },
+    {
+      "at": 4784,
+      "kind": "vad",
+      "text": "ACTIVITY_END"
+    },
+    {
+      "at": 6693,
+      "kind": "vad",
+      "text": "ACTIVITY_START"
+    },
+    {
+      "at": 7332,
+      "kind": "interim",
+      "text": "Qual"
+    },
+    {
+      "at": 7640,
+      "kind": "interim",
+      "text": "Quais foram"
+    },
+    {
+      "at": 8117,
+      "kind": "interim",
+      "text": "Quais foram as"
+    },
+    {
+      "at": 8643,
+      "kind": "interim",
+      "text": "Quais foram as últimas"
+    },
+    {
+      "at": 9105,
+      "kind": "interim",
+      "text": "Quais foram as últimas evoluções"
+    },
+    {
+      "at": 9597,
+      "kind": "interim",
+      "text": "Quais foram as últimas evoluções dela?"
+    },
+    {
+      "at": 10118,
+      "kind": "interim",
+      "text": "Quais foram as últimas evoluções dela?"
+    },
+    {
+      "at": 10354,
+      "kind": "final",
+      "text": "Quais foram as últimas evoluções dela?"
+    },
+    {
+      "at": 10354,
+      "kind": "vad",
+      "text": "ACTIVITY_END"
+    },
+    {
+      "at": 12399,
+      "kind": "vad",
+      "text": "ACTIVITY_START"
+    },
+    {
+      "at": 13326,
+      "kind": "interim",
+      "text": "E nos últimos"
+    },
+    {
+      "at": 13750,
+      "kind": "interim",
+      "text": "E nos últimos"
+    },
+    {
+      "at": 15715,
+      "kind": "interim",
+      "text": "E nos últimos seis meses?"
+    },
+    {
+      "at": 16320,
+      "kind": "interim",
+      "text": "E nos últimos seis meses?"
+    },
+    {
+      "at": 16758,
+      "kind": "interim",
+      "text": "E nos últimos seis meses?"
+    },
+    {
+      "at": 16880,
+      "kind": "final",
+      "text": "E nos últimos seis meses?"
+    },
+    {
+      "at": 16881,
+      "kind": "vad",
+      "text": "ACTIVITY_END"
+    },
+    {
+      "at": 18861,
+      "kind": "vad",
+      "text": "ACTIVITY_START"
+    },
+    {
+      "at": 19326,
+      "kind": "interim",
+      "text": "Agora."
+    },
+    {
+      "at": 19603,
+      "kind": "interim",
+      "text": "Agora"
+    },
+    {
+      "at": 20101,
+      "kind": "interim",
+      "text": "Agora, veja a"
+    },
+    {
+      "at": 20630,
+      "kind": "interim",
+      "text": "Agora, veja a"
+    },
+    {
+      "at": 21077,
+      "kind": "interim",
+      "text": "Agora, veja a"
+    },
+    {
+      "at": 21632,
+      "kind": "interim",
+      "text": "Agora, veja a fisioterapia."
+    },
+    {
+      "at": 22158,
+      "kind": "final",
+      "text": "Agora, veja a fisioterapia."
+    },
+    {
+      "at": 22159,
+      "kind": "vad",
+      "text": "ACTIVITY_END"
+    },
+    {
+      "at": 24085,
+      "kind": "vad",
+      "text": "ACTIVITY_START"
+    },
+    {
+      "at": 24676,
+      "kind": "interim",
+      "text": "E o"
+    },
+    {
+      "at": 24935,
+      "kind": "interim",
+      "text": "E o que"
+    },
+    {
+      "at": 25399,
+      "kind": "interim",
+      "text": "E o que mudou"
+    },
+    {
+      "at": 25965,
+      "kind": "interim",
+      "text": "E o que mudou depois"
+    },
+    {
+      "at": 26418,
+      "kind": "interim",
+      "text": "E o que mudou depois da"
+    },
+    {
+      "at": 26949,
+      "kind": "interim",
+      "text": "E o que mudou depois da entorse de"
+    },
+    {
+      "at": 27325,
+      "kind": "interim",
+      "text": "E o que mudou depois da entorse de tornozelo"
+    },
+    {
+      "at": 27866,
+      "kind": "interim",
+      "text": "E o que mudou depois da entorse de tornozelo direito?"
+    },
+    {
+      "at": 28323,
+      "kind": "interim",
+      "text": "E o que mudou depois da entorse de tornozelo direito?"
+    },
+    {
+      "at": 28762,
+      "kind": "final",
+      "text": "E o que mudou depois da entorse de tornozelo direito?"
+    },
+    {
+      "at": 28763,
+      "kind": "vad",
+      "text": "ACTIVITY_END"
+    },
+    {
+      "at": 30993,
+      "kind": "vad",
+      "text": "ACTIVITY_START"
+    },
+    {
+      "at": 31698,
+      "kind": "interim",
+      "text": "Ela"
+    },
+    {
+      "at": 32069,
+      "kind": "interim",
+      "text": "Ela nega"
+    },
+    {
+      "at": 32472,
+      "kind": "interim",
+      "text": "Ela nega dor"
+    },
+    {
+      "at": 32978,
+      "kind": "interim",
+      "text": "Ela nega dor noturna,"
+    },
+    {
+      "at": 33432,
+      "kind": "interim",
+      "text": "Ela nega dor noturna,"
+    },
+    {
+      "at": 33918,
+      "kind": "interim",
+      "text": "Ela nega dor noturna, e não"
+    },
+    {
+      "at": 34353,
+      "kind": "interim",
+      "text": "Ela nega dor noturna, e não teve"
+    },
+    {
+      "at": 34865,
+      "kind": "interim",
+      "text": "Ela nega dor noturna, e não teve edema."
+    },
+    {
+      "at": 35452,
+      "kind": "interim",
+      "text": "Ela nega dor noturna, e não teve edema."
+    },
+    {
+      "at": 35601,
+      "kind": "final",
+      "text": "Ela nega dor noturna e não teve edema."
+    },
+    {
+      "at": 35602,
+      "kind": "vad",
+      "text": "ACTIVITY_END"
+    },
+    {
+      "at": 37748,
+      "kind": "vad",
+      "text": "ACTIVITY_START"
+    },
+    {
+      "at": 38200,
+      "kind": "interim",
+      "text": "O"
+    },
+    {
+      "at": 38467,
+      "kind": "interim",
+      "text": "Usou"
+    },
+    {
+      "at": 38974,
+      "kind": "interim",
+      "text": "Usou dipirona"
+    },
+    {
+      "at": 39466,
+      "kind": "interim",
+      "text": "Usou dipirona"
+    },
+    {
+      "at": 39959,
+      "kind": "interim",
+      "text": "Usou dipirona 500"
+    },
+    {
+      "at": 40481,
+      "kind": "interim",
+      "text": "Usou dipirona 500 mg de 8 em 8"
+    },
+    {
+      "at": 40886,
+      "kind": "interim",
+      "text": "Usou dipirona 500 mg de 8 em 8"
+    },
+    {
+      "at": 41433,
+      "kind": "interim",
+      "text": "Usou dipirona 500 mg de 8 em 8 horas por"
+    },
+    {
+      "at": 41906,
+      "kind": "interim",
+      "text": "Usou dipirona 500 mg de 8 em 8 horas por 3"
+    },
+    {
+      "at": 42378,
+      "kind": "interim",
+      "text": "Usou dipirona 500 mg de 8 em 8 horas por 3 dias."
+    },
+    {
+      "at": 42873,
+      "kind": "interim",
+      "text": "Usou dipirona 500 mg de 8 em 8 horas por 3 dias."
+    },
+    {
+      "at": 43432,
+      "kind": "final",
+      "text": "Usou dipirona 500 mg de 8 em 8 horas por 3 dias."
+    },
+    {
+      "at": 43433,
+      "kind": "vad",
+      "text": "ACTIVITY_END"
+    },
+    {
+      "at": 45559,
+      "kind": "vad",
+      "text": "ACTIVITY_START"
+    },
+    {
+      "at": 45893,
+      "kind": "interim",
+      "text": "O"
+    },
+    {
+      "at": 46305,
+      "kind": "interim",
+      "text": "O teste"
+    },
+    {
+      "at": 46816,
+      "kind": "interim",
+      "text": "O teste de"
+    },
+    {
+      "at": 47289,
+      "kind": "interim",
+      "text": "O teste de gaveta"
+    },
+    {
+      "at": 49330,
+      "kind": "interim",
+      "text": "O teste de gaveta anterior"
+    },
+    {
+      "at": 49761,
+      "kind": "interim",
+      "text": "O teste de gaveta anterior foi"
+    },
+    {
+      "at": 50265,
+      "kind": "interim",
+      "text": "O teste de gaveta anterior foi"
+    },
+    {
+      "at": 50775,
+      "kind": "interim",
+      "text": "O teste de gaveta anterior foi negativo no"
+    },
+    {
+      "at": 51235,
+      "kind": "interim",
+      "text": "O teste de gaveta anterior foi negativo no joelho esquerdo."
+    },
+    {
+      "at": 51764,
+      "kind": "interim",
+      "text": "O teste de gaveta anterior foi negativo no joelho esquerdo."
+    },
+    {
+      "at": 52263,
+      "kind": "interim",
+      "text": "O teste de gaveta anterior foi negativo no joelho esquerdo."
+    },
+    {
+      "at": 52483,
+      "kind": "final",
+      "text": "O teste de gaveta anterior foi negativo no joelho esquerdo."
+    },
+    {
+      "at": 52484,
+      "kind": "vad",
+      "text": "ACTIVITY_END"
+    },
+    {
+      "at": 54657,
+      "kind": "vad",
+      "text": "ACTIVITY_START"
+    },
+    {
+      "at": 55069,
+      "kind": "interim",
+      "text": "O"
+    },
+    {
+      "at": 55472,
+      "kind": "interim",
+      "text": "O"
+    },
+    {
+      "at": 55866,
+      "kind": "interim",
+      "text": "O atendimento foi"
+    },
+    {
+      "at": 56382,
+      "kind": "interim",
+      "text": "O atendimento foi em"
+    },
+    {
+      "at": 56855,
+      "kind": "interim",
+      "text": "O atendimento foi em 10 de"
+    },
+    {
+      "at": 57401,
+      "kind": "interim",
+      "text": "O atendimento foi em 10 de novembro de"
+    },
+    {
+      "at": 57899,
+      "kind": "interim",
+      "text": "O atendimento foi em 10 de novembro de"
+    },
+    {
+      "at": 58306,
+      "kind": "interim",
+      "text": "O atendimento foi em 10 de novembro de 2026."
+    },
+    {
+      "at": 58895,
+      "kind": "interim",
+      "text": "O atendimento foi em 10 de novembro de 2026."
+    },
+    {
+      "at": 59376,
+      "kind": "interim",
+      "text": "O atendimento foi em 10 de novembro de 2026."
+    },
+    {
+      "at": 59521,
+      "kind": "final",
+      "text": "O atendimento foi em 10 de novembro de 2026."
+    },
+    {
+      "at": 59522,
+      "kind": "vad",
+      "text": "ACTIVITY_END"
+    },
+    {
+      "at": 61684,
+      "kind": "vad",
+      "text": "ACTIVITY_START"
+    },
+    {
+      "at": 62780,
+      "kind": "interim",
+      "text": "Atleta"
+    },
+    {
+      "at": 63135,
+      "kind": "interim",
+      "text": "Atleta relata"
+    },
+    {
+      "at": 63672,
+      "kind": "interim",
+      "text": "Atleta relata melhora da"
+    },
+    {
+      "at": 64109,
+      "kind": "interim",
+      "text": "Atleta relata melhora da"
+    },
+    {
+      "at": 64635,
+      "kind": "interim",
+      "text": "Atleta relata melhora da dorsiflexão."
+    },
+    {
+      "at": 65129,
+      "kind": "interim",
+      "text": "Atleta relata melhora da dorsiflexão."
+    },
+    {
+      "at": 65557,
+      "kind": "final",
+      "text": "Atleta relata melhora da dorsiflexão."
+    },
+    {
+      "at": 65558,
+      "kind": "vad",
+      "text": "ACTIVITY_END"
+    },
+    {
+      "at": 66901,
+      "kind": "vad",
+      "text": "ACTIVITY_START"
+    },
+    {
+      "at": 67608,
+      "kind": "interim",
+      "text": "manda"
+    },
+    {
+      "at": 67936,
+      "kind": "interim",
+      "text": "Mantém"
+    },
+    {
+      "at": 68311,
+      "kind": "interim",
+      "text": "Mantém bandagem"
+    },
+    {
+      "at": 68842,
+      "kind": "interim",
+      "text": "Mantém bandagem funcional."
+    },
+    {
+      "at": 69330,
+      "kind": "interim",
+      "text": "Mantém bandagem funcional."
+    },
+    {
+      "at": 69812,
+      "kind": "interim",
+      "text": "Mantém bandagem funcional. e"
+    },
+    {
+      "at": 70266,
+      "kind": "interim",
+      "text": "Mantém bandagem funcional. e crioterapia"
+    },
+    {
+      "at": 70728,
+      "kind": "interim",
+      "text": "Mantém bandagem funcional. e crioterapia"
+    },
+    {
+      "at": 71227,
+      "kind": "interim",
+      "text": "Mantém bandagem funcional. e crioterapia após o"
+    },
+    {
+      "at": 71703,
+      "kind": "interim",
+      "text": "Mantém bandagem funcional. e crioterapia após o treino."
+    },
+    {
+      "at": 72213,
+      "kind": "interim",
+      "text": "Mantém bandagem funcional. e crioterapia após o treino."
+    },
+    {
+      "at": 72423,
+      "kind": "final",
+      "text": "Mantém bandagem funcional e crioterapia após o treino."
+    },
+    {
+      "at": 72423,
+      "kind": "vad",
+      "text": "ACTIVITY_END"
+    },
+    {
+      "at": 74531,
+      "kind": "vad",
+      "text": "ACTIVITY_START"
+    },
+    {
+      "at": 75241,
+      "kind": "interim",
+      "text": "Faça uma"
+    },
+    {
+      "at": 75752,
+      "kind": "interim",
+      "text": "Faça uma"
+    },
+    {
+      "at": 76259,
+      "kind": "interim",
+      "text": "Faça uma evolução com essa"
+    },
+    {
+      "at": 76730,
+      "kind": "interim",
+      "text": "Faça uma evolução com essa"
+    },
+    {
+      "at": 77185,
+      "kind": "interim",
+      "text": "Faça uma evolução com essa"
+    },
+    {
+      "at": 77742,
+      "kind": "interim",
+      "text": "Faça uma evolução com essa informações."
+    },
+    {
+      "at": 78284,
+      "kind": "interim",
+      "text": "Faça uma evolução com essa informações."
+    },
+    {
+      "at": 78418,
+      "kind": "final",
+      "text": "Faça uma evolução com essas informações."
+    },
+    {
+      "at": 78418,
+      "kind": "vad",
+      "text": "ACTIVITY_END"
+    },
+    {
+      "at": 80554,
+      "kind": "vad",
+      "text": "ACTIVITY_START"
+    },
+    {
+      "at": 81048,
+      "kind": "interim",
+      "text": "Pode."
+    },
+    {
+      "at": 81330,
+      "kind": "interim",
+      "text": "Pode salvar."
+    },
+    {
+      "at": 83365,
+      "kind": "interim",
+      "text": "Pode salvar isso."
+    },
+    {
+      "at": 83880,
+      "kind": "interim",
+      "text": "Pode salvar isso."
+    },
+    {
+      "at": 84506,
+      "kind": "final",
+      "text": "Pode salvar isso."
+    },
+    {
+      "at": 84506,
+      "kind": "vad",
+      "text": "ACTIVITY_END"
+    }
+  ]
+}

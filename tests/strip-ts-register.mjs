@@ -1,0 +1,12 @@
+import { register } from "node:module";
+
+const source = `
+export async function resolve(specifier, context, nextResolve) {
+  if ((specifier.startsWith("./") || specifier.startsWith("../")) && !/\\.[cm]?[jt]sx?$/.test(specifier)) {
+    return nextResolve(specifier + ".ts", context);
+  }
+  return nextResolve(specifier, context);
+}
+`;
+
+register(`data:text/javascript,${encodeURIComponent(source)}`, import.meta.url);

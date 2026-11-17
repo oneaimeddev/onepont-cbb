@@ -1,6 +1,6 @@
 import { eventDate } from "../athletes/data";
 import {
-  documentKinds, isPrescription, lateralityLabels, prescriptionPending, priorityLabels, statusLabels, surgicalPending,
+  documentKinds, examTypeLabels, isExamRequest, isPrescription, lateralityLabels, prescriptionPending, priorityLabels, statusLabels, surgicalPending, examPending,
   type DocumentContent, type DocumentKind, type DocumentStatus,
 } from "./content";
 
@@ -66,6 +66,26 @@ export function DocumentPreview({ document, athleteName }: { document: PreviewDo
             </section>
           )}
           <Pending groups={prescriptionPending(document.content).groups} />
+        </div>
+      ) : isExamRequest(document.content) ? (
+        <div>
+          {document.content.occurred_at ? <p>Data do atendimento: {document.content.occurred_at}</p> : null}
+          {document.content.items.map((item, index) => (
+            <section className="document-medication" key={item.id} aria-label={`Exame ${index + 1}`}>
+              <h2>{item.name.trim() || `Exame ${index + 1}`}</h2>
+              {item.exam_type ? <p>Tipo: {examTypeLabels[item.exam_type]}</p> : null}
+              {item.region.trim() ? <p>Região: {item.region}</p> : null}
+              {item.laterality ? <p>Lateralidade: {lateralityLabels[item.laterality]}</p> : null}
+              {item.technical_details.trim() ? <p>Detalhes técnicos: {item.technical_details}</p> : null}
+              {item.notes.trim() ? <p>Observações: {item.notes}</p> : null}
+            </section>
+          ))}
+          {document.content.indication.trim() ? <p>Indicação: {document.content.indication}</p> : null}
+          {document.content.justification.trim() ? <p>Justificativa: {document.content.justification}</p> : null}
+          {document.content.diagnosis.trim() ? <p>Hipótese diagnóstica: {document.content.diagnosis}</p> : null}
+          {document.content.priority ? <p>Prioridade: {priorityLabels[document.content.priority]}</p> : null}
+          {document.content.additional.trim() ? <p>Orientações: {document.content.additional}</p> : null}
+          <Pending groups={examPending(document.content).groups} />
         </div>
       ) : (
         <div>

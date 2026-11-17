@@ -14,7 +14,7 @@ function returnPath(athlete: string, value: string) {
   const kept = new URLSearchParams();
   const kind = params.get("tipo");
   const documentId = params.get("documento");
-  if (kind === "prescricao" || kind === "cirurgia") kept.set("tipo", kind);
+  if (kind === "prescricao" || kind === "cirurgia" || kind === "exames") kept.set("tipo", kind);
   if (documentId && uuidPattern.test(documentId)) kept.set("documento", documentId);
   const suffix = kept.toString();
   return suffix ? `${path}?${suffix}` : path;
@@ -30,7 +30,7 @@ export async function saveDocument(form: FormData) {
   const raw = String(form.get("content") ?? "");
   const back = returnPath(athlete, String(form.get("return") ?? ""));
   const fail = `${back}${back.includes("?") ? "&" : "?"}erro=`;
-  if (!uuidPattern.test(athlete) || !uuidPattern.test(documentId) || (kind !== "prescription" && kind !== "surgical_order") || !Number.isInteger(version) || version < 0 || raw.length > 30000) {
+  if (!uuidPattern.test(athlete) || !uuidPattern.test(documentId) || (kind !== "prescription" && kind !== "surgical_order" && kind !== "exam_request") || !Number.isInteger(version) || version < 0 || raw.length > 30000) {
     redirect(`${fail}invalido`);
   }
   let payload: unknown;

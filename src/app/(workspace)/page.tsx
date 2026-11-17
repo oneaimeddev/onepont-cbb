@@ -1,11 +1,14 @@
 import Link from "next/link";
 import { Avatar } from "../../components/avatar";
 import { SubmitButton } from "../../components/submit-button";
-import { intelligenceEnabled } from "../../features/chat/config";
+import { intelligenceEnabled, voiceApiKey } from "../../features/chat/config";
+import { parseConversation, parseHistory } from "../../features/chat/conversation";
+import { endConversationContext } from "../../features/chat/conversation-actions";
 import { IntelligenceHome } from "../../features/chat/intelligence-home";
 import { chatFonts } from "../../features/chat/fonts";
-import { getAthlete } from "../../features/athletes/data";
+import { getAthlete, loadAthlete } from "../../features/athletes/data";
 import { requireProfile } from "../../lib/profile";
+import { supabaseServer } from "../../lib/supabase";
 import { logout } from "../login/actions";
 
 function greetingFor(name: string) {
@@ -27,15 +30,27 @@ export default async function ChatPage({ searchParams }: {
 }) {
   const profile = await requireProfile();
   const { atleta } = await searchParams;
-  const context = typeof atleta === "string" ? await getAthlete(atleta, "chat") : null;
+  const client = await supabaseServer();
+  const [currentResult, recentResult] = await Promise.all([
+    client.rpc("conversation_current"),
+    client.rpc("conversation_recent"),
+  ]);
+  if (currentResult.error || recentResult.error) throw new Error("Não foi possível recuperar a conversa.");
+  const current = parseConversation(currentResult.data);
+  const history = parseHistory(recentResult.data);
+  const requested = typeof atleta === "string" ? atleta : null;
+  const context = requested
+    ? await getAthlete(requested, "chat")
+    : current.athleteId
+      ? await loadAthlete(current.athleteId, "chat")
+      : null;
   const active = context?.athlete ?? null;
   const activeName = active && (active.social_name || active.full_name);
-  const activeDetails = active ? [active.team, active.category].filter(Boolean) : [];
+  const today = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo" }).format(new Date());
+  const sport = context?.sports?.find((item) => item.starts_on <= today && (!item.ends_on || item.ends_on >= today));
   const givenName = profile.display_name.trim().split(/\s+/)[0] || profile.display_name;
 
   return (
-    <>
-    <script dangerouslySetInnerHTML={{ __html: "try{var raw=sessionStorage.getItem('cbb-intelligence-turns:v1');if(raw)document.documentElement.dataset.iaRestored='true';}catch(error){document.documentElement.dataset.iaStorage='off';}" }} />
     <IntelligenceHome
       fonts={chatFonts}
       greeting={greetingFor(givenName)}
@@ -46,32 +61,40 @@ export default async function ChatPage({ searchParams }: {
         canReadAudit: profile.can_read_audit,
       }}
       enabled={intelligenceEnabled()}
+      voiceEnabled={Boolean(voiceApiKey())}
+      contextAthleteId={active?.id ?? null}
+      canFinalize={Boolean(context?.can_finalize)}
+      initialSessionId={current.sessionId}
+      initialSnapshot={current.snapshot}
+      initialHistory={history}
       signOut={(
         <form action={logout}>
           <SubmitButton className="ia-signout" pendingLabel="Saindo…">Sair</SubmitButton>
         </form>
       )}
       context={active && activeName ? (
-        <aside className="context-panel" aria-label="Contexto da tarefa">
-          <h2>Atleta em contexto</h2>
-          <p>{activeName} está em contexto. {intelligenceEnabled() ? "A conversa usa apenas as informações autorizadas para o seu perfil." : "Quando o assistente estiver disponível, a conversa usará apenas as informações autorizadas para o seu perfil."}</p>
-          <div className="context-athlete">
+        <div className="ia-context-card">
+          <div className="ia-context-id">
             <Avatar name={activeName} athleteId={active.id} photoVersion={active.photo_version} />
-            <div>
-              <strong>{activeName}</strong>
-              {activeDetails.length > 0 && <span className="meta-list">{activeDetails.map((item) => <span key={item}>{item}</span>)}</span>}
-            </div>
+            <h2>{activeName}</h2>
           </div>
-          <p className="record-id">{active.id}</p>
-          <div className="context-actions">
-            <Link className="outline" href={`/atletas/${active.id}`} prefetch={false}>Voltar ao perfil</Link>
-            {context?.can_write && <Link className="outline" href={`/atletas/${active.id}/evolucao`} prefetch={false}>Registrar evolução</Link>}
-            {context?.can_read_records && <Link className="ghost-link" href={`/atletas/${active.id}?aba=timeline`} prefetch={false}>Consultar atendimentos e evoluções</Link>}
-            <Link className="ghost-link" href="/" prefetch={false}>Encerrar contexto</Link>
-          </div>
-        </aside>
+          <dl>
+            <div><dt>Categoria</dt><dd>{sport?.category || active.category || "Não informado"}</dd></div>
+            <div><dt>Naipe</dt><dd>{sport?.division || "Não informado"}</dd></div>
+            <div><dt>Clube</dt><dd>{sport?.club || active.team || "Não informado"}</dd></div>
+          </dl>
+          <p>{activeName} está em contexto. {intelligenceEnabled() ? "A conversa usa apenas as informações autorizadas para o seu perfil." : "Quando o assistente estiver disponível, a conversa usará apenas as informações autorizadas para o seu perfil."}</p>
+          <p className="ia-context-record">{active.id}</p>
+          <nav className="ia-context-actions" aria-label="Ações do atleta">
+            <Link href={`/atletas/${active.id}`} prefetch={false}>Abrir prontuário</Link>
+            {context?.can_write ? <Link href={`/atletas/${active.id}/evolucao`} prefetch={false}>Registrar evolução</Link> : null}
+            {context?.can_read_records ? <Link href={`/atletas/${active.id}?aba=timeline`} prefetch={false}>Consultar histórico</Link> : null}
+            <form action={endConversationContext}>
+              <button type="submit">Encerrar contexto</button>
+            </form>
+          </nav>
+        </div>
       ) : null}
     />
-    </>
   );
 }

@@ -3,15 +3,15 @@ import { SubmitButton } from "../../components/submit-button";
 import { Avatar } from "../../components/avatar";
 import { Icon } from "../../components/icon";
 import { chatFonts } from "../../features/chat/fonts";
-import { availableSections } from "../../features/sections";
+import { navigationSections } from "../../features/sections";
 import { requireProfile } from "../../lib/profile";
 import { logout } from "../login/actions";
 
 export default async function WorkspaceLayout({ children }: { children: React.ReactNode }) {
   const profile = await requireProfile();
   const navigation = [
-    { href: "/", title: "Chat", icon: "chat" as const },
-    ...availableSections(profile.can_read_audit).map(([slug, section]) => ({
+    { href: "/", title: "CBB Intelligence", icon: "chat" as const },
+    ...navigationSections(profile.can_read_audit).map(([slug, section]) => ({
       href: `/${slug}`, title: section.title, isAvailable: section.isAvailable, icon: section.icon,
     })),
   ];

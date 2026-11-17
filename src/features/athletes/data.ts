@@ -21,7 +21,41 @@ type Athlete = AthleteSummary & {
   external_cbb_id: string | null;
 };
 
-export type SportLink = { id: string; category: string; modality: string; division: string; club: string | null; season: number; starts_on: string; ends_on: string | null };
+export type SportLink = {
+  id: string;
+  category: string;
+  modality: string;
+  division: string;
+  club: string | null;
+  club_id?: string | null;
+  national_team?: string | null;
+  position?: string | null;
+  shirt_number?: string | null;
+  season: number;
+  starts_on: string;
+  ends_on: string | null;
+};
+
+export type CatalogOption = { id: string; name: string };
+
+export type RegistrationCatalog = {
+  categories: CatalogOption[];
+  clubs: CatalogOption[];
+  national_teams: CatalogOption[];
+  divisions: string[];
+  modalities: string[];
+};
+
+export type AthleteRegistration = {
+  gender_identity: string | null;
+  document_id: string | null;
+  phone: string | null;
+  email: string | null;
+  guardian_name: string | null;
+  guardian_relation: string | null;
+  guardian_contact: string | null;
+  emergency_contact: string | null;
+};
 
 type ClinicalRecord = {
   encounter_status: "open" | "closed" | null;
@@ -42,6 +76,23 @@ export const uuidPattern = /^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i;
 export const eventDate = new Intl.DateTimeFormat("pt-BR", {
   dateStyle: "short", timeStyle: "short", timeZone: "America/Sao_Paulo",
 });
+
+export async function loadCatalog() {
+  await requireProfile();
+  const client = await supabaseServer();
+  const { data, error } = await client.rpc("catalog_list");
+  if (error || !data || data.error) return null;
+  return data as RegistrationCatalog;
+}
+
+export async function loadRegistration(id: string) {
+  await requireProfile();
+  if (!uuidPattern.test(id)) return null;
+  const client = await supabaseServer();
+  const { data, error } = await client.rpc("athlete_registration", { target: id });
+  if (error) return null;
+  return data as AthleteRegistration | null;
+}
 
 export async function listAthletes(search = "") {
   await requireProfile();

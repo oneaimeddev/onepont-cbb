@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { notFound } from "next/navigation";
 import { getAthlete, uuidPattern } from "../../../../../../features/athletes/data";
 import { documentNotice, DocumentScreen } from "../../../../../../features/documents/screen";
-import { emptyPrescription, emptySurgical, kindFromSlug } from "../../../../../../features/documents/content";
+import { emptyExam, emptyPrescription, emptySurgical, kindFromSlug } from "../../../../../../features/documents/content";
 import { medicalCapability } from "../../../../../../features/documents/data";
 import { requireProfile } from "../../../../../../lib/profile";
 
@@ -32,7 +32,7 @@ export default async function NewDocumentPage({ params, searchParams }: {
       status="draft"
       authorName={profile.display_name}
       credential={capability.credential_label}
-      content={kind === "prescription" ? emptyPrescription() : emptySurgical()}
+      content={kind === "prescription" ? emptyPrescription() : kind === "exam_request" ? emptyExam() : emptySurgical()}
       createdAt={now}
       updatedAt={now}
       saved={false}

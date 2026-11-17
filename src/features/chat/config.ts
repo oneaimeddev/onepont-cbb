@@ -16,3 +16,9 @@ export function intelligenceModel() {
     provider: model.startsWith("gemini") && !baseURL ? "google" as const : "openai" as const,
   };
 }
+
+export function voiceApiKey() {
+  if (process.env.CBB_VOICE_ENABLED === "false") return null;
+  const config = intelligenceModel();
+  return config?.provider === "google" ? config.apiKey : null;
+}

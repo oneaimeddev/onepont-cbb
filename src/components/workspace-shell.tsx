@@ -19,8 +19,17 @@ export function WorkspaceShell({ children, session, navigation, fonts }: {
   const [isWide, setIsWide] = useState(false);
   const menuButton = useRef<HTMLButtonElement>(null);
   const athletePath = pathname.match(/^\/atletas\/([0-9a-f-]{36})$/i);
-  const current = navigation.find((item) => item.href === pathname)
-    ?? navigation.find((item) => pathname.startsWith(item.href + "/"));
+  function mark(href: string) {
+    if (href === "/atletas") {
+      if (pathname === "/atletas" || pathname === "/prontuarios" || pathname === "/evolucoes") return "page" as const;
+      if (pathname.startsWith("/atletas/") || pathname.startsWith("/prontuarios/") || pathname.startsWith("/evolucoes/")) return "location" as const;
+      return undefined;
+    }
+    if (href === "/") return pathname === "/" ? "page" as const : undefined;
+    if (pathname === href) return "page" as const;
+    if (pathname.startsWith(`${href}/`)) return "location" as const;
+    return undefined;
+  }
 
   function closeNavigation() {
     setNavigationOpen(false);
@@ -41,7 +50,7 @@ export function WorkspaceShell({ children, session, navigation, fonts }: {
         <nav aria-label="Navegação do workspace">
           {navigation.map((item) => (
             <Link key={item.href} href={item.href === "/" && athletePath ? `/?atleta=${athletePath[1]}` : item.href}
-              prefetch={false} aria-current={current?.href === item.href ? (pathname === item.href ? "page" : "location") : undefined}
+              prefetch={false} aria-label={item.title} data-label={item.title} aria-current={mark(item.href)}
               onClick={() => { if (navigationOpen) closeNavigation(); }}>
               <Icon name={item.icon} size={18} />
               <span className="nav-label">{item.title}</span>
@@ -51,7 +60,7 @@ export function WorkspaceShell({ children, session, navigation, fonts }: {
             </Link>
           ))}
         </nav>
-        <button type="button" className="rail-toggle" aria-expanded={isWide} aria-controls="workspace-sidebar" onClick={() => setIsWide((value) => !value)}>
+        <button type="button" className="rail-toggle" aria-label={isWide ? "Recolher menu" : "Expandir menu"} data-label={isWide ? "Recolher" : "Expandir"} aria-expanded={isWide} aria-controls="workspace-sidebar" onClick={() => setIsWide((value) => !value)}>
           <Icon name="rail" size={18} />
           <span className="nav-label">{isWide ? "Recolher" : "Expandir"}</span>
         </button>

@@ -92,15 +92,17 @@ test("busca, seleção, timeline, troca, cadastro e auditoria do atleta", async 
   expect(timeline.data.records.map((r) => r.title)).toEqual(["Evento recente", "Evento anterior"]);
 
   await page.getByRole("link", { name: "Abrir no chat" }).click();
+  await page.getByRole("button", { name: "Contexto", exact: true }).click();
   await expect(page.getByRole("complementary", { name: "Contexto da tarefa" })).toContainText(athlete);
   await expect(page.getByText("Atleta DEMO Teste está em contexto.", { exact: false })).toBeVisible();
   await expect(page.getByRole("button", { name: "Enviar", exact: true })).toBeDisabled();
-  await page.getByRole("link", { name: "Voltar ao perfil" }).click();
+  await page.getByRole("link", { name: "Abrir prontuário" }).click();
   await page.getByRole("link", { name: "Trocar atleta" }).click();
   await page.getByRole("link", { name: "Atleta DEMO Vazio" }).click();
   await page.getByRole("link", { name: "Linha do tempo" }).click();
   await expect(page.getByText("Nenhum registro disponível para este perfil.")).toBeVisible();
   await page.getByRole("link", { name: "Abrir no chat" }).click();
+  await page.getByRole("button", { name: "Contexto", exact: true }).click();
   await expect(page.getByRole("complementary", { name: "Contexto da tarefa" })).toContainText(emptyAthlete);
 
   await page.goto("/atletas/novo");

@@ -1,0 +1,30 @@
+{
+  "model": "models/gemini-3.5-transcribe-live",
+  "generationConfig": { "responseModalities": ["TEXT"] },
+  "inputAudioTranscription": {
+    "languageCodes": ["pt-BR"],
+    "mode": "VERBATIM",
+    "customVocabulary": [
+      "CBB", "prontuário", "evolução", "fisioterapia", "fisioterapeuta", "ortopedia", "medicina esportiva",
+      "nutrição", "psicologia", "preparação física", "Sub-13", "Sub-15", "Sub-17", "Sub-19", "Sub-23",
+      "armador", "ala-armador", "ala", "ala-pivô", "pivô", "rebote", "aterrissagem", "salto vertical",
+      "entorse", "inversão", "tornozelo", "joelho", "quadril", "ombro", "lombar", "coluna lombar",
+      "ligamento cruzado anterior", "LCA", "ligamento talofibular anterior", "menisco", "tendinopatia patelar",
+      "tendão de Aquiles", "fascite plantar", "contratura", "estiramento", "edema", "equimose",
+      "dorsiflexão", "flexão plantar", "amplitude de movimento", "propriocepção", "crioterapia",
+      "bandagem funcional", "órtese", "lateral", "medial", "direito", "esquerdo", "bilateral",
+      "nega", "sem irradiação", "dor noturna", "escala visual analógica", "EVA",
+      "dipirona", "ibuprofeno", "paracetamol", "cetoprofeno", "miligramas", "mg", "de 8 em 8 horas",
+      "ressonância magnética", "ultrassonografia", "raio X", "teste de gaveta anterior", "Lachman",
+      "retorno ao jogo", "afastamento", "reavaliação", "conduta"
+    ]
+  },
+  "realtimeInputConfig": {
+    "automaticActivityDetection": {
+      "startOfSpeechSensitivity": "START_SENSITIVITY_HIGH",
+      "endOfSpeechSensitivity": "END_SENSITIVITY_LOW",
+      "prefixPaddingMs": 300,
+      "silenceDurationMs": 1000
+    }
+  }
+}

@@ -12,5 +12,5 @@ export function Avatar({ name, size = "md", athleteId, photoVersion }: { name: s
     // eslint-disable-next-line @next/next/no-img-element
     return <img className={`avatar avatar-${size}`} src={`/api/atletas/${athleteId}/foto?v=${photoVersion}`} alt="" width={72} height={72} />;
   }
-  return <span className={`avatar avatar-${size}`} aria-hidden="true">{initials(name)}</span>;
+  return <span className={`avatar avatar-${size}`} title={`Iniciais de ${name}`} aria-hidden="true">{initials(name)}</span>;
 }

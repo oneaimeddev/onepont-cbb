@@ -6,7 +6,8 @@ import { Icon } from "../../../../components/icon";
 import { SubmitButton } from "../../../../components/submit-button";
 import { WorkspaceArea } from "../../../../components/workspace-area";
 import { AccessPanel } from "../../../../features/athletes/access-panel";
-import { accessRoster, eventDate, loadAthlete, searchProfessionals } from "../../../../features/athletes/data";
+import { accessRoster, eventDate, loadAthlete, loadCatalog, loadRegistration, searchProfessionals, uuidPattern } from "../../../../features/athletes/data";
+import { SportLinkForm } from "../../../../features/athletes/registration-form";
 import { documentKinds, statusLabels } from "../../../../features/documents/content";
 import { listDocuments, medicalCapability } from "../../../../features/documents/data";
 import { PhotoEditor } from "../../../../features/athletes/photo-editor";
@@ -39,11 +40,15 @@ function groupsOf<T extends { occurred_at: string }>(records: T[]) {
 
 export default async function AthletePage({ params, searchParams }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ aba?: string | string[]; retorno?: string; erro?: string; salvo?: string; aviso?: string; q?: string | string[] }>;
+  searchParams: Promise<{ aba?: string | string[]; registro?: string | string[]; retorno?: string; erro?: string; salvo?: string; aviso?: string; q?: string | string[] }>;
 }) {
   const { id } = await params;
   const query = await searchParams;
   const aba = (Array.isArray(query.aba) ? query.aba[0] : query.aba) ?? "visao-geral";
+  const requestedRecord = Array.isArray(query.registro) ? query.registro[0] : query.registro;
+  const registro = requestedRecord && uuidPattern.test(requestedRecord)
+    ? requestedRecord.toLowerCase()
+    : null;
   const { retorno, erro, salvo, aviso } = query;
   const term = ((Array.isArray(query.q) ? query.q[0] : query.q) ?? "").trim().slice(0, 80);
   const profile = await requireProfile();
@@ -79,9 +84,14 @@ export default async function AthletePage({ params, searchParams }: {
   }
 
   const { athlete, can_read_records, records, can_edit, can_write, sports, counts, recent_records } = workspace;
+  const registration = can_edit ? await loadRegistration(athlete.id) : null;
+  const registrationCatalog = can_edit ? await loadCatalog() : null;
+  const genderLabels: Record<string, string> = {
+    feminino: "Feminino", masculino: "Masculino", nao_binario: "Não binário", outro: "Outro", nao_informado: "Prefere não informar",
+  };
   const name = athlete.social_name || athlete.full_name;
   const base = `/atletas/${athlete.id}`;
-  const returnTo = retorno && /^\/(atletas|prontuarios)(\?|$)/.test(retorno) ? retorno : "/atletas";
+  const returnTo = retorno && /^\/(atletas|prontuarios|evolucoes)(\?|$)/.test(retorno) ? retorno : "/atletas";
   const today = new Date().toLocaleDateString("sv-SE", { timeZone: "America/Sao_Paulo" });
   const age = athlete.birth_date ? (() => {
     const years = Number(today.slice(0, 4)) - Number(athlete.birth_date.slice(0, 4));
@@ -123,17 +133,14 @@ export default async function AthletePage({ params, searchParams }: {
           <Avatar name={name} size="lg" athleteId={athlete.id} photoVersion={athlete.photo_version} />
           <div>
             <div className="record-mast-top">
-              <div>
+              <div className="record-identity">
                 <h1 className="athlete-name">{name}</h1>
                 {lede && <p className="record-lede">{lede}</p>}
                 {athlete.status !== "active" && <span className="pill">Inativo</span>}
               </div>
-              <div className="record-actions">
-                {can_write && <Link className="button" href={`${base}/evolucao`} prefetch={false}>Iniciar atendimento</Link>}
-                {capability.enabled && can_read_records && <Link className="outline" href={`${base}/documentos/nova?tipo=prescricao`} prefetch={false}>Nova prescrição</Link>}
-                {capability.enabled && can_read_records && <Link className="outline" href={`${base}/documentos/nova?tipo=cirurgia`} prefetch={false}>Novo pedido cirúrgico</Link>}
-                <Link className="outline" href={`/?atleta=${athlete.id}`} prefetch={false}>Abrir no chat</Link>
-              </div>
+              <Link className="record-chat" href={`/?atleta=${athlete.id}`} prefetch={false} aria-label="Abrir no chat">
+                <Icon name="chat" size={18} />
+              </Link>
             </div>
             <dl className="record-spec">
               {spec.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}
@@ -156,7 +163,14 @@ export default async function AthletePage({ params, searchParams }: {
         {aba === "visao-geral" && (
           <div className="record-work">
             <section aria-labelledby="historico-recente">
-              <h2 id="historico-recente">Histórico clínico</h2>
+              <div className="record-mast-top">
+                <h2 id="historico-recente">Histórico clínico</h2>
+                {can_write ? (
+                  <div className="record-actions">
+                    <Link className="button" href={`${base}/evolucao`} prefetch={false}>Nova evolução</Link>
+                  </div>
+                ) : null}
+              </div>
               {recent_records?.length ? (
                 <ol className="timeline">
                   {recent_records.map((record) => (
@@ -180,6 +194,8 @@ export default async function AthletePage({ params, searchParams }: {
                     <li key={sport.id}>
                       <strong>{[sport.category, sport.division].filter(Boolean).join(", ") || "Vínculo vigente"}</strong>
                       <span>{[sport.club, sport.modality].filter(Boolean).join(", ")}</span>
+                      {sport.position ? <span>Posição {sport.position}</span> : null}
+                      {sport.shirt_number ? <span>Camisa {sport.shirt_number}</span> : null}
                     </li>
                   ))}
                 </ul>
@@ -204,7 +220,7 @@ export default async function AthletePage({ params, searchParams }: {
                     <li id={`registro-${record.id}`} key={record.id} className={record.status === "draft" ? "is-draft" : undefined}>
                       <div className="timeline-head">
                         <time className="timeline-day" dateTime={record.occurred_at}>{recordWhen(record.occurred_at).day}</time>
-                        <details>
+                        <details open={registro === record.id.toLowerCase()}>
                           <summary>{record.title}</summary>
                           <p className="record-body">{record.body}</p>
                           {can_write && record.is_author && record.status === "draft" && <Link className="clinical-link" prefetch={false} href={`${base}/evolucao?registro=${record.id}`}>Revisar rascunho</Link>}
@@ -228,12 +244,13 @@ export default async function AthletePage({ params, searchParams }: {
               <div className="record-actions">
                 <Link className="outline" href={`${base}/documentos/nova?tipo=prescricao`} prefetch={false}>Nova prescrição</Link>
                 <Link className="outline" href={`${base}/documentos/nova?tipo=cirurgia`} prefetch={false}>Novo pedido cirúrgico</Link>
+                <Link className="outline" href={`${base}/documentos/nova?tipo=exames`} prefetch={false}>Nova solicitação de exames</Link>
               </div>
             </div>
             <p>Rascunhos privados deste médico. Nenhum documento desta lista é emitido ou assinado.</p>
             {documents.length === 0 ? (
               <EmptyState icon="records" title="Nenhum rascunho deste atleta.">
-                <p>Uma prescrição ou um pedido cirúrgico preparado aqui fica vinculado a este atleta e a você.</p>
+                <p>Uma prescrição, um pedido cirúrgico ou uma solicitação de exames preparada aqui fica vinculada a este atleta e a você.</p>
               </EmptyState>
             ) : (
               <ol className="clinical-list">
@@ -257,13 +274,36 @@ export default async function AthletePage({ params, searchParams }: {
                 <label>Nome completo<input name="name" required maxLength={160} defaultValue={athlete.full_name} /></label>
                 <label>Nome social<input name="social" maxLength={160} defaultValue={athlete.social_name ?? ""} /></label>
                 <label>Nascimento<input type="date" name="birth" defaultValue={athlete.birth_date ?? ""} /></label>
-                <label>Clube cadastral<input name="club" maxLength={120} defaultValue={athlete.team ?? ""} /></label>
-                <label>Categoria cadastral<input name="category" maxLength={120} defaultValue={athlete.category ?? ""} /></label>
+                <input type="hidden" name="club" value={athlete.team ?? ""} />
+                <input type="hidden" name="category" value={athlete.category ?? ""} />
                 <label>Status<select name="status" defaultValue={athlete.status}><option value="active">Ativo</option><option value="inactive">Inativo</option></select></label>
                 <SubmitButton pendingLabel="Salvando…">Salvar cadastro</SubmitButton>
               </form>
             )}
             {can_edit && <PhotoEditor athleteId={id} />}
+            {registration && (
+              <div className="record-work registration-facts">
+                <section aria-labelledby="dados-pessoais">
+                  <h2 id="dados-pessoais">Dados pessoais</h2>
+                  <dl className="record-spec">
+                    <div><dt>Identidade de gênero</dt><dd>{registration.gender_identity ? genderLabels[registration.gender_identity] : "Não informada"}</dd></div>
+                    <div><dt>Identificador</dt><dd>{registration.document_id ?? "Não informado"}</dd></div>
+                  </dl>
+                </section>
+                <section aria-labelledby="contatos-cadastro">
+                  <h2 id="contatos-cadastro">Contatos</h2>
+                  <dl className="record-spec">
+                    <div><dt>Telefone</dt><dd>{registration.phone ?? "Não informado"}</dd></div>
+                    <div><dt>E-mail</dt><dd>{registration.email ?? "Não informado"}</dd></div>
+                    <div><dt>Responsável legal</dt><dd>{registration.guardian_name ?? "Não informado"}</dd></div>
+                    <div><dt>Relação</dt><dd>{registration.guardian_relation ?? "Não informada"}</dd></div>
+                    <div><dt>Contato do responsável</dt><dd>{registration.guardian_contact ?? "Não informado"}</dd></div>
+                    <div><dt>Contato de emergência</dt><dd>{registration.emergency_contact ?? "Não informado"}</dd></div>
+                  </dl>
+                </section>
+              </div>
+            )}
+            {registrationCatalog && <SportLinkForm athleteId={athlete.id} catalog={registrationCatalog} />}
             {sports.length > 0 && (
               <section className="sport-history" aria-labelledby="historico-esportivo">
                 <h2 id="historico-esportivo">Histórico esportivo</h2>
@@ -271,7 +311,7 @@ export default async function AthletePage({ params, searchParams }: {
                   {sports.map((sport) => (
                     <li key={sport.id}>
                       <strong>{[sport.category, sport.modality, sport.division].filter(Boolean).join(", ")}</strong>
-                      <span>{sport.club}, temporada {sport.season}</span>
+                      <span>{[sport.club, sport.position, sport.shirt_number ? `camisa ${sport.shirt_number}` : null].filter(Boolean).join(", ") || "Sem clube"}, temporada {sport.season}{sport.ends_on ? `, até ${sport.ends_on}` : ""}</span>
                     </li>
                   ))}
                 </ul>
