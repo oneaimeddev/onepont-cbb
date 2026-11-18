@@ -189,7 +189,7 @@ test("diretório paginado da seleção fictícia e busca normalizada",async({pag
  await expect(page.getByRole("heading",{name:"Atletas"})).toBeVisible();
  await expect(page.locator(".athlete-list > li").first()).toBeVisible();
  await page.screenshot({path:"docs/visual/handoff-007-4/diretorio-1440x900.png"});
- await page.locator("details.directory-filters").evaluate((node) => { node.open = true; });
+ await expect(page.getByRole("combobox",{name:/^Categoria/})).toBeVisible();
  await page.screenshot({path:"docs/visual/handoff-007-4/filtros-1440x900.png"});
  await page.getByRole("button",{name:"Expandir menu",exact:true}).click();
  await page.screenshot({path:"docs/visual/handoff-007-4/sidebar-1440x900.png"});
