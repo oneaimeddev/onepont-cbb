@@ -53,7 +53,7 @@ test("backend rejeita acesso anônimo e as duas interfaces exigem login", async 
 test("login individual, navegação nos dois modos e logout em tela móvel", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await signIn(page, await createAccount(true));
-  await expect(page.getByRole("heading", { name: "Como posso ajudar você hoje?" })).toBeVisible();
+  await expect(page.locator(".ia-greeting")).toBeVisible();
   await expect(page.getByLabel("Mensagem", { exact: true })).toBeDisabled();
   await expect(page.getByRole("button", { name: "Enviar", exact: true })).toBeDisabled();
   await expect(page.getByRole("complementary", { name: "Contexto da tarefa" })).toHaveCount(0);
@@ -63,8 +63,7 @@ test("login individual, navegação nos dois modos e logout em tela móvel", asy
   await expect(rail.getByRole("link", { name: "Auditoria" })).toBeVisible();
   await expect(rail.getByRole("link")).toHaveCount(3);
   const tasks = page.getByRole("navigation", { name: "Tarefas clínicas" });
-  await expect(tasks.getByRole("link")).toHaveCount(3);
-  await expect(tasks.getByRole("link", { name: /Criar evolução/ })).toHaveCount(1);
+  await expect(tasks).toHaveCount(0);
 
   const account = page.getByRole("button", { name: "Conta de Profissional DEMO" });
   await account.click();
@@ -82,8 +81,8 @@ test("login individual, navegação nos dois modos e logout em tela móvel", asy
   await expect(menu).toHaveAttribute("aria-expanded", "false");
   await menu.click();
   await page.getByRole("link", { name: "CBB Intelligence", exact: true }).click();
-  await expect(page.getByRole("heading", { name: "Como posso ajudar você hoje?" })).toBeVisible();
-  await page.getByRole("navigation", { name: "Tarefas clínicas" }).getByRole("link", { name: "Consultar prontuários" }).click();
+  await expect(page.locator(".ia-greeting")).toBeVisible();
+  await page.goto("/prontuarios");
   await expect(page.getByRole("heading", { name: "Atletas" })).toBeVisible();
   await menu.click();
   await expect(page.getByRole("navigation", { name: "Navegação do workspace" }).getByRole("link", { name: "Atletas", exact: true })).toHaveAttribute("aria-current", "page");
@@ -94,7 +93,7 @@ test("login individual, navegação nos dois modos e logout em tela móvel", asy
 
 test("sem permissão a auditoria fica oculta e a URL direta recebe 404", async ({ page }) => {
   await signIn(page, await createAccount(false));
-  await expect(page.getByRole("heading", { name: "Como posso ajudar você hoje?" })).toBeVisible();
+  await expect(page.locator(".ia-greeting")).toBeVisible();
   await expect(page.getByRole("navigation", { name: "Atalhos" }).getByRole("link")).toHaveCount(2);
   await expect(page.getByRole("link", { name: "Auditoria" })).toHaveCount(0);
   expect((await page.goto("/auditoria")).status()).toBe(404);

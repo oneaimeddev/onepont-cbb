@@ -60,11 +60,6 @@ test("uma frase explícita grava só o rascunho da prescrição", async ({ page 
     insert into clinical.medical_authors(professional_id, credential_label, enabled, granted_by)
     values('${id}', 'CRM fictício', true, '${id}');`);
   const requestId = randomUUID();
-  const registered = await client.rpc("clinical_document_proposal_register", {
-    target: athlete, request_id: requestId, kind: "prescription", payload: prescription,
-  });
-  expect(registered.data.ok).toBe(true);
-
   await page.route("**/api/inteligencia", async (route) => {
     const payload = { text: "A confirmação fica com o sistema.", athletes: [], navigation: null, search: null, draft: null, document: null, context: null, contextCleared: false };
     await route.fulfill({
@@ -79,6 +74,15 @@ test("uma frase explícita grava só o rascunho da prescrição", async ({ page 
   await page.getByRole("button", { name: "Entrar", exact: true }).click();
   await page.waitForURL("/");
   await page.setViewportSize({ width: 1440, height: 900 });
+  // Match the real flow: open the current conversation before registering its proposal.
+  await page.getByRole("textbox", { name: "Mensagem", exact: true }).fill("Prepare uma prescrição fictícia.");
+  await page.getByRole("textbox", { name: "Mensagem", exact: true }).press("Enter");
+  await expect(page.getByRole("region", { name: "Histórico da conversa" })).toContainText("A confirmação fica com o sistema.");
+  const registered = await client.rpc("clinical_document_proposal_register", {
+    target: athlete, request_id: requestId, kind: "prescription", payload: prescription,
+  });
+  expect(registered.data.ok).toBe(true);
+
   await page.evaluate((value) => {
     sessionStorage.setItem("cbb-intelligence-turns:v1", JSON.stringify({ v: 1, turns: value }));
     window.dispatchEvent(new Event("cbb-intelligence-adopt"));

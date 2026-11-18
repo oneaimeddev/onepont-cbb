@@ -12,7 +12,6 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import { Icon, type IconName } from "../../components/icon";
-import { sections } from "../sections";
 import { conversationFailure, parseConversation, parseHistory, postConversation, sessionIdFrom, type ConversationSummary } from "./conversation";
 import { ClinicalDraftCard } from "./clinical-draft-card";
 import { draftSaveMessage, presentedDraft } from "./clinical-draft";
@@ -21,6 +20,8 @@ import { documentSaveMessage, presentedDocument, type DocumentDraft } from "./do
 import { confirmSpokenDocument } from "./document-draft-actions";
 import { confirmSpokenDraft } from "./clinical-draft-actions";
 import { athleteCardLine, compactDirectoryReply, presentedAthletes, presentedContext, presentedNavigation, presentedSearch, uuidPattern, type PresentedAthlete, type PresentedSearch } from "./guards";
+import { HomeGreeting } from "./home-greeting";
+import { ProcessingIndicator } from "./processing-indicator";
 import { MessageComposer } from "./message-composer";
 import { MessageText } from "./message-text";
 import { presentedRoster } from "./athlete-resolution";
@@ -38,12 +39,6 @@ const shortcuts: { href: string; label: string; icon: IconName; audit?: boolean 
   { href: "/atletas", label: "Atletas", icon: "athletes" },
   { href: "/auditoria", label: "Auditoria", icon: "audit", audit: true },
 ];
-
-const tasks = [
-  { href: "/atletas", label: "Buscar atletas", slug: "atletas" },
-  { href: "/evolucoes", label: "Criar evolução", slug: "evolucoes" },
-  { href: "/prontuarios", label: "Consultar prontuários", slug: "prontuarios" },
-] as const;
 
 const historyDate = new Intl.DateTimeFormat("pt-BR", {
   dateStyle: "short",
@@ -189,6 +184,7 @@ function readEvent(chunk: string) {
 export function IntelligenceHome({
   fonts,
   greeting,
+  landing = false,
   profile,
   context,
   contextAthleteId = null,
@@ -202,6 +198,7 @@ export function IntelligenceHome({
 }: {
   fonts: string;
   greeting: string;
+  landing?: boolean;
   profile: { displayName: string; profession: string; initials: string; canReadAudit: boolean };
   context?: ReactNode;
   contextAthleteId?: string | null;
@@ -215,6 +212,7 @@ export function IntelligenceHome({
 }) {
   const pathname = usePathname();
   const router = useRouter();
+  const landingRef = useRef(landing);
   const accountRef = useRef<HTMLButtonElement>(null);
   const contextToggleRef = useRef<HTMLButtonElement>(null);
   const contextPanelRef = useRef<HTMLElement>(null);
@@ -233,6 +231,8 @@ export function IntelligenceHome({
   const [menuOpen, setMenuOpen] = useState(false);
   const [starting, setStarting] = useState(false);
   const [pending, setPending] = useState(false);
+  const [processingTools, setProcessingTools] = useState(false);
+  const [composerFocused, setComposerFocused] = useState(false);
   const [failure, setFailure] = useState<string | null>(null);
   const [streamingId, setStreamingId] = useState<string | null>(null);
   const [moreTurnId, setMoreTurnId] = useState<string | null>(null);
@@ -265,6 +265,7 @@ export function IntelligenceHome({
     if (transcriptFollowsServer()) sessionRef.current = initialSessionId;
   }, [initialSnapshot, initialSessionId]);
   useLayoutEffect(() => {
+    if (landingRef.current) { sessionRef.current = null; replaceTurns([]); }
     discardInactiveTranscript();
   }, []);
   useLayoutEffect(() => {
@@ -412,6 +413,8 @@ export function IntelligenceHome({
     setMoreTurnId(null);
     setMoreError(null);
     try {
+      await persistQueue.current;
+      if (epoch !== epochRef.current) return;
       const { ok, payload } = await postConversation({ action: "start" });
       if (epoch !== epochRef.current) return;
       if (!ok) {
@@ -459,6 +462,8 @@ export function IntelligenceHome({
     setMoreTurnId(null);
     setMoreError(null);
     try {
+      await persistQueue.current;
+      if (epoch !== epochRef.current) return;
       const { ok, payload } = await postConversation({ action: "resume", sessionId: id });
       if (epoch !== epochRef.current) return;
       const view = ok ? parseConversation(payload) : null;
@@ -662,6 +667,7 @@ export function IntelligenceHome({
     pinRef.current = true;
     setFailure(null);
     setPending(true);
+    setProcessingTools(false);
     setStreamingId(assistantId);
     patchTurns((current) => [
       ...current.filter((turn) => turnCarriesContent(turn)),
@@ -673,6 +679,16 @@ export function IntelligenceHome({
     abortRef.current = controller;
     let settled = false;
     try {
+      if (!sessionRef.current) {
+        const start = persistQueue.current.then(() => postConversation({ action: "start" }));
+        persistQueue.current = start.then(() => undefined, () => undefined);
+        const started = await start;
+        const id = started.ok ? sessionIdFrom(started.payload) : null;
+        if (!id) throw new Error("Não foi possível iniciar a conversa.");
+        if (controller.signal.aborted) return;
+        sessionRef.current = id;
+        setOpenSessionId(id);
+      }
       const response = await fetch("/api/inteligencia", {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -722,6 +738,11 @@ export function IntelligenceHome({
             throw error;
           }
           if (!parsed || settled) continue;
+          if (parsed.event === "status") {
+            const phase = parsed.data && typeof parsed.data === "object" ? (parsed.data as { phase?: unknown }).phase : null;
+            if (phase === "tool" || phase === "response") setProcessingTools(phase === "tool");
+            continue;
+          }
           const data = parsed.data;
           const record = data && typeof data === "object" ? data as { text?: unknown; athletes?: unknown; navigation?: unknown; search?: unknown; draft?: unknown; document?: unknown; readings?: unknown; attachments?: unknown; clinicalSearch?: unknown; context?: unknown; contextCleared?: unknown; sessionId?: unknown; error?: unknown } : {};
           if (parsed.event === "delta" && typeof record.text === "string" && record.text) {
@@ -988,7 +1009,7 @@ export function IntelligenceHome({
           <div className="ia-hero" inert={live ? true : undefined} aria-hidden={live ? true : undefined}>
             <div className="ia-hero-inner">
               <p>{greeting}</p>
-              <h1>Como posso ajudar<br /><span>você hoje?</span></h1>
+              {!live && <HomeGreeting paused={composerFocused || draftMessage.length > 0 || voice.active || starting || attachmentOpen} />}
             </div>
           </div>
           {live ? (
@@ -1015,8 +1036,8 @@ export function IntelligenceHome({
                   <p className="ia-sr">{turn.role === "user" ? "Você" : "Assistente"}</p>
                   {turn.role === "user" ? <p className="ia-user-text">{turn.text}</p> : null}
                   {turn.role === "assistant" && turn.text ? <MessageText text={turn.text} /> : null}
-                  {turn.role === "assistant" && turn.id === streamingId && !turn.text ? (
-                    <p className="ia-pending" aria-live="polite">Consultando os registros autorizados.</p>
+                  {turn.role === "assistant" && turn.id === streamingId && pending ? (
+                    <ProcessingIndicator tools={processingTools} />
                   ) : null}
                   {turn.athletes.length > 0 && !turn.clinicalSearch ? (
                     <AthleteResults
@@ -1053,6 +1074,7 @@ export function IntelligenceHome({
           ) : null}
           <MessageComposer
             key="composer"
+            onFocusChange={setComposerFocused}
             enabled={enabled}
             pending={pending || attachmentPending}
             attachmentControl={<button type="button" className="ia-attach" disabled={starting || pending} onClick={()=>{voice.stop(true);setAttachmentOpen(true);}}><Icon name="clip" size={16}/>Anexar ao prontuário</button>}
@@ -1067,6 +1089,8 @@ export function IntelligenceHome({
             voiceControl={voiceEnabled ? (
               <VoiceToggle
                 active={voice.active}
+                status={voice.status}
+                muted={voice.muted}
                 disabled={!enabled || starting}
                 onStart={() => void voice.start()}
                 onStop={() => voice.stop()}
@@ -1096,21 +1120,7 @@ export function IntelligenceHome({
             ) : undefined}
           />
           {attachmentOpen && <AttachmentUpload athleteId={selectedId} base="/api/inteligencia/anexos" ensureSession={ensureAttachmentSession} onSelect={selectAthlete} onClose={()=>{setAttachmentOpen(false);setAttachmentPending(false);}} onSaved={uploadedAttachment} onPending={setAttachmentPending}/>}
-          {live ? null : (
-            <nav className="ia-tasks" aria-label="Tarefas clínicas">
-              <ul className="ia-pills">
-                {tasks.map((task) => (
-                  <li key={task.href}>
-                    {sections[task.slug].isAvailable ? (
-                      <Link href={task.href} prefetch={false}>{task.label}</Link>
-                    ) : (
-                      <span>{task.label}</span>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </nav>
-          )}
+
         </main>
       </div>
       {visibleContext ? (

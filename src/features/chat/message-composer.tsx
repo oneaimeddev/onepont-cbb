@@ -12,6 +12,7 @@ export function MessageComposer({
   voicePanel,
   voiceControl,
   attachmentControl,
+  onFocusChange,
   onValueChange,
   onEdit,
   onSend,
@@ -23,6 +24,7 @@ export function MessageComposer({
   voicePanel?: ReactNode;
   voiceControl?: ReactNode;
   attachmentControl?: ReactNode;
+  onFocusChange?: (focused: boolean) => void;
   onValueChange: (value: string) => void;
   onEdit: () => void;
   onSend: (message: string) => void;
@@ -32,7 +34,7 @@ export function MessageComposer({
   const status = !enabled
     ? "O assistente ainda está indisponível. O envio será habilitado quando a integração estiver pronta."
     : pending
-      ? "Consultando os registros autorizados."
+      ? "Aguarde a conclusão para enviar outra mensagem."
       : tooLong
         ? `A mensagem passou de ${messageLimit} caracteres. Divida o texto antes de enviar.`
         : failure
@@ -58,6 +60,8 @@ export function MessageComposer({
       className="ia-composer"
       aria-label="Composição de mensagem"
       aria-busy={pending}
+      onFocusCapture={() => onFocusChange?.(true)}
+      onBlurCapture={event => { if (!event.currentTarget.contains(event.relatedTarget)) onFocusChange?.(false); }}
       onSubmit={(event) => {
         event.preventDefault();
         submit();
@@ -94,8 +98,8 @@ export function MessageComposer({
         </button>}
         <div className="ia-toolbar-end">
           {voiceControl ?? (
-            <button type="button" className="ia-icon" disabled aria-label="Iniciar conversa por voz" aria-describedby="composer-status">
-              <Icon name="headphones" size={18} />
+            <button type="button" className="ia-icon" disabled aria-label="Iniciar conversa por voz" title="Iniciar conversa por voz" aria-describedby="composer-status">
+              <Icon name="mic" size={18} />
             </button>
           )}
           <button type="submit" className="ia-send" disabled={!enabled || pending || tooLong || value.trim().length === 0} aria-label="Enviar" aria-describedby="composer-status">

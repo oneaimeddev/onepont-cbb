@@ -430,34 +430,6 @@ p.ia-status {
   letter-spacing: -0.006em;
   line-height: 1.45;
 }
-.ia-tasks { width: min(640px, 100%); }
-.ia-pills {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.5rem;
-  width: 100%;
-  margin: 1.35rem 0 0;
-  padding: 0;
-  list-style: none;
-}
-.ia-pills a,
-.ia-pills span {
-  display: inline-flex;
-  align-items: center;
-  min-height: 36px;
-  padding: 0.35rem 0.9rem;
-  border: 1px solid #e3e8f0;
-  border-radius: 999px;
-  background: #fff;
-  color: #3a4660;
-  font-size: 0.875rem;
-  font-weight: 500;
-  letter-spacing: -0.011em;
-  line-height: 1.25;
-  text-decoration: none;
-}
-.ia-pills a:hover { border-color: #b7c4d4; color: var(--navy); background: #fbfcfe; }
 .ia-top-end { display: flex; align-items: center; gap: .5rem; }
 .ia.has-context { grid-template-columns: 80px 248px minmax(0, 1fr) 300px; }
 .ia-rail, .ia-history, .ia-stage, .ia-context { grid-row: 1; }
@@ -707,7 +679,6 @@ p.ia-status {
   .ia-icon,
   .ia-attach,
   .ia-send,
-  .ia-pills a,
   .ia-composer,
   .ia-user > button,
   .ia-menu a,
@@ -776,4 +747,28 @@ p.ia-status {
 @keyframes ia-voice-pulse {
   0%, 100% { box-shadow: 0 0 0 0 rgb(0 121 213 / .35); }
   50% { box-shadow: 0 0 0 5px rgb(0 121 213 / 0); }
+}
+
+/* Handoff 007.10.1: local greeting and transient response state. */
+.ia-hero h1.ia-greeting { display: grid; width: min(12em, 100%); max-width: 100%; margin-inline: auto; }
+.ia-greeting-size { display: grid; visibility: hidden; pointer-events: none; }
+.ia-greeting-size > span, .ia-greeting-size, .ia-greeting-typed, .ia-greeting-reduced { grid-area: 1 / 1; }
+.ia-hero h1.ia-greeting span { color: inherit; }
+.ia-greeting-typed { align-self: center; transition: opacity 180ms ease; }
+.ia-greeting-typed.is-fading { opacity: 0; }
+.ia-greeting-reduced { display: none; }
+.ia-greeting-cursor { display: inline-block; height: .8em; border-right: 1px solid currentColor; margin-left: .05em; }
+.ia-pending { display: flex; align-items: center; gap: .65rem; }
+.ia-processing-dots { display: inline-flex; align-items: center; gap: 4px; }
+.ia-processing-dots > span { width: 4px; height: 4px; border-radius: 50%; background: currentColor; animation: ia-processing-dot 1.2s ease-in-out infinite; }
+.ia-processing-dots > span:nth-child(2) { animation-delay: .15s; }
+.ia-processing-dots > span:nth-child(3) { animation-delay: .3s; }
+@keyframes ia-processing-dot { 0%, 65%, 100% { opacity: .35; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-3px); } }
+.ia-voice-toggle[data-status="listening"] { color: var(--ia-blue); background: #e7f1fb; }
+.ia-voice-toggle[data-status="muted"] { color: #a32631; background: #fbeff0; }
+.ia-voice-toggle[data-status="processing"], .ia-voice-toggle[data-status="transcribing"], .ia-voice-toggle[data-status="connecting"] { color: var(--navy); background: #e4e9f1; }
+@media (prefers-reduced-motion: reduce) {
+  .ia-processing-dots > span { animation: none; }
+  .ia-greeting-typed { display: none; }
+  .ia-greeting-reduced { display: block; align-self: center; }
 }

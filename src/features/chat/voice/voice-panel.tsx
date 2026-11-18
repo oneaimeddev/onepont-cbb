@@ -1,3 +1,4 @@
+import { useId } from "react";
 import { Icon } from "../../../components/icon";
 import type { VoiceStatus } from "./use-voice-session";
 
@@ -11,24 +12,31 @@ const labels: Record<VoiceStatus, string> = {
   error: "Voz interrompida",
 };
 
-export function VoiceToggle({ active, disabled, onStart, onStop }: {
+export function VoiceToggle({ active, status = "inactive", muted = false, disabled, onStart, onStop }: {
   active: boolean;
+  status?: VoiceStatus;
+  muted?: boolean;
   disabled: boolean;
   onStart: () => void;
   onStop: () => void;
 }) {
+  const descriptionId = useId();
+  const state = !active ? "inactive" : muted ? "muted" : status;
   const label = active ? "Encerrar conversa por voz" : "Iniciar conversa por voz";
   return (
     <button
       type="button"
       className="ia-icon ia-voice-toggle"
+      data-status={state}
+      aria-describedby={descriptionId}
       aria-pressed={active}
       aria-label={label}
-      title={label}
+      title={`${label} — ${labels[state]}`}
       disabled={disabled && !active}
       onClick={active ? onStop : onStart}
     >
-      <Icon name="headphones" size={18} />
+      <Icon name={muted ? "micOff" : "mic"} size={18} />
+      <span id={descriptionId} className="ia-sr">{labels[state]}</span>
     </button>
   );
 }

@@ -70,7 +70,7 @@ test("busca, seleção, timeline, troca, cadastro e auditoria do atleta", async 
   await page.getByLabel("E-mail").fill(professional.email);
   await page.getByLabel("Senha").fill(professional.password);
   await page.getByRole("button", { name: "Entrar" }).click();
-  await page.getByRole("navigation", { name: "Tarefas clínicas" }).getByRole("link", { name: /^Buscar atleta/ }).click();
+  await page.getByRole("navigation", { name: "Atalhos" }).getByRole("link", { name: "Atletas", exact: true }).click();
   await page.getByLabel("Nome do atleta").fill("Cadastro sintético");
   await page.getByRole("button", { name: "Buscar", exact: true }).click();
   await expect(page.getByRole("link", { name: "Atleta DEMO Vazio" })).toHaveCount(0);
@@ -149,7 +149,7 @@ test("busca, seleção, timeline, troca, cadastro e auditoria do atleta", async 
   await page.getByLabel("E-mail").fill(auditor.email);
   await page.getByLabel("Senha").fill(auditor.password);
   await page.getByRole("button", { name: "Entrar" }).click();
-  await expect(page.getByRole("heading", { name: "Como posso ajudar você hoje?" })).toBeVisible();
+  await expect(page.locator(".ia-greeting")).toBeVisible();
   expect((await page.goto(`/atletas/${athlete}?aba=timeline`)).status()).toBe(404);
   expect((await page.goto(`/?atleta=${emptyAthlete}`)).status()).toBe(404);
   await page.goto("/auditoria");

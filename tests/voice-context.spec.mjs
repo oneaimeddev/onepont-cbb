@@ -52,11 +52,6 @@ test("comando e voz selecionam o contexto e a frase explícita grava o rascunho"
   const signed = await client.auth.signInWithPassword({ email, password });
   if (signed.error) throw signed.error;
   const requestId = randomUUID();
-  const registered = await client.rpc("clinical_draft_proposal_register", {
-    target: athlete, request_id: requestId, entry_title: title, entry_body: proposalBody, occurred_on: "2026-11-10", restricted: true,
-  });
-  expect(registered.data.ok).toBe(true);
-
   await page.route("**/api/inteligencia", async (route) => {
     const body = route.request().postDataJSON();
     const last = body.messages.at(-1).content;
@@ -105,6 +100,11 @@ test("comando e voz selecionam o contexto e a frase explícita grava o rascunho"
   await field.press("Enter");
   await expect(page.getByRole("link", { name: "Abrir prontuário de Alice Almeida Lopes" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Alice Almeida Lopes" })).toBeVisible();
+
+  const registered = await client.rpc("clinical_draft_proposal_register", {
+    target: athlete, request_id: requestId, entry_title: title, entry_body: proposalBody, occurred_on: "2026-11-10", restricted: true,
+  });
+  expect(registered.data.ok).toBe(true);
 
   await page.evaluate((value) => {
     sessionStorage.setItem("cbb-intelligence-turns:v1", JSON.stringify({ v: 1, turns: value }));
@@ -162,11 +162,6 @@ test("voz seleciona o contexto e a frase explícita grava o rascunho", async ({ 
   const signed = await client.auth.signInWithPassword({ email, password });
   if (signed.error) throw signed.error;
   const requestId = randomUUID();
-  const registered = await client.rpc("clinical_draft_proposal_register", {
-    target: voiceAthlete, request_id: requestId, entry_title: title, entry_body: proposalBody, occurred_on: "2026-11-10", restricted: true,
-  });
-  expect(registered.data.ok).toBe(true);
-
   const calls = [];
   const socketUrl = "wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContentConstrained";
   await page.route("**/api/inteligencia/voz", async (route) => {
@@ -212,6 +207,11 @@ test("voz seleciona o contexto e a frase explícita grava o rascunho", async ({ 
   expect(sql(`select athlete_id from clinical.conversation_sessions where professional_id = '${professional}' and status = 'active'`)).toBe(voiceAthlete);
   mkdirSync(shots, { recursive: true });
   await page.screenshot({ path: `${shots}/voz-contexto.png` });
+
+  const registered = await client.rpc("clinical_draft_proposal_register", {
+    target: voiceAthlete, request_id: requestId, entry_title: title, entry_body: proposalBody, occurred_on: "2026-11-10", restricted: true,
+  });
+  expect(registered.data.ok).toBe(true);
 
   await page.evaluate((value) => {
     sessionStorage.setItem("cbb-intelligence-turns:v1", JSON.stringify({ v: 1, turns: value }));

@@ -30,15 +30,15 @@ export default async function ChatPage({ searchParams }: {
 }) {
   const profile = await requireProfile();
   const { atleta } = await searchParams;
+  const requested = typeof atleta === "string" ? atleta : null;
   const client = await supabaseServer();
   const [currentResult, recentResult] = await Promise.all([
-    client.rpc("conversation_current"),
+    requested ? client.rpc("conversation_current") : Promise.resolve({ data: null, error: null }),
     client.rpc("conversation_recent"),
   ]);
   if (currentResult.error || recentResult.error) throw new Error("Não foi possível recuperar a conversa.");
   const current = parseConversation(currentResult.data);
   const history = parseHistory(recentResult.data);
-  const requested = typeof atleta === "string" ? atleta : null;
   const context = requested
     ? await getAthlete(requested, "chat")
     : current.athleteId
@@ -54,6 +54,7 @@ export default async function ChatPage({ searchParams }: {
     <IntelligenceHome
       fonts={chatFonts}
       greeting={greetingFor(givenName)}
+      landing={!requested}
       profile={{
         displayName: profile.display_name,
         profession: profile.profession,

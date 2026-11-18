@@ -293,7 +293,7 @@ test("agente consulta só o autorizado e a interface tradicional segue sem o pro
   expect(JSON.stringify(nextBody)).not.toContain("Segredo");
   expect(nextBody.athletes.map((athlete) => athlete.id)).not.toContain(hidden);
 
-  await expect(page.getByRole("heading", { name: "Como posso ajudar você hoje?" })).toBeVisible();
+  await expect(page.locator(".ia-greeting")).toBeVisible();
   const long = "registro autorizado ".repeat(24);
   const stored = Array.from({ length: 8 }, (_, index) => ([
     { id: `user-${index}`, role: "user", text: index === 0 ? "Pergunta antiga **literal**" : `Pergunta ${index} ${long}`, athletes: [], navigation: null },
@@ -310,13 +310,13 @@ test("agente consulta só o autorizado e a interface tradicional segue sem o pro
     sessionStorage.setItem("cbb-intelligence-turns:v1", JSON.stringify({ v: 1, turns: value }));
   }, stored);
   await page.reload();
-  await expect(page.getByRole("heading", { name: "Como posso ajudar você hoje?" })).toBeVisible();
+  await expect(page.locator(".ia-greeting")).toBeVisible();
   await expect(page.locator("html")).not.toHaveAttribute("data-ia-restored");
   await page.evaluate((value) => {
     sessionStorage.setItem("cbb-intelligence-turns:v1", JSON.stringify({ v: 1, turns: value }));
     window.dispatchEvent(new Event("cbb-intelligence-adopt"));
   }, stored);
-  await expect(page.getByRole("heading", { name: "Como posso ajudar você hoje?" })).toBeHidden();
+  await expect(page.locator(".ia-greeting")).toBeHidden();
   const log = page.getByRole("region", { name: "Histórico da conversa" });
   await expect(log).toBeVisible();
   await expect(page.locator(".ia-prose strong")).toHaveText("Negrito");
@@ -347,8 +347,8 @@ test("agente consulta só o autorizado e a interface tradicional segue sem o pro
   await page.getByRole("button", { name: "Conversas", exact: true }).click();
   await expect(page.getByRole("button", { name: "Nova conversa" })).toBeVisible();
   await page.getByRole("button", { name: "Nova conversa" }).click();
-  await expect(page.getByRole("heading", { name: "Como posso ajudar você hoje?" })).toBeVisible();
-  await expect(page.getByRole("navigation", { name: "Tarefas clínicas" })).toBeVisible();
+  await expect(page.locator(".ia-greeting")).toBeVisible();
+  await expect(page.getByRole("navigation", { name: "Tarefas clínicas" })).toHaveCount(0);
 
   await page.setViewportSize({ width: 1440, height: 900 });
   const searchTurns = [
@@ -441,14 +441,14 @@ test("agente consulta só o autorizado e a interface tradicional segue sem o pro
   await page.evaluate(() => sessionStorage.setItem("cbb-unsaved-clinical:v1", "1"));
   page.once("dialog", (dialog) => dialog.dismiss());
   await page.getByRole("button", { name: "Nova conversa" }).click();
-  await expect(page.getByRole("heading", { name: "Como posso ajudar você hoje?" })).toBeHidden();
+  await expect(page.locator(".ia-greeting")).toBeHidden();
   await expect(page).toHaveURL(/atleta=/);
   page.once("dialog", (dialog) => dialog.accept());
   await page.getByRole("button", { name: "Nova conversa" }).click();
-  await expect(page.getByRole("heading", { name: "Como posso ajudar você hoje?" })).toBeVisible();
+  await expect(page.locator(".ia-greeting")).toBeVisible();
   await expect(page).not.toHaveURL(/atleta=/);
   await expect(page.getByRole("complementary", { name: "Contexto da tarefa" })).toHaveCount(0);
-  await expect(page.getByRole("navigation", { name: "Tarefas clínicas" })).toBeVisible();
+  await expect(page.getByRole("navigation", { name: "Tarefas clínicas" })).toHaveCount(0);
   await page.screenshot({ path: "docs/visual/handoff-007-3/home-restaurada-1440x900.png" });
   const recovered = await client.rpc("conversation_start");
   expect(recovered.data.ok).toBe(true);
@@ -464,17 +464,19 @@ test("agente consulta só o autorizado e a interface tradicional segue sem o pro
   expect(recoveredSave.data.ok).toBe(true);
   await page.goto("/");
   const recoveredLog = page.getByRole("region", { name: "Histórico da conversa" });
+  await expect(recoveredLog).toHaveCount(0);
+  await page.getByRole("navigation", { name: "Conversas anteriores" }).getByRole("button", { name: /Mensagem da sessão anterior/ }).click();
   await expect(recoveredLog.getByText("Mensagem da sessão anterior")).toBeVisible();
   await expect(recoveredLog.getByText("Resposta guardada da sessão")).toBeVisible();
   await expect(page.getByRole("complementary", { name: "Contexto da tarefa" })).toContainText("Marina Costa");
   const previous = page.getByRole("navigation", { name: "Conversas anteriores" });
   await page.getByRole("button", { name: "Nova conversa" }).click();
-  await expect(page.getByRole("heading", { name: "Como posso ajudar você hoje?" })).toBeVisible();
+  await expect(page.locator(".ia-greeting")).toBeVisible();
   await expect(page.getByRole("region", { name: "Histórico da conversa" })).toHaveCount(0);
   await expect(previous.getByRole("button", { name: /Mensagem da sessão anterior/ })).toBeVisible();
   await expect(page.getByRole("complementary", { name: "Contexto da tarefa" })).toHaveCount(0);
   await page.reload();
-  await expect(page.getByRole("heading", { name: "Como posso ajudar você hoje?" })).toBeVisible();
+  await expect(page.locator(".ia-greeting")).toBeVisible();
   await expect(page.getByRole("region", { name: "Histórico da conversa" })).toHaveCount(0);
   await expect(previous.getByRole("button", { name: /Mensagem da sessão anterior/ })).toBeVisible();
   await page.setViewportSize({ width: 390, height: 844 });
