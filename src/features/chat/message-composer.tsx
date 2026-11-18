@@ -11,6 +11,7 @@ export function MessageComposer({
   value,
   voicePanel,
   voiceControl,
+  attachmentControl,
   onValueChange,
   onEdit,
   onSend,
@@ -21,6 +22,7 @@ export function MessageComposer({
   value: string;
   voicePanel?: ReactNode;
   voiceControl?: ReactNode;
+  attachmentControl?: ReactNode;
   onValueChange: (value: string) => void;
   onEdit: () => void;
   onSend: (message: string) => void;
@@ -86,10 +88,10 @@ export function MessageComposer({
         }}
       />
       <div className="ia-toolbar">
-        <button type="button" className="ia-attach" disabled aria-describedby="composer-status">
+        {attachmentControl ?? <button type="button" className="ia-attach" disabled aria-describedby="composer-status">
           <Icon name="clip" size={16} />
           Anexar
-        </button>
+        </button>}
         <div className="ia-toolbar-end">
           {voiceControl ?? (
             <button type="button" className="ia-icon" disabled aria-label="Iniciar conversa por voz" aria-describedby="composer-status">

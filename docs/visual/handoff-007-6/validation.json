@@ -1,0 +1,49 @@
+{
+  "date": "2026-11-18",
+  "branch": "feat/handoff-007-6-clinical-attachments",
+  "checks": {
+    "lint": "passed",
+    "typecheck": "passed",
+    "production_build": "passed",
+    "isolated_patch_build": "passed"
+  },
+  "attachments_tests": {
+    "app_passed": 5,
+    "voice_passed": 1
+  },
+  "full_suite": {
+    "command": "npm test -- --workers=1",
+    "passed": 44,
+    "failed": 2,
+    "total": 46,
+    "failures": [
+      "longitudinal-history: fixed date range ending 2026-11-17 excludes new documents",
+      "voice-reading: random UUID contained substring 500; passed unchanged on isolated rerun"
+    ]
+  },
+  "isolated_patch_suite": {
+    "passed": 7,
+    "failed": 0,
+    "seconds": 30.4
+  },
+  "storage": {
+    "private_bucket": "clinical-attachments",
+    "tested_limit_bytes": 20971520,
+    "sample_20mib_upload_ms": 470,
+    "environment": "local Supabase and Next.js"
+  },
+  "known_limits": [
+    "No antivirus/antimalware scanning",
+    "No resumable byte transfer/TUS",
+    "No background global orphan-collection job",
+    "Production hosting quotas and request limits not certified"
+  ],
+  "merge": false,
+  "remote_deployment": false,
+  "final_pdf_viewer_check": {
+    "passed": 1,
+    "failed": 0,
+    "seconds": 10.2,
+    "includes": "PDF zoom and desktop/mobile viewing"
+  }
+}

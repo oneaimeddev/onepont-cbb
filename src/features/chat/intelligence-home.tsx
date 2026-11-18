@@ -1,5 +1,10 @@
 "use client";
 
+import { AttachmentUpload } from "../attachments/upload";
+import { AttachmentCards } from "../attachments/module";
+import { attachmentBoard } from "../attachments/types";
+import { attachmentRoster } from "../attachments/conversation";
+import { allowAttachmentContextChange, hasPendingAttachment } from "../attachments/pending";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -221,6 +226,8 @@ export function IntelligenceHome({
   const stickRef = useRef(true);
   const pinRef = useRef(false);
   const scrollRestoredRef = useRef(false);
+  const [attachmentOpen,setAttachmentOpen]=useState(false);
+  const [attachmentPending,setAttachmentPending]=useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [starting, setStarting] = useState(false);
   const [pending, setPending] = useState(false);
@@ -238,7 +245,7 @@ export function IntelligenceHome({
   const contextClearedRef = useRef(false);
   const selectedAthleteRef = useRef<string | null | undefined>(undefined);
   const voice = useVoiceSession({
-    busy: pending || starting,
+    busy: pending || starting || attachmentPending,
     onTurn: (text) => void send(text, "voice"),
     onDraft: (text) => setDraftMessage((current) => joinSegments(current.trim(), text)),
   });
@@ -330,6 +337,7 @@ export function IntelligenceHome({
   }
 
   function selectAthlete(id: string) {
+    if(!allowAttachmentContextChange(id))return;
     const previous = currentAthlete();
     if (previous && previous !== id && hasUnsavedClinicalDraft()) {
       const proceed = window.confirm("Há uma proposta clínica ainda não salva para o atleta em contexto. Trocar o contexto não apaga essa proposta, mas as próximas ações passam a valer para outra pessoa. Deseja trocar?");
@@ -365,6 +373,7 @@ export function IntelligenceHome({
   }
 
   function clearSelectedAthlete() {
+    if(!allowAttachmentContextChange(null))return;
     contextClearedRef.current = true;
     selectedAthleteRef.current = null;
     setContextCleared(true);
@@ -383,6 +392,8 @@ export function IntelligenceHome({
   }
 
   async function startNew() {
+    if(!allowAttachmentContextChange(null))return;
+    setAttachmentOpen(false);
     if (hasUnsavedClinicalDraft()) {
       const proceed = window.confirm("Há alterações clínicas locais que ainda não foram salvas. A nova conversa não apaga prontuários, rascunhos já gravados nem a auditoria. Deseja iniciar mesmo assim?");
       if (!proceed) return;
@@ -429,6 +440,8 @@ export function IntelligenceHome({
   }
 
   async function resume(id: string) {
+    if(!allowAttachmentContextChange(null))return;
+    setAttachmentOpen(false);
     if (starting || id === sessionRef.current) {
       setHistoryOpen(false);
       return;
@@ -473,6 +486,25 @@ export function IntelligenceHome({
     } finally {
       if (epoch === epochRef.current) setStarting(false);
     }
+  }
+
+  async function ensureAttachmentSession(target:string) {
+    await persistQueue.current;
+    if(!sessionRef.current){
+      const response=await postConversation({action:"start"});
+      const id=response.ok?sessionIdFrom(response.payload):null;
+      if(!id)throw new Error("Não foi possível confirmar a conversa de destino.");
+      sessionRef.current=id;setOpenSessionId(id);
+    }
+    const response=await postConversation({action:"context",athleteId:target,sessionId:sessionRef.current});
+    if(!response.ok)throw new Error("Não foi possível confirmar o atleta na conversa.");
+    return sessionRef.current!;
+  }
+
+  function uploadedAttachment(id:string,athleteId:string,reused=false) {
+    setAttachmentOpen(false);setAttachmentPending(false);
+    patchTurns(current=>[...current,{id:crypto.randomUUID(),role:"assistant",text:reused?"Este arquivo já estava anexado. O registro existente foi reutilizado e seus metadados foram preservados.":"Documento anexado ao prontuário do atleta confirmado. O conteúdo não foi enviado à IA.",athletes:[],navigation:null,search:null,draft:null,document:null,readings:null,analysis:null,attachments:{athleteId,ids:[id]}}]);
+    queuePersist(athleteId,epochRef.current);
   }
 
   function patchTurns(updater: (current: ChatTurn[]) => ChatTurn[]) {
@@ -576,6 +608,7 @@ export function IntelligenceHome({
   }
 
   async function send(message: string, inputMode: "text" | "voice" = "text") {
+    if(hasPendingAttachment()){setFailure("Conclua ou descarte o anexo pendente antes de enviar outra mensagem.");return;}
     voice.touch();
     const pendingDrafts = loadTurns().flatMap((turn) => turn.draft && turn.draft.contentHash && (turn.draft.state === "proposal" || turn.draft.state === "error")
       ? [{ turnId: turn.id, draft: turn.draft }]
@@ -646,6 +679,7 @@ export function IntelligenceHome({
           inputMode,
           roster,
           documentRoster,
+          attachmentRoster: attachmentRoster(loadTurns(),currentAthlete()),
           createdDocumentIds: savedDocumentIds,
         }),
         signal: controller.signal,
@@ -685,12 +719,13 @@ export function IntelligenceHome({
           }
           if (!parsed || settled) continue;
           const data = parsed.data;
-          const record = data && typeof data === "object" ? data as { text?: unknown; athletes?: unknown; navigation?: unknown; search?: unknown; draft?: unknown; document?: unknown; readings?: unknown; context?: unknown; contextCleared?: unknown; sessionId?: unknown; error?: unknown } : {};
+          const record = data && typeof data === "object" ? data as { text?: unknown; athletes?: unknown; navigation?: unknown; search?: unknown; draft?: unknown; document?: unknown; readings?: unknown; attachments?: unknown; context?: unknown; contextCleared?: unknown; sessionId?: unknown; error?: unknown } : {};
           if (parsed.event === "delta" && typeof record.text === "string" && record.text) {
             patchTurns((current) => current.map((turn) => turn.id === assistantId && typeof record.text === "string" ? { ...turn, text: turn.text + record.text } : turn));
           } else if (parsed.event === "done") {
             const text = typeof record.text === "string" && record.text.trim() ? record.text.trim() : replies.provider;
             finishTurn(assistantId, text, presentedAthletes(record.athletes), presentedNavigation(record.navigation), presentedSearch(record.search), presentedDraft(record.draft), presentedDocument(record.document), presentedReadings(record.readings));
+            patchTurns(current=>current.map(turn=>turn.id===assistantId?{...turn,attachments:attachmentBoard(record.attachments)}:turn));
             if (typeof record.sessionId === "string" && uuidPattern.test(record.sessionId) && !sessionRef.current) {
               sessionRef.current = record.sessionId;
               setOpenSessionId(record.sessionId);
@@ -992,6 +1027,7 @@ export function IntelligenceHome({
                   {turn.navigation && turn.athletes.length === 0 ? <Link className="ia-open" href={turn.navigation.href} prefetch={false}>Abrir prontuário de {turn.navigation.name}</Link> : null}
                   {turn.draft ? <ClinicalDraftCard draft={turn.draft} canFinalize={canFinalize && turn.draft.athleteId === selectedId} onChange={(next) => updateDraft(turn.id, next)} /> : null}
                   {turn.document ? <DocumentDraftCard draft={turn.document} onChange={(next) => updateDocument(turn.id, next)} /> : null}
+                  {turn.attachments ? <AttachmentCards key={JSON.stringify(turn.attachments)} board={turn.attachments} /> : null}
                   {turn.readings ? (
                     <ClinicalReadings
                       board={turn.readings}
@@ -1007,7 +1043,8 @@ export function IntelligenceHome({
           <MessageComposer
             key="composer"
             enabled={enabled}
-            pending={pending}
+            pending={pending || attachmentPending}
+            attachmentControl={<button type="button" className="ia-attach" disabled={starting || pending} onClick={()=>{voice.stop(true);setAttachmentOpen(true);}}><Icon name="clip" size={16}/>Anexar ao prontuário</button>}
             failure={failure}
             value={draftMessage}
             onValueChange={(next) => {
@@ -1047,6 +1084,7 @@ export function IntelligenceHome({
               />
             ) : undefined}
           />
+          {attachmentOpen && <AttachmentUpload athleteId={selectedId} base="/api/inteligencia/anexos" ensureSession={ensureAttachmentSession} onSelect={selectAthlete} onClose={()=>{setAttachmentOpen(false);setAttachmentPending(false);}} onSaved={uploadedAttachment} onPending={setAttachmentPending}/>}
           {live ? null : (
             <nav className="ia-tasks" aria-label="Tarefas clínicas">
               <ul className="ia-pills">

@@ -3,6 +3,8 @@ import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createOpenAI } from "@ai-sdk/openai";
 import { APICallError, streamText, stepCountIs, tool } from "ai";
 import { z } from "zod";
+import { attachmentConversation } from "../attachments/chat-service";
+import type { AttachmentBoard } from "../attachments/types";
 import { supabaseServer } from "../../lib/supabase";
 import { intelligenceModel } from "./config";
 import { presentedDraft, type ClinicalDraft } from "./clinical-draft";
@@ -22,6 +24,7 @@ const requestSchema = z.object({
   inputMode: z.enum(["text", "voice"]).optional(),
   roster: z.array(z.string()).max(40).optional(),
   documentRoster: z.array(z.string()).max(20).optional(),
+  attachmentRoster: z.array(z.string()).max(25).optional(),
   createdDocumentIds: z.array(z.string()).max(8).optional(),
 }).strict();
 
@@ -197,6 +200,20 @@ async function prepareConversation(input: unknown) {
   const command = athleteCommand(utterance);
   const speech = documentRequest(utterance);
   const published: { reading: ReadingBoard | null } = { reading: null };
+
+  let attachmentPublished: AttachmentBoard | null = null;
+  const listClinicalAttachments = tool({
+    description: "Consulta somente metadados de anexos autorizados. Pode abrir um arquivo no visualizador; não lê nem interpreta PDF ou imagem.",
+    inputSchema: z.object({athleteId:z.string(), utterance:z.string().min(1).max(500)}),
+    execute: async ({athleteId,utterance}) => {
+      const decision=decideAthleteAccess(athleteId,contextAthleteId,searches);
+      if(decision!=="allow") return unavailable(decision);
+      const result=await attachmentConversation({message:utterance,athleteId,ids:parsed.data.attachmentRoster,mode:parsed.data.inputMode,agent:true});
+      if(!result)return {status:"unavailable"};
+      attachmentPublished=result.board;
+      return {status:"metadata",note:result.text,attachments:result.summary};
+    },
+  });
 
   async function readAthlete(athleteId: string) {
     const profile = await client.rpc("agent_athlete_workspace", { target: athleteId, view_name: "profile" });
@@ -818,6 +835,7 @@ async function prepareConversation(input: unknown) {
 
   return {
     published,
+    attachmentView: () => attachmentPublished,
     request: {
       model: model.provider === "google"
         ? createGoogleGenerativeAI({ apiKey: model.apiKey }).chat(model.model)
@@ -825,6 +843,7 @@ async function prepareConversation(input: unknown) {
       system: [
         "Você é o CBB Intelligence, assistente do prontuário de um profissional autenticado.",
         "Responda em português, somente com fatos devolvidos pelas ferramentas.",
+        "Anexos: use listClinicalAttachments para consultar metadados e abrir o visualizador. Nunca afirme ter interpretado o conteúdo de um PDF ou imagem. Não há ferramenta de upload nem de análise automática de arquivos.",
         "Se a ferramenta não trouxer dados suficientes, diga isso. Não invente atendimentos, diagnósticos, resultados ou atletas.",
         "Se uma busca tiver mais de uma pessoa possível, peça confirmação antes de resumir ou abrir o prontuário.",
         "Não repita a lista de atletas no texto. Diga a quantidade e deixe os cards mostrarem quem são.",
@@ -878,7 +897,7 @@ async function prepareConversation(input: unknown) {
       ].filter((line) => line.trim()).join("\n"),
       messages: parsed.data.messages,
       tools: {
-        searchAthletes, recallAthlete, getAthleteSummary, navigateToAthlete, selectAthleteContext, clearAthleteContext, prepareClinicalDraft, saveClinicalDraft, readClinicalEvolutions,
+        listClinicalAttachments, searchAthletes, recallAthlete, getAthleteSummary, navigateToAthlete, selectAthleteContext, clearAthleteContext, prepareClinicalDraft, saveClinicalDraft, readClinicalEvolutions,
         ...(canAuthorDocuments ? { preparePrescription, prepareSurgicalOrder, prepareExamRequest, listDocumentDrafts, openClinicalDocument, saveClinicalDocument, browseClinicalDocuments, readClinicalDocument } : {}),
       },
       stopWhen: stepCountIs(6),
@@ -894,6 +913,14 @@ function failureCode(error: unknown) {
 }
 
 export async function openIntelligenceStream(input: unknown): Promise<{ stream: ReadableStream<Uint8Array> } | { error: "unavailable" | "invalid" | "limit" | "provider" }> {
+  const attachmentInput = requestSchema.safeParse(input);
+  if (attachmentInput.success && attachmentInput.data.messages.at(-1)?.role === "user") {
+    const reply=await attachmentConversation({message:attachmentInput.data.messages.at(-1)!.content,athleteId:attachmentInput.data.contextAthleteId??null,ids:attachmentInput.data.attachmentRoster,mode:attachmentInput.data.inputMode});
+    if(reply) {
+      const bytes=new TextEncoder().encode(`event: done\ndata: ${JSON.stringify({text:reply.text,attachments:reply.board,athletes:[],navigation:null,search:null,draft:null,document:null,context:null})}\n\n`);
+      return {stream:new ReadableStream<Uint8Array>({start(controller){controller.enqueue(bytes);controller.close();}})};
+    }
+  }
   const prepared = await prepareConversation(input);
   if (prepared.error) return { error: prepared.error };
   const encoder = new TextEncoder();
@@ -939,6 +966,7 @@ export async function openIntelligenceStream(input: unknown): Promise<{ stream: 
           draft: view.draft,
           document: view.document,
           readings: prepared.published.reading,
+          attachments: prepared.attachmentView(),
           context: view.context,
           contextCleared: view.contextCleared,
           sessionId: view.sessionId,

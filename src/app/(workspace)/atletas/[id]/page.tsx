@@ -12,6 +12,7 @@ import { documentKinds, statusLabels } from "../../../../features/documents/cont
 import { listDocuments, medicalCapability } from "../../../../features/documents/data";
 import { PhotoEditor } from "../../../../features/athletes/photo-editor";
 import { requireProfile } from "../../../../lib/profile";
+import { AttachmentModule } from "../../../../features/attachments/module";
 import { editAthlete } from "./edit-actions";
 
 const dayKey = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo", year: "numeric", month: "2-digit", day: "2-digit" });
@@ -53,7 +54,7 @@ export default async function AthletePage({ params, searchParams }: {
   const term = ((Array.isArray(query.q) ? query.q[0] : query.q) ?? "").trim().slice(0, 80);
   const profile = await requireProfile();
   const capability = await medicalCapability();
-  const sections = ["visao-geral", "timeline", "cadastro", ...(capability.enabled ? ["documentos"] : []), ...(profile.can_manage_access ? ["acesso"] : [])];
+  const sections = ["visao-geral", "timeline", "cadastro", "anexos", ...(capability.enabled ? ["documentos"] : []), ...(profile.can_manage_access ? ["acesso"] : [])];
   if (!sections.includes(aba)) notFound();
 
   const workspace = await loadAthlete(id, aba === "timeline" ? "timeline" : "profile");
@@ -110,11 +111,12 @@ export default async function AthletePage({ params, searchParams }: {
     ["visao-geral", "Visão geral"],
     ...(can_read_records ? [["timeline", "Linha do tempo"] as const] : []),
     ["cadastro", "Dados cadastrais"],
+    ...(can_read_records ? [["anexos", "Documentos e Anexos"] as const] : []),
     ...(capability.enabled && can_read_records ? [["documentos", "Documentos"] as const] : []),
     ...(roster ? [["acesso", "Acesso"] as const] : []),
   ] as const;
   const history = records ?? [];
-  if (aba === "documentos" && !can_read_records) notFound();
+  if ((aba === "documentos" || aba === "anexos") && !can_read_records) notFound();
   const documents = aba === "documentos" ? await listDocuments(athlete.id) : null;
   if (aba === "documentos" && !documents) notFound();
 
@@ -264,6 +266,8 @@ export default async function AthletePage({ params, searchParams }: {
             )}
           </section>
         )}
+
+        {aba === "anexos" && can_read_records && <AttachmentModule key={athlete.id} athleteId={athlete.id} />}
 
         {aba === "cadastro" && (
           <section aria-labelledby="dados-cadastrais">
