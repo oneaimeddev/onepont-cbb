@@ -212,6 +212,7 @@ textarea::placeholder, input::placeholder { color: var(--muted); opacity: 1; }
 .notice { display: inline-flex; align-items: center; gap: .5rem; }
 .result-count { margin-top: 1.25rem; font-size: .875rem; }
 
+.directory-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
 .directory-intro h1 { max-width: 18ch; }
 .directory-intro p { max-width: 42rem; margin-top: .5rem; color: #3a4660; font-size: 1rem; line-height: 1.5; }
 .directory-search { max-width: 46rem; }

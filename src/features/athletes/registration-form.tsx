@@ -89,6 +89,11 @@ function CatalogCombobox({ name, label, optional = true, options, value, onChang
   notice?: string;
 }) {
   const listId = useId();
+  const blurTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  function cancelClose() {
+    if (blurTimer.current) clearTimeout(blurTimer.current);
+  }
+  useEffect(() => () => { if (blurTimer.current) clearTimeout(blurTimer.current); }, []);
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState(notice ?? "");
@@ -129,9 +134,9 @@ function CatalogCombobox({ name, label, optional = true, options, value, onChang
           value={open ? query : (selected?.name ?? "")}
           placeholder="Buscar ou adicionar"
           autoComplete="off"
-          onFocus={() => { setOpen(true); setQuery(""); }}
-          onChange={(event) => { setQuery(event.target.value); setOpen(true); }}
-          onBlur={() => window.setTimeout(() => setOpen(false), 150)}
+          onFocus={() => { cancelClose(); setOpen(true); setQuery(""); }}
+          onChange={(event) => { cancelClose(); setQuery(event.target.value); setOpen(true); }}
+          onBlur={() => { cancelClose(); blurTimer.current = setTimeout(() => setOpen(false), 150); }}
         />
       </label>
       <input type="hidden" name={name} value={value} />

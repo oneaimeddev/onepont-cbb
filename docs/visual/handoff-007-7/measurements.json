@@ -1,0 +1,26 @@
+[
+  {
+    "total": 10,
+    "previewMs": 17,
+    "commitMs": 23,
+    "batchSize": 25
+  },
+  {
+    "total": 100,
+    "previewMs": 131,
+    "commitMs": 193,
+    "batchSize": 25
+  },
+  {
+    "total": 1000,
+    "previewMs": 1646,
+    "commitMs": 2270,
+    "batchSize": 25
+  },
+  {
+    "total": 5000,
+    "previewMs": 12419,
+    "commitMs": 18976,
+    "batchSize": 25
+  }
+]

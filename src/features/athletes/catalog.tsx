@@ -71,9 +71,14 @@ export async function AthleteCatalog({ intent = "browse", action, query, params 
             <h1>Atletas</h1>
             <p>{intentCopy[intent]}</p>
           </div>
-          {catalog ? <RegistrationEntry catalog={catalog} /> : canCreate ? (
-            <Link href="/atletas/novo" prefetch={false} className="button"><Icon name="plus" size={18} />Cadastrar atleta</Link>
-          ) : null}
+          {canCreate && (
+            <div className="directory-actions">
+              {action === "/atletas" && <Link href={`/atletas/importar?retorno=${encodeURIComponent(returnTo)}`} prefetch={false} className="outline">Importar CSV</Link>}
+              {catalog ? <RegistrationEntry catalog={catalog} /> : (
+                <Link href="/atletas/novo" prefetch={false} className="button"><Icon name="plus" size={18} />Cadastrar atleta</Link>
+              )}
+            </div>
+          )}
         </header>
         <form action={action} className="directory-search" role="search">
           <label htmlFor="athlete-search">Nome do atleta</label>
