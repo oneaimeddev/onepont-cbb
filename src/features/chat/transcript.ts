@@ -3,6 +3,7 @@ import { attachmentBoard, type AttachmentBoard } from "../attachments/types";
 import { presentedDraft, type ClinicalDraft } from "./clinical-draft";
 import { presentedDocument, storedDocument, type DocumentDraft } from "./document-draft";
 import { presentedReadings, type ReadingBoard } from "./document-resolution";
+import { presentedAnalysis, type HistoryAnalysis } from "./history-analysis";
 import { presentedAthletes, presentedNavigation, presentedSearch, type PresentedAthlete, type PresentedSearch } from "./guards";
 
 const storageKey = "cbb-intelligence-turns:v1";
@@ -26,10 +27,11 @@ export type ChatTurn = {
   readings: ReadingBoard | null;
   attachments?: AttachmentBoard | null;
   clinicalSearch?: ClinicalSearchBoard | null;
+  analysis: HistoryAnalysis | null;
 };
 
-export function turnCarriesContent(turn: Pick<ChatTurn, "text" | "athletes" | "navigation" | "draft" | "document" | "readings">) {
-  return Boolean(turn.text.trim() || turn.athletes.length > 0 || turn.navigation || turn.draft || turn.document || turn.readings);
+export function turnCarriesContent(turn: Pick<ChatTurn, "text" | "athletes" | "navigation" | "draft" | "document" | "readings" | "analysis">) {
+  return Boolean(turn.text.trim() || turn.athletes.length > 0 || turn.navigation || turn.draft || turn.document || turn.readings || turn.analysis);
 }
 
 export function conversationTurn(turn: ChatTurn): ChatTurn {
@@ -37,7 +39,7 @@ export function conversationTurn(turn: ChatTurn): ChatTurn {
     ? null
     : { ...turn.draft, body: "", missing: [], error: null };
   const document = turn.document ? storedDocument(turn.document) : null;
-  return { ...turn, draft, document };
+  return { ...turn, draft, document, analysis: presentedAnalysis(turn.analysis) };
 }
 
 function storedTurn(value: unknown): ChatTurn | null {
@@ -51,8 +53,9 @@ function storedTurn(value: unknown): ChatTurn | null {
   const draft = row.role === "assistant" ? presentedDraft(row.draft) : null;
   const document = row.role === "assistant" ? presentedDocument(row.document) : null;
   const readings = row.role === "assistant" ? presentedReadings(row.readings) : null;
+  const analysis = row.role === "assistant" ? presentedAnalysis(row.analysis) : null;
   if (row.role === "user" && !text.trim()) return null;
-  return { clinicalSearch: row.role === "assistant" ? clinicalSearchBoard(row.clinicalSearch) : null, attachments: row.role === "assistant" ? attachmentBoard(row.attachments) : null, id: row.id.slice(0, 80), role: row.role, text, athletes, navigation, search, draft, document, readings };
+  return { clinicalSearch: row.role === "assistant" ? clinicalSearchBoard(row.clinicalSearch) : null, attachments: row.role === "assistant" ? attachmentBoard(row.attachments) : null, id: row.id.slice(0, 80), role: row.role, text, athletes, navigation, search, draft, document, readings, analysis };
 }
 
 export function turnsFrom(raw: string): ChatTurn[] {

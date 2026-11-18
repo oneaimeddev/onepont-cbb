@@ -398,6 +398,15 @@ button.ia-attach:disabled:hover { border-color: #e1e7f0; color: #6d7c90; backgro
 .ia-reading-body dl { display: grid; gap: .45rem; margin: .35rem 0 0; }
 .ia-reading-body dt { color: var(--quiet); font-size: .75rem; }
 .ia-reading-body dd { margin: 0; overflow-wrap: anywhere; white-space: pre-wrap; }
+.ia-longitudinal { display: grid; gap: .65rem; margin-top: .75rem; padding: 1rem; border: 1px solid var(--ia-line); border-radius: 16px; background: #fff; }
+.ia-longitudinal h3, .ia-longitudinal p { margin: 0; }
+.ia-longitudinal h3 { color: var(--navy); font-size: 1rem; font-weight: 500; }
+.ia-longitudinal .ia-kicker { color: var(--ia-blue); font-size: .75rem; font-weight: 500; }
+.ia-longitudinal-counts { display: flex; flex-wrap: wrap; gap: .35rem .75rem; color: var(--quiet); font-size: .8125rem; }
+.ia-longitudinal details { color: var(--navy); }
+.ia-longitudinal summary { min-height: 44px; cursor: pointer; }
+.ia-longitudinal ul { margin: .35rem 0 0; padding-left: 1.1rem; }
+.ia-longitudinal .ia-more { justify-self: start; min-height: 44px; padding: 0 .9rem; border: 1px solid var(--ia-line); border-radius: 12px; background: #fff; color: var(--ia-blue); font-weight: 500; }
 .ia-draft { display: grid; gap: .75rem; margin-top: .75rem; padding: 1rem; border: 1px solid var(--ia-line); border-radius: 16px; background: #fff; }
 .ia-draft header { display: flex; justify-content: space-between; gap: .75rem; align-items: baseline; }
 .ia-draft h3 { margin: 0; font-size: 1rem; font-weight: 500; }

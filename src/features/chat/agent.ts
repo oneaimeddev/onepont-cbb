@@ -15,6 +15,8 @@ import { documentMissing, documentTitle, examPayload, mergeExamContent, prescrip
 import { athleteCommand, rosterChoice, rosterPrompt, type AthleteCommand } from "./athlete-resolution";
 import { documentChoice, documentRequest, examFollowUp, modelDocumentSummary, type DocumentSlot, type ReadingBoard } from "./document-resolution";
 import { athleteProfilePath, athletesFromDirectory, compactDirectoryReply, decideAthleteAccess, directoryFilters, directoryPageSize, presentedAthletes, presentedContext, presentedNavigation, presentedSearch, uuidPattern, type AthleteSearch, type PresentedAthlete, type PresentedSearch } from "./guards";
+import { historyRequest, presentedAnalysis, type HistoryAnalysis } from "./history-analysis";
+import { historyScope, modelHistory, readLongitudinalHistory } from "./history-run";
 
 const messageSchema = z.object({
   role: z.enum(["user", "assistant"]),
@@ -30,6 +32,16 @@ const requestSchema = z.object({
   attachmentRoster: z.array(z.string()).max(25).optional(),
   clinicalSearchScope: z.unknown().nullable().optional(),
   createdDocumentIds: z.array(z.string()).max(8).optional(),
+  historyScope: z.object({
+    athleteId: z.string(),
+    athleteName: z.string().max(160),
+    from: z.string().max(10),
+    to: z.string().max(10),
+    unbounded: z.boolean(),
+    periodLabel: z.string().max(120),
+    specialties: z.array(z.string().max(40)).max(4),
+    kinds: z.array(z.enum(["evolution", "prescription", "surgical_order", "exam_request"])).max(4),
+  }).strict().nullable().optional(),
 }).strict();
 
 const voiceRules = [
@@ -203,7 +215,7 @@ async function prepareConversation(input: unknown) {
   const utterance = parsed.data.messages.at(-1)?.content ?? "";
   const command = athleteCommand(utterance);
   const speech = documentRequest(utterance);
-  const published: { reading: ReadingBoard | null } = { reading: null };
+  const published: { reading: ReadingBoard | null; analysis: HistoryAnalysis | null } = { reading: null, analysis: null };
 
   let clinicalPublished: Awaited<ReturnType<typeof runClinicalSearch>> | null = null;
   const searchClinicalActivity = tool({
@@ -846,6 +858,25 @@ async function prepareConversation(input: unknown) {
     },
   });
 
+  const analyzeAthleteHistory = tool({
+    description: "Analisa o histórico clínico autorizado já em contexto ou nomeado na frase. Não grava, não diagnostica e não descreve o conteúdo dos registros.",
+    inputSchema: z.object({ utterance: z.string().trim().min(1).max(500) }),
+    execute: async ({ utterance }) => {
+      const document = documentRequest(utterance);
+      if (historyRequest(utterance).command === "unknown" && document.command !== "unknown") return { status: "unavailable" as const };
+      const result = await readLongitudinalHistory({
+        utterance,
+        contextAthleteId,
+        previous: historyScope(parsed.data.historyScope),
+        inputMode: parsed.data.inputMode ?? "text",
+        channel: "agent",
+      });
+      if (result.analysis) published.analysis = presentedAnalysis(result.analysis);
+      if (!result.analysis) return { status: "unavailable" as const, note: result.text };
+      return modelHistory(result.analysis);
+    },
+  });
+
   return {
     published,
     attachmentView: () => attachmentPublished,
@@ -903,6 +934,7 @@ async function prepareConversation(input: unknown) {
           ? "saveClinicalDocument não grava nada. A frase explícita ou o botão do cartão grava somente o rascunho. Não emita, não assine e não marque revisão."
           : "",
         "Para ler evoluções já gravadas, use readClinicalEvolutions. Não altere, não finalize e não reescreva o texto do registro.",
+        "Quando o profissional pedir a análise do histórico, lesões ao longo do tempo, comparação entre especialidades ou as fontes dessa análise, use analyzeAthleteHistory. Não descreva queixas, doses, diagnósticos ou condutas. O cartão mostra a cronologia. Não diga que a análise diagnosticou, liberou ou prescreveu.",
         "A autoria é sempre do profissional autenticado. Não mude o atleta nem torne público um registro restrito.",
         "Use as mensagens anteriores para resolver referências como dela, desse período ou essas informações. Não peça confirmações desnecessárias quando o contexto já é claro.",
         contextAthleteId
@@ -912,7 +944,7 @@ async function prepareConversation(input: unknown) {
       ].filter((line) => line.trim()).join("\n"),
       messages: parsed.data.messages,
       tools: {
-        searchClinicalActivity, listClinicalAttachments, searchAthletes, recallAthlete, getAthleteSummary, navigateToAthlete, selectAthleteContext, clearAthleteContext, prepareClinicalDraft, saveClinicalDraft, readClinicalEvolutions,
+        searchClinicalActivity, listClinicalAttachments, searchAthletes, recallAthlete, getAthleteSummary, navigateToAthlete, selectAthleteContext, clearAthleteContext, prepareClinicalDraft, saveClinicalDraft, readClinicalEvolutions, analyzeAthleteHistory,
         ...(canAuthorDocuments ? { preparePrescription, prepareSurgicalOrder, prepareExamRequest, listDocumentDrafts, openClinicalDocument, saveClinicalDocument, browseClinicalDocuments, readClinicalDocument } : {}),
       },
       stopWhen: stepCountIs(6),
@@ -973,7 +1005,9 @@ export async function openIntelligenceStream(input: unknown): Promise<{ stream: 
           ? (modelText || "Organizei uma proposta de documento para revisão. Ela ainda não foi salva.")
           : view.draft
             ? (modelText || "Organizei uma proposta de evolução para revisão. Ela ainda não foi salva.")
-            : prepared.published.reading && !modelText
+              : prepared.published.analysis && !modelText
+                ? "A análise longitudinal está no cartão. Ela não diagnostica nem libera o atleta."
+              : prepared.published.reading && !modelText
               ? prepared.published.reading.items.some((item) => item.open)
                 ? "O documento original está no cartão. Ele não foi emitido nem assinado."
                 : prepared.published.reading.total === 1
@@ -997,6 +1031,7 @@ export async function openIntelligenceStream(input: unknown): Promise<{ stream: 
           document: view.document,
           readings: prepared.published.reading,
           attachments: prepared.attachmentView(),
+          analysis: prepared.published.analysis,
           context: clinical ? null : view.context,
           contextCleared: clinical ? false : view.contextCleared,
           sessionId: view.sessionId,

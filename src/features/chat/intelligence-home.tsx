@@ -26,6 +26,8 @@ import { MessageComposer } from "./message-composer";
 import { MessageText } from "./message-text";
 import { presentedRoster } from "./athlete-resolution";
 import { ClinicalReadings } from "./clinical-reading";
+import { historyRequest, presentedAnalysis, type HistoryAnalysis } from "./history-analysis";
+import { LongitudinalCard } from "./longitudinal-card";
 import { createdDocumentIds, presentedDocumentRoster, presentedReadings, type ReadingBoard, type ReadingRef } from "./document-resolution";
 import { conversationSnapshot, discardInactiveTranscript, loadScroll, loadTurns, readConversationSnapshot, rememberServerSnapshot, replaceTurns, saveScroll, subscribeTurns, transcriptFollowsServer, turnCarriesContent, turnsFrom, type ChatTurn } from "./transcript";
 import { hasUnsavedClinicalDraft, setUnsavedClinicalDraft } from "../clinical/unsaved";
@@ -518,8 +520,8 @@ export function IntelligenceHome({
     replaceTurns(updater(loadTurns()));
   }
 
-  function finishTurn(id: string, text: string, athletes: PresentedAthlete[], navigation: ChatTurn["navigation"], search: PresentedSearch | null, draft: ChatTurn["draft"] = null, document: ChatTurn["document"] = null, readings: ReadingBoard | null = null) {
-    patchTurns((current) => current.map((turn) => turn.id === id ? { ...turn, text, athletes, navigation, search, draft, document, readings } : turn));
+  function finishTurn(id: string, text: string, athletes: PresentedAthlete[], navigation: ChatTurn["navigation"], search: PresentedSearch | null, draft: ChatTurn["draft"] = null, document: ChatTurn["document"] = null, readings: ReadingBoard | null = null, analysis: HistoryAnalysis | null = null) {
+    patchTurns((current) => current.map((turn) => turn.id === id ? { ...turn, text, athletes, navigation, search, draft, document, readings, analysis } : turn));
   }
 
   function updateDocument(turnId: string, document: DocumentDraft) {
@@ -662,7 +664,8 @@ export function IntelligenceHome({
       ...loadTurns().flatMap((turn) => turn.text.trim() ? [{ role: turn.role, content: turn.text.slice(0, 2000) }] : []),
       { role: "user" as const, content: message },
     ].slice(-8);
-    const userTurn: ChatTurn = { id: crypto.randomUUID(), role: "user", text: message, athletes: [], navigation: null, search: null, draft: null, document: null, readings: null };
+    const previousAnalysis = [...loadTurns()].reverse().find((turn) => turn.analysis)?.analysis ?? null;
+    const userTurn: ChatTurn = { id: crypto.randomUUID(), role: "user", text: message, athletes: [], navigation: null, search: null, draft: null, document: null, readings: null, analysis: null };
     const assistantId = crypto.randomUUID();
     pinRef.current = true;
     setFailure(null);
@@ -672,7 +675,7 @@ export function IntelligenceHome({
     patchTurns((current) => [
       ...current.filter((turn) => turnCarriesContent(turn)),
       userTurn,
-      { id: assistantId, role: "assistant", text: "", athletes: [], navigation: null, search: null, draft: null, document: null, readings: null },
+      { id: assistantId, role: "assistant", text: "", athletes: [], navigation: null, search: null, draft: null, document: null, readings: null, analysis: null },
     ]);
     abortRef.current?.abort();
     const controller = new AbortController();
@@ -689,6 +692,41 @@ export function IntelligenceHome({
         sessionRef.current = id;
         setOpenSessionId(id);
       }
+      const asked = historyRequest(message);
+      if (asked.command === "sources" || asked.command === "analyze" || (asked.command === "follow" && previousAnalysis)) {
+        if (asked.command === "sources") {
+          finishTurn(assistantId, previousAnalysis ? "As fontes estão nos cartões da análise. Cada uma abre o registro original." : "Ainda não há uma análise nesta conversa.", [], null, null);
+          settled = true;
+          return;
+        }
+        const historyResponse = await fetch("/api/inteligencia/historico", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            utterance: message,
+            contextAthleteId: currentAthlete(),
+            inputMode,
+            previous: previousAnalysis ? {
+              athleteId: previousAnalysis.athleteId,
+              athleteName: previousAnalysis.athleteName,
+              from: previousAnalysis.from,
+              to: previousAnalysis.to,
+              unbounded: previousAnalysis.unbounded,
+              periodLabel: previousAnalysis.periodLabel,
+              specialties: previousAnalysis.specialties,
+              kinds: previousAnalysis.kinds,
+            } : null,
+          }),
+          signal: controller.signal,
+        });
+        const historyBody = await historyResponse.json() as { text?: unknown; analysis?: unknown; athletes?: unknown };
+        const historyAnalysis = presentedAnalysis(historyBody.analysis);
+        const historyText = historyAnalysis ? "A análise longitudinal está no cartão." : typeof historyBody.text === "string" && historyBody.text.trim() ? historyBody.text.trim() : "Não consegui consultar o histórico.";
+        finishTurn(assistantId, historyResponse.ok ? historyText : "Não consegui consultar o histórico.", presentedAthletes(historyBody.athletes), null, null, null, null, null, historyAnalysis);
+        if (!historyResponse.ok) setFailure("Não consegui consultar o histórico.");
+        settled = true;
+        return;
+      }
       const response = await fetch("/api/inteligencia", {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -701,6 +739,16 @@ export function IntelligenceHome({
           attachmentRoster: attachmentRoster(loadTurns(),currentAthlete()),
           clinicalSearchScope: previousClinical,
           createdDocumentIds: savedDocumentIds,
+          historyScope: previousAnalysis ? {
+            athleteId: previousAnalysis.athleteId,
+            athleteName: previousAnalysis.athleteName,
+            from: previousAnalysis.from,
+            to: previousAnalysis.to,
+            unbounded: previousAnalysis.unbounded,
+            periodLabel: previousAnalysis.periodLabel,
+            specialties: previousAnalysis.specialties,
+            kinds: previousAnalysis.kinds,
+          } : null,
         }),
         signal: controller.signal,
       });
@@ -744,12 +792,12 @@ export function IntelligenceHome({
             continue;
           }
           const data = parsed.data;
-          const record = data && typeof data === "object" ? data as { text?: unknown; athletes?: unknown; navigation?: unknown; search?: unknown; draft?: unknown; document?: unknown; readings?: unknown; attachments?: unknown; clinicalSearch?: unknown; context?: unknown; contextCleared?: unknown; sessionId?: unknown; error?: unknown } : {};
+          const record = data && typeof data === "object" ? data as { text?: unknown; athletes?: unknown; navigation?: unknown; search?: unknown; draft?: unknown; document?: unknown; readings?: unknown; attachments?: unknown; clinicalSearch?: unknown; analysis?: unknown; context?: unknown; contextCleared?: unknown; sessionId?: unknown; error?: unknown } : {};
           if (parsed.event === "delta" && typeof record.text === "string" && record.text) {
             patchTurns((current) => current.map((turn) => turn.id === assistantId && typeof record.text === "string" ? { ...turn, text: turn.text + record.text } : turn));
           } else if (parsed.event === "done") {
             const text = typeof record.text === "string" && record.text.trim() ? record.text.trim() : replies.provider;
-            finishTurn(assistantId, text, presentedAthletes(record.athletes), presentedNavigation(record.navigation), presentedSearch(record.search), presentedDraft(record.draft), presentedDocument(record.document), presentedReadings(record.readings));
+            finishTurn(assistantId, text, presentedAthletes(record.athletes), presentedNavigation(record.navigation), presentedSearch(record.search), presentedDraft(record.draft), presentedDocument(record.document), presentedReadings(record.readings), presentedAnalysis(record.analysis));
             patchTurns(current=>current.map(turn=>turn.id===assistantId?{...turn,clinicalSearch:clinicalSearchBoard(record.clinicalSearch),attachments:attachmentBoard(record.attachments)}:turn));
             if (typeof record.sessionId === "string" && uuidPattern.test(record.sessionId) && !sessionRef.current) {
               sessionRef.current = record.sessionId;
@@ -1067,6 +1115,7 @@ export function IntelligenceHome({
                       onMore={turn.readings.source === "document" && turn.readings.items.length < turn.readings.total ? () => showMoreDocuments(turn.id) : undefined}
                     />
                   ) : null}
+                  {turn.analysis ? <LongitudinalCard analysis={turn.analysis} /> : null}
                 </article>
                 );
               })}
