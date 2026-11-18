@@ -452,3 +452,22 @@ img.avatar { object-fit: cover; }
   .timeline-head { grid-template-columns: 2.25rem minmax(0, 1fr); }
   .timeline-byline, .timeline .pill { grid-column: 2; }
 }
+
+/* Athlete profile refinements retain the Clinical Design North Star. */
+.profile-tab-controls { display: none; }
+.record-chat { width: auto; gap: .5rem; padding-inline: .5rem; }
+.profile-chat-label { font-size: .8125rem; }
+.recent-evolutions .timeline-head { grid-template-columns: 6rem minmax(0, 1fr) minmax(9rem, 16rem) auto; }
+.timeline li[id] { scroll-margin-top: 1.5rem; }
+.timeline summary { display: list-item; list-style: disclosure-closed inside; min-height: 24px; }
+.timeline details[open] > summary { list-style-type: disclosure-open; }
+.timeline summary::-webkit-details-marker { display: inline; }
+.record-restriction { color: #6b5400; font-size: .8125rem; }
+@media (max-width: 760px) {
+  .profile-tab-controls { display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin: -.8rem 0 1.25rem; }
+  .profile-tab-controls span { font-size: .75rem; color: #3a4660; text-align: center; }
+  .profile-tab-controls button { min-width: 44px; padding: .5rem; }
+  .profile-tab-controls button:disabled { opacity: .4; }
+  .profile-chat-label { display: none; }
+  .recent-evolutions .timeline-head { grid-template-columns: 6rem minmax(0, 1fr); }
+}

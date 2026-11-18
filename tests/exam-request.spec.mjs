@@ -86,7 +86,7 @@ test("médico prepara, revisa e recupera uma solicitação de exames", async ({ 
   await page.getByRole("button", { name: "Entrar", exact: true }).click();
   await page.waitForURL("/");
   await page.goto(`/atletas/${athlete}`);
-  await page.getByRole("link", { name: "Documentos", exact: true }).click();
+  await page.getByRole("link", { name: "Documentos médicos", exact: true }).click();
   await page.getByRole("link", { name: "Nova solicitação de exames", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Atleta QA Exame" })).toBeVisible();
   await expect(page.getByText("Dra. QA Exames")).toBeVisible();
@@ -120,7 +120,7 @@ test("médico prepara, revisa e recupera uma solicitação de exames", async ({ 
   await page.setViewportSize({ width: 1440, height: 900 });
 
   await page.goto(`/atletas/${athlete}`);
-  await page.getByRole("link", { name: "Documentos", exact: true }).click();
+  await page.getByRole("link", { name: "Documentos médicos", exact: true }).click();
   await expect(page.getByRole("link", { name: "Solicitação de exames", exact: true })).toBeVisible();
   await page.screenshot({ path: `${shots}/perfil-1440x900.png` });
   await page.getByRole("link", { name: "Solicitação de exames", exact: true }).click();

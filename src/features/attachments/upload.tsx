@@ -210,7 +210,7 @@ export function AttachmentUpload({
       }}
     >
       <header className="attachment-heading">
-        <h2 id="attachment-upload-title">Adicionar documento</h2>
+        <h2 id="attachment-upload-title">Adicionar anexo</h2>
         <button className="outline" type="button" onClick={close}>
           Fechar
         </button>

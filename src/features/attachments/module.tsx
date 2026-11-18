@@ -59,13 +59,13 @@ export function AttachmentModule({ athleteId }: { athleteId: string }) {
     <section className="attachment-module" aria-labelledby="attachments-title">
       <header className="attachment-heading">
         <div>
-          <h2 id="attachments-title">Documentos e Anexos</h2>
+          <h2 id="attachments-title">Anexos clínicos</h2>
           <p>Arquivos clínicos do atleta disponíveis para você.</p>
         </div>
         {data?.can_upload && (
           <button className="button" onClick={() => setUpload(true)}>
             <Icon name="plus" size={18} />
-            Adicionar documento
+            Adicionar anexo
           </button>
         )}
       </header>

@@ -79,7 +79,7 @@ test("rascunhos médicos, revisão e bloqueios", async ({ page }) => {
   await page.getByRole("button", { name: "Entrar", exact: true }).click();
   await page.waitForURL("/");
   await page.goto(`/atletas/${athlete}`);
-  await page.getByRole("link", { name: "Documentos", exact: true }).click();
+  await page.getByRole("link", { name: "Documentos médicos", exact: true }).click();
   await page.getByRole("link", { name: "Nova prescrição", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Atleta QA Documento" })).toBeVisible();
   await expect(page.getByText("Dra. QA Medicina")).toBeVisible();
@@ -144,7 +144,7 @@ test("rascunhos médicos, revisão e bloqueios", async ({ page }) => {
   expect(replayed.data.version).toBe(1);
 
   await page.goto(`/atletas/${athlete}`);
-  await page.getByRole("link", { name: "Documentos", exact: true }).click();
+  await page.getByRole("link", { name: "Documentos médicos", exact: true }).click();
   await page.getByRole("link", { name: "Novo pedido cirúrgico", exact: true }).click();
   await page.getByLabel("Procedimento proposto").fill("Artroscopia fictícia de joelho");
   await page.getByLabel("Justificativa médica").fill("Justificativa fictícia para revisão interna.");

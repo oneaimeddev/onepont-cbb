@@ -122,7 +122,7 @@ async function upload(
 }
 async function fillUpload(page, bytes, name = "laudo-demo.pdf") {
   const dialog = page.getByRole("dialog", {
-    name: "Adicionar documento",
+    name: "Adicionar anexo",
     exact: true,
   });
   await dialog.getByLabel("Arquivo PDF ou imagem").setInputFiles({
@@ -509,7 +509,7 @@ test("perfil permite PDF, imagem, associação a exame, edição, filtros e down
   await login(page, owner);
   await page.goto(`/atletas/${target}?aba=anexos`);
   await page
-    .getByRole("button", { name: "Adicionar documento", exact: true })
+    .getByRole("button", { name: "Adicionar anexo", exact: true })
     .click();
   const dialog = await fillUpload(page, bytes);
   await dialog
@@ -561,7 +561,7 @@ test("perfil permite PDF, imagem, associação a exame, edição, filtros e down
     fullPage: true,
   });
   await page
-    .getByRole("button", { name: "Adicionar documento", exact: true })
+    .getByRole("button", { name: "Adicionar anexo", exact: true })
     .click();
   const png = await sharp({
     create: { width: 480, height: 180, channels: 3, background: "#102849" },
@@ -672,12 +672,12 @@ test("chat anexa sem LLM, pede atleta sem contexto, persiste card e protege troc
   page.once("dialog", (d) => d.dismiss());
   await page.keyboard.press("Escape");
   await expect(
-    page.getByRole("dialog", { name: "Adicionar documento", exact: true }),
+    page.getByRole("dialog", { name: "Adicionar anexo", exact: true }),
   ).toBeVisible();
   page.once("dialog", (d) => d.accept());
   await page.keyboard.press("Escape");
   await expect(
-    page.getByRole("dialog", { name: "Adicionar documento", exact: true }),
+    page.getByRole("dialog", { name: "Adicionar anexo", exact: true }),
   ).toHaveCount(0);
   const session = (await rpc(owner.client, "conversation_current")).session.id;
   const pendingBytes=Buffer.concat([bytes,Buffer.from("\n% Contexto pendente ficticio\n")]);

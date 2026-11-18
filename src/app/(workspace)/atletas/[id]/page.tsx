@@ -10,6 +10,9 @@ import { accessRoster, eventDate, loadAthlete, loadCatalog, loadRegistration, se
 import { SportLinkForm } from "../../../../features/athletes/registration-form";
 import { documentKinds, statusLabels } from "../../../../features/documents/content";
 import { listDocuments, medicalCapability } from "../../../../features/documents/data";
+import { ProfileTabs } from "../../../../features/athletes/profile-navigation";
+import { RecordTarget } from "../../../../features/athletes/record-target";
+import { RegistrationGuard } from "../../../../features/athletes/registration-guard";
 import { PhotoEditor } from "../../../../features/athletes/photo-editor";
 import { requireProfile } from "../../../../lib/profile";
 import { AttachmentModule } from "../../../../features/attachments/module";
@@ -111,8 +114,8 @@ export default async function AthletePage({ params, searchParams }: {
     ["visao-geral", "Visão geral"],
     ...(can_read_records ? [["timeline", "Linha do tempo"] as const] : []),
     ["cadastro", "Dados cadastrais"],
-    ...(can_read_records ? [["anexos", "Documentos e Anexos"] as const] : []),
-    ...(capability.enabled && can_read_records ? [["documentos", "Documentos"] as const] : []),
+    ...(can_read_records ? [["anexos", "Anexos clínicos"] as const] : []),
+    ...(capability.enabled && can_read_records ? [["documentos", "Documentos médicos"] as const] : []),
     ...(roster ? [["acesso", "Acesso"] as const] : []),
   ] as const;
   const history = records ?? [];
@@ -140,8 +143,8 @@ export default async function AthletePage({ params, searchParams }: {
                 {lede && <p className="record-lede">{lede}</p>}
                 {athlete.status !== "active" && <span className="pill">Inativo</span>}
               </div>
-              <Link className="record-chat" href={`/?atleta=${athlete.id}`} prefetch={false} aria-label="Abrir no chat">
-                <Icon name="chat" size={18} />
+              <Link className="record-chat" href={`/?atleta=${athlete.id}`} prefetch={false} aria-label="Abrir no chat" title="Abrir no CBB Intelligence">
+                <Icon name="chat" size={18} /><span className="profile-chat-label">CBB Intelligence</span>
               </Link>
             </div>
             <dl className="record-spec">
@@ -152,11 +155,7 @@ export default async function AthletePage({ params, searchParams }: {
         <p className="record-id sr-only">ID {athlete.id}</p>
         {aba !== "acesso" && erro && <p role="alert">Não foi possível salvar. Confira os dados e as permissões.</p>}
         {aba !== "acesso" && salvo && <p role="status">Cadastro salvo.</p>}
-        <nav className="athlete-tabs" aria-label="Seções do atleta">
-          {tabs.map(([value, label]) => (
-            <Link key={value} href={tabHref(value)} prefetch={false} aria-current={aba === value ? "page" : undefined}>{label}</Link>
-          ))}
-        </nav>
+        <ProfileTabs active={aba} tabs={tabs.map(([value, label]) => ({id: value, label, href: tabHref(value)}))} />
 
         {aba === "acesso" && roster ? (
           <AccessPanel athleteId={athlete.id} links={roster.links} matches={matches} term={term} notice={accessNotice} />
@@ -166,7 +165,7 @@ export default async function AthletePage({ params, searchParams }: {
           <div className="record-work">
             <section aria-labelledby="historico-recente">
               <div className="record-mast-top">
-                <h2 id="historico-recente">Histórico clínico</h2>
+                <h2 id="historico-recente">Evoluções recentes</h2>
                 {can_write ? (
                   <div className="record-actions">
                     <Link className="button" href={`${base}/evolucao`} prefetch={false}>Nova evolução</Link>
@@ -174,12 +173,12 @@ export default async function AthletePage({ params, searchParams }: {
                 ) : null}
               </div>
               {recent_records?.length ? (
-                <ol className="timeline">
+                <ol className="timeline recent-evolutions">
                   {recent_records.map((record) => (
                     <li key={record.id}>
                       <div className="timeline-head">
-                        <time className="timeline-day" dateTime={record.occurred_at}>{recordWhen(record.occurred_at).day}</time>
-                        <Link href={`${base}?aba=timeline&retorno=${encodeURIComponent(returnTo)}#registro-${record.id}`} prefetch={false}>{record.title}</Link>
+                        <time className="timeline-day" dateTime={record.occurred_at}>{new Intl.DateTimeFormat("pt-BR", {timeZone:"America/Sao_Paulo"}).format(new Date(record.occurred_at))}</time>
+                        <Link href={`${base}?aba=timeline&retorno=${encodeURIComponent(returnTo)}&registro=${record.id}#registro-${record.id}`} prefetch={false}>{record.title}</Link>
                         <p className="timeline-byline">{record.author_name}, {record.specialty}</p>
                         <span className={record.status === "draft" ? "pill pill-draft" : "pill pill-success"}>{record.status === "draft" ? "Rascunho" : "Finalizado"}</span>
                       </div>
@@ -187,6 +186,7 @@ export default async function AthletePage({ params, searchParams }: {
                   ))}
                 </ol>
               ) : <p className="muted">Nenhum registro recente disponível para este perfil.</p>}
+              {can_read_records && <Link className="clinical-link" href={tabHref("timeline")} prefetch={false}>Ver todas as evoluções</Link>}
             </section>
             <aside className="record-context">
               <h2>Contexto esportivo</h2>
@@ -210,6 +210,7 @@ export default async function AthletePage({ params, searchParams }: {
         {aba === "timeline" && (
           <section aria-labelledby="linha-do-tempo">
             <h2 id="linha-do-tempo">Linha do tempo</h2>
+            <RecordTarget recordId={registro} />
             {history.length === 0 ? (
               <EmptyState icon="records" title="Nenhum registro disponível para este perfil.">
                 <p>Os registros autorizados para o seu perfil aparecem aqui, do mais recente ao mais antigo.</p>
@@ -228,7 +229,7 @@ export default async function AthletePage({ params, searchParams }: {
                           {can_write && record.is_author && record.status === "draft" && <Link className="clinical-link" prefetch={false} href={`${base}/evolucao?registro=${record.id}`}>Revisar rascunho</Link>}
                           {record.encounter_status && <p>Atendimento {record.encounter_status === "open" ? "aberto" : "encerrado"}</p>}
                         </details>
-                        <p className="timeline-byline">{record.author_name}, {record.specialty}</p>
+                        <p className="timeline-byline">{record.author_name}, {record.specialty}{record.is_author && record.is_restricted && <span className="record-restriction"> · Restrito ao autor</span>}</p>
                         <span className={record.status === "draft" ? "pill pill-draft" : "pill pill-success"}>{record.status === "draft" ? "Rascunho" : "Finalizado"}</span>
                       </div>
                     </li>
@@ -242,7 +243,7 @@ export default async function AthletePage({ params, searchParams }: {
         {aba === "documentos" && documents && (
           <section aria-labelledby="documentos-clinicos">
             <div className="record-mast-top">
-              <h2 id="documentos-clinicos">Documentos</h2>
+              <h2 id="documentos-clinicos">Documentos médicos</h2>
               <div className="record-actions">
                 <Link className="outline" href={`${base}/documentos/nova?tipo=prescricao`} prefetch={false}>Nova prescrição</Link>
                 <Link className="outline" href={`${base}/documentos/nova?tipo=cirurgia`} prefetch={false}>Novo pedido cirúrgico</Link>
@@ -273,7 +274,7 @@ export default async function AthletePage({ params, searchParams }: {
           <section aria-labelledby="dados-cadastrais">
             <h2 id="dados-cadastrais">Dados cadastrais</h2>
             {can_edit && (
-              <form action={editAthlete} className="athlete-form composer-panel">
+              <RegistrationGuard><form action={editAthlete} className="athlete-form composer-panel">
                 <input type="hidden" name="id" value={id} />
                 <label>Nome completo<input name="name" required maxLength={160} defaultValue={athlete.full_name} /></label>
                 <label>Nome social<input name="social" maxLength={160} defaultValue={athlete.social_name ?? ""} /></label>
@@ -282,7 +283,7 @@ export default async function AthletePage({ params, searchParams }: {
                 <input type="hidden" name="category" value={athlete.category ?? ""} />
                 <label>Status<select name="status" defaultValue={athlete.status}><option value="active">Ativo</option><option value="inactive">Inativo</option></select></label>
                 <SubmitButton pendingLabel="Salvando…">Salvar cadastro</SubmitButton>
-              </form>
+              </form></RegistrationGuard>
             )}
             {can_edit && <PhotoEditor athleteId={id} />}
             {registration && (
