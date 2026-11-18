@@ -101,6 +101,17 @@ npm run dev -- --hostname 127.0.0.1
 
 Em **Buscar atleta**, abra **Atleta DEMO Aurora** para ver dois registros
 sintéticos persistidos. **Atleta DEMO Horizonte** demonstra a linha do tempo vazia.
+
+Para espalhar evoluções, prescrições, solicitações de exame e pedidos
+cirúrgicos fictícios pelo elenco já existente, com quantidades diferentes
+por atleta:
+
+```bash
+node scripts/seed-demo-chart.mjs
+```
+
+O comando só funciona no Supabase local e pode ser repetido. Horizonte
+continua sem esses registros.
 O cadastro manual fica disponível para a conta escolhida. A auditoria é acessível
 com um perfil criado com a opção `auditor`.
 
