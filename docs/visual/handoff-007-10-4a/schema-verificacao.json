@@ -1,0 +1,19 @@
+{
+  "baseline": {
+    "function_count": 114,
+    "definitions_hash": "9cb7500bc754bade633bc79eb150d9ee",
+    "constraints": {
+      "constraint_count": 143,
+      "definitions_hash": "cdfc7c62d8c0b6b6a8081b19715a6876"
+    }
+  },
+  "isolated": {
+    "function_count": 114,
+    "definitions_hash": "9cb7500bc754bade633bc79eb150d9ee",
+    "constraints": {
+      "constraint_count": 143,
+      "definitions_hash": "cdfc7c62d8c0b6b6a8081b19715a6876"
+    }
+  },
+  "identical": true
+}

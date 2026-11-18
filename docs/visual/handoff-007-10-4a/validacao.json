@@ -1,0 +1,52 @@
+{
+  "handoff": "007.10.4A",
+  "baseline": "f0dac25",
+  "branch": "docs/handoff-007-10-4a-conversation-audit",
+  "nature": "diagnostico_sem_implementacao",
+  "real_screenshots": 12,
+  "conceptual_visuals": [
+    "proposta-conceitual.html",
+    "proposta-conceitual.png"
+  ],
+  "schema_equivalence": true,
+  "application_functions": 114,
+  "application_constraints": 143,
+  "browser": "Chromium headless",
+  "viewports": [
+    1440,
+    390,
+    320
+  ],
+  "locale": "pt-BR",
+  "timezone": "America/Sao_Paulo",
+  "horizontal_overflow": false,
+  "temporary_copy_build": {
+    "baseline": "f0dac25",
+    "command": "npm run build -- --webpack",
+    "exit_code": 0
+  },
+  "checks": {
+    "foreign_session_http": 403,
+    "anonymous_http": 401,
+    "archived_resume_http": 400,
+    "unimplemented_delete_action_http": 400,
+    "closed_resume_reactivates": true,
+    "pending_resume_has_confirmation": false,
+    "confirmation_after_archive_accepted": true,
+    "proposal_attach_ambiguity_reproduced": true,
+    "history_returned_after_access_revocation": true
+  },
+  "full_suite_rerun": false,
+  "production_code_changed": false,
+  "migrations_executed": false,
+  "existing_demo_data_modified": false,
+  "temporary_environment_removed": true,
+  "merge": false,
+  "published": false,
+  "limitations": [
+    "Sem execução de IA externa; proposta pendente local reconstruída com fixture e mecanismo existente de transcript.",
+    "Ausência de UI para arquivadas/restaurar/removidas foi documentada, sem simular recursos existentes.",
+    "Sem leitor de tela real, aparelho físico ou Safari.",
+    "Nenhuma política jurídica ou prazo de retenção foi definido."
+  ]
+}

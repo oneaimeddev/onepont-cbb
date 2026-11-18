@@ -1,0 +1,236 @@
+{
+  "baseline": "f0dac25",
+  "isolation": {
+    "api": 56321,
+    "db": 56322,
+    "app": 3200,
+    "migrations": false
+  },
+  "checks": {
+    "proposal_attach_error": "clinical_draft_proposal_attach: column reference \"request_id\" is ambiguous",
+    "foreign_resume": {
+      "ok": false,
+      "error": "denied"
+    },
+    "archived_resume": {
+      "ok": false,
+      "error": "invalid"
+    },
+    "closed_save": {
+      "ok": false,
+      "error": "closed"
+    },
+    "recent": {
+      "emptyListed": false,
+      "closedListed": true,
+      "archivedListed": false,
+      "foreignListed": false,
+      "statuses": [
+        "active",
+        "closed",
+        "closed",
+        "closed"
+      ]
+    },
+    "home_clean": 0,
+    "closed_resume_status": "active",
+    "extensive_message_count": "40",
+    "new_pending_prompt": 1,
+    "resume_pending_prompt": 0,
+    "pending_still_in_db": "1",
+    "attachment_upload_status": 200,
+    "foreign_http": {
+      "status": 403,
+      "body": {
+        "error": "denied"
+      }
+    },
+    "archived_http": {
+      "status": 400,
+      "body": {
+        "error": "invalid"
+      }
+    },
+    "unsupported_archive_http": {
+      "status": 400,
+      "body": {
+        "error": "invalid"
+      }
+    },
+    "unsupported_delete_http": {
+      "status": 400,
+      "body": {
+        "error": "invalid"
+      }
+    },
+    "direct_query_foreign_visible": false,
+    "after_clinical_permission_reduction": {
+      "ok": true,
+      "athleteId": "05f55941-f823-4ad1-8160-ba17f3c52101",
+      "textRetained": true
+    },
+    "card_confirm_after_archive": {
+      "ok": true,
+      "documentCreated": true
+    },
+    "saved_records_exist": {
+      "record": "1",
+      "document": "1",
+      "attachment": "1"
+    },
+    "audit_operations": [
+      {
+        "count": 6,
+        "outcome": "success",
+        "operation": "athlete.context.open"
+      },
+      {
+        "count": 1,
+        "outcome": "success",
+        "operation": "attachment.created"
+      },
+      {
+        "count": 1,
+        "outcome": "success",
+        "operation": "attachment.list"
+      },
+      {
+        "count": 1,
+        "outcome": "success",
+        "operation": "attachment.upload.started"
+      },
+      {
+        "count": 1,
+        "outcome": "success",
+        "operation": "clinical_draft.confirmed"
+      },
+      {
+        "count": 1,
+        "outcome": "success",
+        "operation": "clinical_record.draft_saved"
+      },
+      {
+        "count": 2,
+        "outcome": "success",
+        "operation": "conversation.archive"
+      },
+      {
+        "count": 12,
+        "outcome": "success",
+        "operation": "conversation.close"
+      },
+      {
+        "count": 2,
+        "outcome": "denied",
+        "operation": "conversation.resume"
+      },
+      {
+        "count": 7,
+        "outcome": "success",
+        "operation": "conversation.resume"
+      },
+      {
+        "count": 7,
+        "outcome": "success",
+        "operation": "conversation.start"
+      },
+      {
+        "count": 2,
+        "outcome": "success",
+        "operation": "document.confirmed"
+      },
+      {
+        "count": 2,
+        "outcome": "success",
+        "operation": "document.draft_created"
+      },
+      {
+        "count": 2,
+        "outcome": "success",
+        "operation": "document.proposal_prepared"
+      }
+    ],
+    "after_full_athlete_access_revocation": {
+      "recentAthleteId": null,
+      "previewRetained": true,
+      "resumeOk": true,
+      "resumeAthleteId": "05f55941-f823-4ad1-8160-ba17f3c52101",
+      "textRetained": true
+    },
+    "function_schema_identical": true,
+    "anonymous_http": {
+      "status": 401,
+      "body": {
+        "error": "invalid"
+      }
+    }
+  },
+  "screenshots": [
+    {
+      "name": "home-limpa",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "conversa-contexto",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "conversa-extensa",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "acao-confirmada",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "proposta-pendente",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "proposta-preservada-apos-cancelar",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "retomada-com-proposta-anterior",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "conversa-anexo",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "conversa-mobile",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "name": "lista-mobile",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "name": "lista-mobile",
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "name": "url-identificador-ignorado",
+      "width": 1440,
+      "overflow": false
+    }
+  ],
+  "dialogs": [
+    {
+      "type": "confirm",
+      "message": "Há alterações clínicas locais que ainda não foram salvas. A nova conversa não apaga prontuários, rascunhos já gravados nem a auditoria. Deseja iniciar mesmo assim?"
+    }
+  ]
+}

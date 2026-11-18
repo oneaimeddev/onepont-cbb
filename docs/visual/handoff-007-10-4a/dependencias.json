@@ -1,0 +1,122 @@
+[
+    {
+        "name": "document_proposals_actor_id_fkey",
+        "table": "clinical.document_proposals",
+        "definition": "FOREIGN KEY (actor_id) REFERENCES profiles(id) ON DELETE CASCADE"
+    },
+    {
+        "name": "records_athlete_id_fkey",
+        "table": "clinical.records",
+        "definition": "FOREIGN KEY (athlete_id) REFERENCES clinical.athletes(id)"
+    },
+    {
+        "name": "records_author_id_fkey",
+        "table": "clinical.records",
+        "definition": "FOREIGN KEY (author_id) REFERENCES profiles(id) ON DELETE SET NULL"
+    },
+    {
+        "name": "document_proposals_session_id_fkey",
+        "table": "clinical.document_proposals",
+        "definition": "FOREIGN KEY (session_id) REFERENCES clinical.conversation_sessions(id) ON DELETE CASCADE"
+    },
+    {
+        "name": "document_proposals_athlete_id_fkey",
+        "table": "clinical.document_proposals",
+        "definition": "FOREIGN KEY (athlete_id) REFERENCES clinical.athletes(id) ON DELETE CASCADE"
+    },
+    {
+        "name": "records_encounter_id_fkey",
+        "table": "clinical.records",
+        "definition": "FOREIGN KEY (encounter_id) REFERENCES clinical.encounters(id)"
+    },
+    {
+        "name": "document_proposals_document_id_fkey",
+        "table": "clinical.document_proposals",
+        "definition": "FOREIGN KEY (document_id) REFERENCES clinical.documents(id) ON DELETE SET NULL"
+    },
+    {
+        "name": "documents_athlete_id_fkey",
+        "table": "clinical.documents",
+        "definition": "FOREIGN KEY (athlete_id) REFERENCES clinical.athletes(id) ON DELETE CASCADE"
+    },
+    {
+        "name": "documents_author_id_fkey",
+        "table": "clinical.documents",
+        "definition": "FOREIGN KEY (author_id) REFERENCES profiles(id)"
+    },
+    {
+        "name": "conversation_sessions_professional_id_fkey",
+        "table": "clinical.conversation_sessions",
+        "definition": "FOREIGN KEY (professional_id) REFERENCES profiles(id) ON DELETE CASCADE"
+    },
+    {
+        "name": "conversation_sessions_athlete_id_fkey",
+        "table": "clinical.conversation_sessions",
+        "definition": "FOREIGN KEY (athlete_id) REFERENCES clinical.athletes(id) ON DELETE SET NULL"
+    },
+    {
+        "name": "conversation_messages_session_id_fkey",
+        "table": "clinical.conversation_messages",
+        "definition": "FOREIGN KEY (session_id) REFERENCES clinical.conversation_sessions(id) ON DELETE CASCADE"
+    },
+    {
+        "name": "evolution_approvals_actor_id_fkey",
+        "table": "clinical.evolution_approvals",
+        "definition": "FOREIGN KEY (actor_id) REFERENCES profiles(id) ON DELETE CASCADE"
+    },
+    {
+        "name": "evolution_approvals_athlete_id_fkey",
+        "table": "clinical.evolution_approvals",
+        "definition": "FOREIGN KEY (athlete_id) REFERENCES clinical.athletes(id) ON DELETE CASCADE"
+    },
+    {
+        "name": "evolution_approvals_record_id_fkey",
+        "table": "clinical.evolution_approvals",
+        "definition": "FOREIGN KEY (record_id) REFERENCES clinical.records(id) ON DELETE SET NULL"
+    },
+    {
+        "name": "draft_proposals_actor_id_fkey",
+        "table": "clinical.draft_proposals",
+        "definition": "FOREIGN KEY (actor_id) REFERENCES profiles(id) ON DELETE CASCADE"
+    },
+    {
+        "name": "draft_proposals_session_id_fkey",
+        "table": "clinical.draft_proposals",
+        "definition": "FOREIGN KEY (session_id) REFERENCES clinical.conversation_sessions(id) ON DELETE CASCADE"
+    },
+    {
+        "name": "draft_proposals_athlete_id_fkey",
+        "table": "clinical.draft_proposals",
+        "definition": "FOREIGN KEY (athlete_id) REFERENCES clinical.athletes(id) ON DELETE CASCADE"
+    },
+    {
+        "name": "draft_proposals_record_id_fkey",
+        "table": "clinical.draft_proposals",
+        "definition": "FOREIGN KEY (record_id) REFERENCES clinical.records(id) ON DELETE SET NULL"
+    },
+    {
+        "name": "attachments_athlete_id_fkey",
+        "table": "clinical.attachments",
+        "definition": "FOREIGN KEY (athlete_id) REFERENCES clinical.athletes(id)"
+    },
+    {
+        "name": "attachments_uploaded_by_fkey",
+        "table": "clinical.attachments",
+        "definition": "FOREIGN KEY (uploaded_by) REFERENCES profiles(id)"
+    },
+    {
+        "name": "attachments_record_id_fkey",
+        "table": "clinical.attachments",
+        "definition": "FOREIGN KEY (record_id) REFERENCES clinical.records(id)"
+    },
+    {
+        "name": "attachments_document_id_fkey",
+        "table": "clinical.attachments",
+        "definition": "FOREIGN KEY (document_id) REFERENCES clinical.documents(id)"
+    },
+    {
+        "name": "attachments_session_id_fkey",
+        "table": "clinical.attachments",
+        "definition": "FOREIGN KEY (session_id) REFERENCES clinical.conversation_sessions(id)"
+    }
+]
