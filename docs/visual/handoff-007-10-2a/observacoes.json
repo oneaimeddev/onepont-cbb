@@ -1,0 +1,3022 @@
+{
+  "baseline": "4a581d7",
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "scenarios": [
+    {
+      "kind": "prescription",
+      "n": 1,
+      "width": 1440,
+      "scrollWidth": 1440,
+      "height": 1302,
+      "firstItemY": 287.328125,
+      "actionsY": 1209.734375,
+      "fields": [
+        {
+          "label": "Nome do medicamento",
+          "clientWidth": 674,
+          "scrollWidth": 674,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Apresentação ou concentração",
+          "clientWidth": 674,
+          "scrollWidth": 674,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Dose",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Unidade",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Via de administração",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Frequência",
+          "clientWidth": 317,
+          "scrollWidth": 767,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Duração",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Quantidade",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Instruções complementares",
+          "clientWidth": 700,
+          "scrollWidth": 700,
+          "clientHeight": 70,
+          "scrollHeight": 141,
+          "textTransform": "none"
+        },
+        {
+          "label": "Observações gerais",
+          "clientWidth": 734,
+          "scrollWidth": 734,
+          "clientHeight": 93,
+          "scrollHeight": 93,
+          "textTransform": "none"
+        }
+      ],
+      "itemHeight": 666.03125
+    },
+    {
+      "kind": "prescription",
+      "n": 1,
+      "width": 390,
+      "scrollWidth": 390,
+      "height": 1815,
+      "firstItemY": 411.0625,
+      "actionsY": 1627.375,
+      "fields": [
+        {
+          "label": "Nome do medicamento",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Apresentação ou concentração",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Dose",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Unidade",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Via de administração",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Frequência",
+          "clientWidth": 296,
+          "scrollWidth": 767,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Duração",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Quantidade",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Instruções complementares",
+          "clientWidth": 322,
+          "scrollWidth": 322,
+          "clientHeight": 70,
+          "scrollHeight": 309,
+          "textTransform": "none"
+        },
+        {
+          "label": "Observações gerais",
+          "clientWidth": 356,
+          "scrollWidth": 356,
+          "clientHeight": 93,
+          "scrollHeight": 93,
+          "textTransform": "none"
+        }
+      ],
+      "itemHeight": 935.9375
+    },
+    {
+      "kind": "prescription",
+      "n": 3,
+      "width": 1440,
+      "scrollWidth": 1440,
+      "height": 2666,
+      "firstItemY": 287.328125,
+      "actionsY": 2573.796875,
+      "fields": [
+        {
+          "label": "Nome do medicamento",
+          "clientWidth": 674,
+          "scrollWidth": 674,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Apresentação ou concentração",
+          "clientWidth": 674,
+          "scrollWidth": 674,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Dose",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Unidade",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Via de administração",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Frequência",
+          "clientWidth": 317,
+          "scrollWidth": 767,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Duração",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Quantidade",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Instruções complementares",
+          "clientWidth": 700,
+          "scrollWidth": 700,
+          "clientHeight": 70,
+          "scrollHeight": 141,
+          "textTransform": "none"
+        },
+        {
+          "label": "Nome do medicamento",
+          "clientWidth": 674,
+          "scrollWidth": 674,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Apresentação ou concentração",
+          "clientWidth": 674,
+          "scrollWidth": 674,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Dose",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Unidade",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Via de administração",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Frequência",
+          "clientWidth": 317,
+          "scrollWidth": 767,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Duração",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Quantidade",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Instruções complementares",
+          "clientWidth": 700,
+          "scrollWidth": 700,
+          "clientHeight": 70,
+          "scrollHeight": 141,
+          "textTransform": "none"
+        },
+        {
+          "label": "Nome do medicamento",
+          "clientWidth": 674,
+          "scrollWidth": 674,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Apresentação ou concentração",
+          "clientWidth": 674,
+          "scrollWidth": 674,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Dose",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Unidade",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Via de administração",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Frequência",
+          "clientWidth": 317,
+          "scrollWidth": 767,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Duração",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Quantidade",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Instruções complementares",
+          "clientWidth": 700,
+          "scrollWidth": 700,
+          "clientHeight": 70,
+          "scrollHeight": 141,
+          "textTransform": "none"
+        },
+        {
+          "label": "Observações gerais",
+          "clientWidth": 734,
+          "scrollWidth": 734,
+          "clientHeight": 93,
+          "scrollHeight": 93,
+          "textTransform": "none"
+        }
+      ],
+      "itemHeight": 666.03125
+    },
+    {
+      "kind": "prescription",
+      "n": 3,
+      "width": 390,
+      "scrollWidth": 390,
+      "height": 3719,
+      "firstItemY": 411.0625,
+      "actionsY": 3531.25,
+      "fields": [
+        {
+          "label": "Nome do medicamento",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Apresentação ou concentração",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Dose",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Unidade",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Via de administração",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Frequência",
+          "clientWidth": 296,
+          "scrollWidth": 767,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Duração",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Quantidade",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Instruções complementares",
+          "clientWidth": 322,
+          "scrollWidth": 322,
+          "clientHeight": 70,
+          "scrollHeight": 309,
+          "textTransform": "none"
+        },
+        {
+          "label": "Nome do medicamento",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Apresentação ou concentração",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Dose",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Unidade",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Via de administração",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Frequência",
+          "clientWidth": 296,
+          "scrollWidth": 767,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Duração",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Quantidade",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Instruções complementares",
+          "clientWidth": 322,
+          "scrollWidth": 322,
+          "clientHeight": 70,
+          "scrollHeight": 309,
+          "textTransform": "none"
+        },
+        {
+          "label": "Nome do medicamento",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Apresentação ou concentração",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Dose",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Unidade",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Via de administração",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Frequência",
+          "clientWidth": 296,
+          "scrollWidth": 767,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Duração",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Quantidade",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Instruções complementares",
+          "clientWidth": 322,
+          "scrollWidth": 322,
+          "clientHeight": 70,
+          "scrollHeight": 309,
+          "textTransform": "none"
+        },
+        {
+          "label": "Observações gerais",
+          "clientWidth": 356,
+          "scrollWidth": 356,
+          "clientHeight": 93,
+          "scrollHeight": 93,
+          "textTransform": "none"
+        }
+      ],
+      "itemHeight": 935.9375
+    },
+    {
+      "kind": "prescription",
+      "n": 6,
+      "width": 1440,
+      "scrollWidth": 1440,
+      "height": 4712,
+      "firstItemY": 287.328125,
+      "actionsY": 4619.890625,
+      "fields": [
+        {
+          "label": "Nome do medicamento",
+          "clientWidth": 674,
+          "scrollWidth": 674,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Apresentação ou concentração",
+          "clientWidth": 674,
+          "scrollWidth": 674,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Dose",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Unidade",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Via de administração",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Frequência",
+          "clientWidth": 317,
+          "scrollWidth": 767,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Duração",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Quantidade",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Instruções complementares",
+          "clientWidth": 700,
+          "scrollWidth": 700,
+          "clientHeight": 70,
+          "scrollHeight": 141,
+          "textTransform": "none"
+        },
+        {
+          "label": "Nome do medicamento",
+          "clientWidth": 674,
+          "scrollWidth": 674,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Apresentação ou concentração",
+          "clientWidth": 674,
+          "scrollWidth": 674,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Dose",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Unidade",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Via de administração",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Frequência",
+          "clientWidth": 317,
+          "scrollWidth": 767,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Duração",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Quantidade",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Instruções complementares",
+          "clientWidth": 700,
+          "scrollWidth": 700,
+          "clientHeight": 70,
+          "scrollHeight": 141,
+          "textTransform": "none"
+        },
+        {
+          "label": "Nome do medicamento",
+          "clientWidth": 674,
+          "scrollWidth": 674,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Apresentação ou concentração",
+          "clientWidth": 674,
+          "scrollWidth": 674,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Dose",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Unidade",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Via de administração",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Frequência",
+          "clientWidth": 317,
+          "scrollWidth": 767,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Duração",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Quantidade",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Instruções complementares",
+          "clientWidth": 700,
+          "scrollWidth": 700,
+          "clientHeight": 70,
+          "scrollHeight": 141,
+          "textTransform": "none"
+        },
+        {
+          "label": "Nome do medicamento",
+          "clientWidth": 674,
+          "scrollWidth": 674,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Apresentação ou concentração",
+          "clientWidth": 674,
+          "scrollWidth": 674,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Dose",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Unidade",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Via de administração",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Frequência",
+          "clientWidth": 317,
+          "scrollWidth": 767,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Duração",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Quantidade",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Instruções complementares",
+          "clientWidth": 700,
+          "scrollWidth": 700,
+          "clientHeight": 70,
+          "scrollHeight": 141,
+          "textTransform": "none"
+        },
+        {
+          "label": "Nome do medicamento",
+          "clientWidth": 674,
+          "scrollWidth": 674,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Apresentação ou concentração",
+          "clientWidth": 674,
+          "scrollWidth": 674,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Dose",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Unidade",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Via de administração",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Frequência",
+          "clientWidth": 317,
+          "scrollWidth": 767,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Duração",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Quantidade",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Instruções complementares",
+          "clientWidth": 700,
+          "scrollWidth": 700,
+          "clientHeight": 70,
+          "scrollHeight": 141,
+          "textTransform": "none"
+        },
+        {
+          "label": "Nome do medicamento",
+          "clientWidth": 674,
+          "scrollWidth": 674,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Apresentação ou concentração",
+          "clientWidth": 674,
+          "scrollWidth": 674,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Dose",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Unidade",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Via de administração",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Frequência",
+          "clientWidth": 317,
+          "scrollWidth": 767,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Duração",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Quantidade",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Instruções complementares",
+          "clientWidth": 700,
+          "scrollWidth": 700,
+          "clientHeight": 70,
+          "scrollHeight": 141,
+          "textTransform": "none"
+        },
+        {
+          "label": "Observações gerais",
+          "clientWidth": 734,
+          "scrollWidth": 734,
+          "clientHeight": 93,
+          "scrollHeight": 93,
+          "textTransform": "none"
+        }
+      ],
+      "itemHeight": 666.03125
+    },
+    {
+      "kind": "prescription",
+      "n": 6,
+      "width": 390,
+      "scrollWidth": 390,
+      "height": 6575,
+      "firstItemY": 411.0625,
+      "actionsY": 6387.0625,
+      "fields": [
+        {
+          "label": "Nome do medicamento",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Apresentação ou concentração",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Dose",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Unidade",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Via de administração",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Frequência",
+          "clientWidth": 296,
+          "scrollWidth": 767,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Duração",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Quantidade",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Instruções complementares",
+          "clientWidth": 322,
+          "scrollWidth": 322,
+          "clientHeight": 70,
+          "scrollHeight": 309,
+          "textTransform": "none"
+        },
+        {
+          "label": "Nome do medicamento",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Apresentação ou concentração",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Dose",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Unidade",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Via de administração",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Frequência",
+          "clientWidth": 296,
+          "scrollWidth": 767,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Duração",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Quantidade",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Instruções complementares",
+          "clientWidth": 322,
+          "scrollWidth": 322,
+          "clientHeight": 70,
+          "scrollHeight": 309,
+          "textTransform": "none"
+        },
+        {
+          "label": "Nome do medicamento",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Apresentação ou concentração",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Dose",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Unidade",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Via de administração",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Frequência",
+          "clientWidth": 296,
+          "scrollWidth": 767,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Duração",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Quantidade",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Instruções complementares",
+          "clientWidth": 322,
+          "scrollWidth": 322,
+          "clientHeight": 70,
+          "scrollHeight": 309,
+          "textTransform": "none"
+        },
+        {
+          "label": "Nome do medicamento",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Apresentação ou concentração",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Dose",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Unidade",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Via de administração",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Frequência",
+          "clientWidth": 296,
+          "scrollWidth": 767,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Duração",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Quantidade",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Instruções complementares",
+          "clientWidth": 322,
+          "scrollWidth": 322,
+          "clientHeight": 70,
+          "scrollHeight": 309,
+          "textTransform": "none"
+        },
+        {
+          "label": "Nome do medicamento",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Apresentação ou concentração",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Dose",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Unidade",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Via de administração",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Frequência",
+          "clientWidth": 296,
+          "scrollWidth": 767,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Duração",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Quantidade",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Instruções complementares",
+          "clientWidth": 322,
+          "scrollWidth": 322,
+          "clientHeight": 70,
+          "scrollHeight": 309,
+          "textTransform": "none"
+        },
+        {
+          "label": "Nome do medicamento",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Apresentação ou concentração",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Dose",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Unidade",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Via de administração",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Frequência",
+          "clientWidth": 296,
+          "scrollWidth": 767,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Duração",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Quantidade",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Instruções complementares",
+          "clientWidth": 322,
+          "scrollWidth": 322,
+          "clientHeight": 70,
+          "scrollHeight": 309,
+          "textTransform": "none"
+        },
+        {
+          "label": "Observações gerais",
+          "clientWidth": 356,
+          "scrollWidth": 356,
+          "clientHeight": 93,
+          "scrollHeight": 93,
+          "textTransform": "none"
+        }
+      ],
+      "itemHeight": 935.9375
+    },
+    {
+      "kind": "exam_request",
+      "n": 1,
+      "width": 1440,
+      "scrollWidth": 1440,
+      "height": 1715,
+      "firstItemY": 908.796875,
+      "actionsY": 1623.484375,
+      "fields": [
+        {
+          "label": "Data do atendimento ou solicitação",
+          "clientWidth": 359,
+          "scrollWidth": 359,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Indicação clínica",
+          "clientWidth": 734,
+          "scrollWidth": 734,
+          "clientHeight": 93,
+          "scrollHeight": 141,
+          "textTransform": "none"
+        },
+        {
+          "label": "Justificativa",
+          "clientWidth": 734,
+          "scrollWidth": 734,
+          "clientHeight": 93,
+          "scrollHeight": 141,
+          "textTransform": "none"
+        },
+        {
+          "label": "Hipótese diagnóstica",
+          "clientWidth": 734,
+          "scrollWidth": 734,
+          "clientHeight": 70,
+          "scrollHeight": 70,
+          "textTransform": "none"
+        },
+        {
+          "label": "Orientações complementares",
+          "clientWidth": 734,
+          "scrollWidth": 734,
+          "clientHeight": 93,
+          "scrollHeight": 93,
+          "textTransform": "none"
+        },
+        {
+          "label": "Nome do exame",
+          "clientWidth": 674,
+          "scrollWidth": 674,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Região anatômica",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Detalhes técnicos",
+          "clientWidth": 700,
+          "scrollWidth": 700,
+          "clientHeight": 70,
+          "scrollHeight": 141,
+          "textTransform": "none"
+        },
+        {
+          "label": "Observações do exame",
+          "clientWidth": 700,
+          "scrollWidth": 700,
+          "clientHeight": 70,
+          "scrollHeight": 70,
+          "textTransform": "none"
+        }
+      ],
+      "itemHeight": 598.6875
+    },
+    {
+      "kind": "exam_request",
+      "n": 1,
+      "width": 390,
+      "scrollWidth": 390,
+      "height": 2134,
+      "firstItemY": 1119.90625,
+      "actionsY": 1945.96875,
+      "fields": [
+        {
+          "label": "Data do atendimento ou solicitação",
+          "clientWidth": 356,
+          "scrollWidth": 356,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Indicação clínica",
+          "clientWidth": 356,
+          "scrollWidth": 356,
+          "clientHeight": 93,
+          "scrollHeight": 285,
+          "textTransform": "none"
+        },
+        {
+          "label": "Justificativa",
+          "clientWidth": 356,
+          "scrollWidth": 356,
+          "clientHeight": 93,
+          "scrollHeight": 285,
+          "textTransform": "none"
+        },
+        {
+          "label": "Hipótese diagnóstica",
+          "clientWidth": 356,
+          "scrollWidth": 356,
+          "clientHeight": 70,
+          "scrollHeight": 70,
+          "textTransform": "none"
+        },
+        {
+          "label": "Orientações complementares",
+          "clientWidth": 356,
+          "scrollWidth": 356,
+          "clientHeight": 93,
+          "scrollHeight": 93,
+          "textTransform": "none"
+        },
+        {
+          "label": "Nome do exame",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Região anatômica",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Detalhes técnicos",
+          "clientWidth": 322,
+          "scrollWidth": 322,
+          "clientHeight": 70,
+          "scrollHeight": 309,
+          "textTransform": "none"
+        },
+        {
+          "label": "Observações do exame",
+          "clientWidth": 322,
+          "scrollWidth": 322,
+          "clientHeight": 70,
+          "scrollHeight": 70,
+          "textTransform": "none"
+        }
+      ],
+      "itemHeight": 686.0625
+    },
+    {
+      "kind": "exam_request",
+      "n": 3,
+      "width": 1440,
+      "scrollWidth": 1440,
+      "height": 2945,
+      "firstItemY": 908.796875,
+      "actionsY": 2852.859375,
+      "fields": [
+        {
+          "label": "Data do atendimento ou solicitação",
+          "clientWidth": 359,
+          "scrollWidth": 359,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Indicação clínica",
+          "clientWidth": 734,
+          "scrollWidth": 734,
+          "clientHeight": 93,
+          "scrollHeight": 141,
+          "textTransform": "none"
+        },
+        {
+          "label": "Justificativa",
+          "clientWidth": 734,
+          "scrollWidth": 734,
+          "clientHeight": 93,
+          "scrollHeight": 141,
+          "textTransform": "none"
+        },
+        {
+          "label": "Hipótese diagnóstica",
+          "clientWidth": 734,
+          "scrollWidth": 734,
+          "clientHeight": 70,
+          "scrollHeight": 70,
+          "textTransform": "none"
+        },
+        {
+          "label": "Orientações complementares",
+          "clientWidth": 734,
+          "scrollWidth": 734,
+          "clientHeight": 93,
+          "scrollHeight": 93,
+          "textTransform": "none"
+        },
+        {
+          "label": "Nome do exame",
+          "clientWidth": 674,
+          "scrollWidth": 674,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Região anatômica",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Detalhes técnicos",
+          "clientWidth": 700,
+          "scrollWidth": 700,
+          "clientHeight": 70,
+          "scrollHeight": 141,
+          "textTransform": "none"
+        },
+        {
+          "label": "Observações do exame",
+          "clientWidth": 700,
+          "scrollWidth": 700,
+          "clientHeight": 70,
+          "scrollHeight": 70,
+          "textTransform": "none"
+        },
+        {
+          "label": "Nome do exame",
+          "clientWidth": 674,
+          "scrollWidth": 674,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Região anatômica",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Detalhes técnicos",
+          "clientWidth": 700,
+          "scrollWidth": 700,
+          "clientHeight": 70,
+          "scrollHeight": 141,
+          "textTransform": "none"
+        },
+        {
+          "label": "Observações do exame",
+          "clientWidth": 700,
+          "scrollWidth": 700,
+          "clientHeight": 70,
+          "scrollHeight": 70,
+          "textTransform": "none"
+        },
+        {
+          "label": "Nome do exame",
+          "clientWidth": 674,
+          "scrollWidth": 674,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Região anatômica",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Detalhes técnicos",
+          "clientWidth": 700,
+          "scrollWidth": 700,
+          "clientHeight": 70,
+          "scrollHeight": 141,
+          "textTransform": "none"
+        },
+        {
+          "label": "Observações do exame",
+          "clientWidth": 700,
+          "scrollWidth": 700,
+          "clientHeight": 70,
+          "scrollHeight": 70,
+          "textTransform": "none"
+        }
+      ],
+      "itemHeight": 598.6875
+    },
+    {
+      "kind": "exam_request",
+      "n": 3,
+      "width": 390,
+      "scrollWidth": 390,
+      "height": 3538,
+      "firstItemY": 1119.90625,
+      "actionsY": 3350.09375,
+      "fields": [
+        {
+          "label": "Data do atendimento ou solicitação",
+          "clientWidth": 356,
+          "scrollWidth": 356,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Indicação clínica",
+          "clientWidth": 356,
+          "scrollWidth": 356,
+          "clientHeight": 93,
+          "scrollHeight": 285,
+          "textTransform": "none"
+        },
+        {
+          "label": "Justificativa",
+          "clientWidth": 356,
+          "scrollWidth": 356,
+          "clientHeight": 93,
+          "scrollHeight": 285,
+          "textTransform": "none"
+        },
+        {
+          "label": "Hipótese diagnóstica",
+          "clientWidth": 356,
+          "scrollWidth": 356,
+          "clientHeight": 70,
+          "scrollHeight": 70,
+          "textTransform": "none"
+        },
+        {
+          "label": "Orientações complementares",
+          "clientWidth": 356,
+          "scrollWidth": 356,
+          "clientHeight": 93,
+          "scrollHeight": 93,
+          "textTransform": "none"
+        },
+        {
+          "label": "Nome do exame",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Região anatômica",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Detalhes técnicos",
+          "clientWidth": 322,
+          "scrollWidth": 322,
+          "clientHeight": 70,
+          "scrollHeight": 309,
+          "textTransform": "none"
+        },
+        {
+          "label": "Observações do exame",
+          "clientWidth": 322,
+          "scrollWidth": 322,
+          "clientHeight": 70,
+          "scrollHeight": 70,
+          "textTransform": "none"
+        },
+        {
+          "label": "Nome do exame",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Região anatômica",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Detalhes técnicos",
+          "clientWidth": 322,
+          "scrollWidth": 322,
+          "clientHeight": 70,
+          "scrollHeight": 309,
+          "textTransform": "none"
+        },
+        {
+          "label": "Observações do exame",
+          "clientWidth": 322,
+          "scrollWidth": 322,
+          "clientHeight": 70,
+          "scrollHeight": 70,
+          "textTransform": "none"
+        },
+        {
+          "label": "Nome do exame",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Região anatômica",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Detalhes técnicos",
+          "clientWidth": 322,
+          "scrollWidth": 322,
+          "clientHeight": 70,
+          "scrollHeight": 309,
+          "textTransform": "none"
+        },
+        {
+          "label": "Observações do exame",
+          "clientWidth": 322,
+          "scrollWidth": 322,
+          "clientHeight": 70,
+          "scrollHeight": 70,
+          "textTransform": "none"
+        }
+      ],
+      "itemHeight": 686.0625
+    },
+    {
+      "kind": "exam_request",
+      "n": 6,
+      "width": 1440,
+      "scrollWidth": 1440,
+      "height": 4789,
+      "firstItemY": 908.796875,
+      "actionsY": 4696.921875,
+      "fields": [
+        {
+          "label": "Data do atendimento ou solicitação",
+          "clientWidth": 359,
+          "scrollWidth": 359,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Indicação clínica",
+          "clientWidth": 734,
+          "scrollWidth": 734,
+          "clientHeight": 93,
+          "scrollHeight": 141,
+          "textTransform": "none"
+        },
+        {
+          "label": "Justificativa",
+          "clientWidth": 734,
+          "scrollWidth": 734,
+          "clientHeight": 93,
+          "scrollHeight": 141,
+          "textTransform": "none"
+        },
+        {
+          "label": "Hipótese diagnóstica",
+          "clientWidth": 734,
+          "scrollWidth": 734,
+          "clientHeight": 70,
+          "scrollHeight": 70,
+          "textTransform": "none"
+        },
+        {
+          "label": "Orientações complementares",
+          "clientWidth": 734,
+          "scrollWidth": 734,
+          "clientHeight": 93,
+          "scrollHeight": 93,
+          "textTransform": "none"
+        },
+        {
+          "label": "Nome do exame",
+          "clientWidth": 674,
+          "scrollWidth": 674,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Região anatômica",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Detalhes técnicos",
+          "clientWidth": 700,
+          "scrollWidth": 700,
+          "clientHeight": 70,
+          "scrollHeight": 141,
+          "textTransform": "none"
+        },
+        {
+          "label": "Observações do exame",
+          "clientWidth": 700,
+          "scrollWidth": 700,
+          "clientHeight": 70,
+          "scrollHeight": 70,
+          "textTransform": "none"
+        },
+        {
+          "label": "Nome do exame",
+          "clientWidth": 674,
+          "scrollWidth": 674,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Região anatômica",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Detalhes técnicos",
+          "clientWidth": 700,
+          "scrollWidth": 700,
+          "clientHeight": 70,
+          "scrollHeight": 141,
+          "textTransform": "none"
+        },
+        {
+          "label": "Observações do exame",
+          "clientWidth": 700,
+          "scrollWidth": 700,
+          "clientHeight": 70,
+          "scrollHeight": 70,
+          "textTransform": "none"
+        },
+        {
+          "label": "Nome do exame",
+          "clientWidth": 674,
+          "scrollWidth": 674,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Região anatômica",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Detalhes técnicos",
+          "clientWidth": 700,
+          "scrollWidth": 700,
+          "clientHeight": 70,
+          "scrollHeight": 141,
+          "textTransform": "none"
+        },
+        {
+          "label": "Observações do exame",
+          "clientWidth": 700,
+          "scrollWidth": 700,
+          "clientHeight": 70,
+          "scrollHeight": 70,
+          "textTransform": "none"
+        },
+        {
+          "label": "Nome do exame",
+          "clientWidth": 674,
+          "scrollWidth": 674,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Região anatômica",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Detalhes técnicos",
+          "clientWidth": 700,
+          "scrollWidth": 700,
+          "clientHeight": 70,
+          "scrollHeight": 141,
+          "textTransform": "none"
+        },
+        {
+          "label": "Observações do exame",
+          "clientWidth": 700,
+          "scrollWidth": 700,
+          "clientHeight": 70,
+          "scrollHeight": 70,
+          "textTransform": "none"
+        },
+        {
+          "label": "Nome do exame",
+          "clientWidth": 674,
+          "scrollWidth": 674,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Região anatômica",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Detalhes técnicos",
+          "clientWidth": 700,
+          "scrollWidth": 700,
+          "clientHeight": 70,
+          "scrollHeight": 141,
+          "textTransform": "none"
+        },
+        {
+          "label": "Observações do exame",
+          "clientWidth": 700,
+          "scrollWidth": 700,
+          "clientHeight": 70,
+          "scrollHeight": 70,
+          "textTransform": "none"
+        },
+        {
+          "label": "Nome do exame",
+          "clientWidth": 674,
+          "scrollWidth": 674,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Região anatômica",
+          "clientWidth": 317,
+          "scrollWidth": 317,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Detalhes técnicos",
+          "clientWidth": 700,
+          "scrollWidth": 700,
+          "clientHeight": 70,
+          "scrollHeight": 141,
+          "textTransform": "none"
+        },
+        {
+          "label": "Observações do exame",
+          "clientWidth": 700,
+          "scrollWidth": 700,
+          "clientHeight": 70,
+          "scrollHeight": 70,
+          "textTransform": "none"
+        }
+      ],
+      "itemHeight": 598.6875
+    },
+    {
+      "kind": "exam_request",
+      "n": 6,
+      "width": 390,
+      "scrollWidth": 390,
+      "height": 5644,
+      "firstItemY": 1119.90625,
+      "actionsY": 5456.28125,
+      "fields": [
+        {
+          "label": "Data do atendimento ou solicitação",
+          "clientWidth": 356,
+          "scrollWidth": 356,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Indicação clínica",
+          "clientWidth": 356,
+          "scrollWidth": 356,
+          "clientHeight": 93,
+          "scrollHeight": 285,
+          "textTransform": "none"
+        },
+        {
+          "label": "Justificativa",
+          "clientWidth": 356,
+          "scrollWidth": 356,
+          "clientHeight": 93,
+          "scrollHeight": 285,
+          "textTransform": "none"
+        },
+        {
+          "label": "Hipótese diagnóstica",
+          "clientWidth": 356,
+          "scrollWidth": 356,
+          "clientHeight": 70,
+          "scrollHeight": 70,
+          "textTransform": "none"
+        },
+        {
+          "label": "Orientações complementares",
+          "clientWidth": 356,
+          "scrollWidth": 356,
+          "clientHeight": 93,
+          "scrollHeight": 93,
+          "textTransform": "none"
+        },
+        {
+          "label": "Nome do exame",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Região anatômica",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Detalhes técnicos",
+          "clientWidth": 322,
+          "scrollWidth": 322,
+          "clientHeight": 70,
+          "scrollHeight": 309,
+          "textTransform": "none"
+        },
+        {
+          "label": "Observações do exame",
+          "clientWidth": 322,
+          "scrollWidth": 322,
+          "clientHeight": 70,
+          "scrollHeight": 70,
+          "textTransform": "none"
+        },
+        {
+          "label": "Nome do exame",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Região anatômica",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Detalhes técnicos",
+          "clientWidth": 322,
+          "scrollWidth": 322,
+          "clientHeight": 70,
+          "scrollHeight": 309,
+          "textTransform": "none"
+        },
+        {
+          "label": "Observações do exame",
+          "clientWidth": 322,
+          "scrollWidth": 322,
+          "clientHeight": 70,
+          "scrollHeight": 70,
+          "textTransform": "none"
+        },
+        {
+          "label": "Nome do exame",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Região anatômica",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Detalhes técnicos",
+          "clientWidth": 322,
+          "scrollWidth": 322,
+          "clientHeight": 70,
+          "scrollHeight": 309,
+          "textTransform": "none"
+        },
+        {
+          "label": "Observações do exame",
+          "clientWidth": 322,
+          "scrollWidth": 322,
+          "clientHeight": 70,
+          "scrollHeight": 70,
+          "textTransform": "none"
+        },
+        {
+          "label": "Nome do exame",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Região anatômica",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Detalhes técnicos",
+          "clientWidth": 322,
+          "scrollWidth": 322,
+          "clientHeight": 70,
+          "scrollHeight": 309,
+          "textTransform": "none"
+        },
+        {
+          "label": "Observações do exame",
+          "clientWidth": 322,
+          "scrollWidth": 322,
+          "clientHeight": 70,
+          "scrollHeight": 70,
+          "textTransform": "none"
+        },
+        {
+          "label": "Nome do exame",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Região anatômica",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Detalhes técnicos",
+          "clientWidth": 322,
+          "scrollWidth": 322,
+          "clientHeight": 70,
+          "scrollHeight": 309,
+          "textTransform": "none"
+        },
+        {
+          "label": "Observações do exame",
+          "clientWidth": 322,
+          "scrollWidth": 322,
+          "clientHeight": 70,
+          "scrollHeight": 70,
+          "textTransform": "none"
+        },
+        {
+          "label": "Nome do exame",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Região anatômica",
+          "clientWidth": 296,
+          "scrollWidth": 296,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Detalhes técnicos",
+          "clientWidth": 322,
+          "scrollWidth": 322,
+          "clientHeight": 70,
+          "scrollHeight": 309,
+          "textTransform": "none"
+        },
+        {
+          "label": "Observações do exame",
+          "clientWidth": 322,
+          "scrollWidth": 322,
+          "clientHeight": 70,
+          "scrollHeight": 70,
+          "textTransform": "none"
+        }
+      ],
+      "itemHeight": 686.0625
+    },
+    {
+      "kind": "surgical_order",
+      "n": 1,
+      "width": 1440,
+      "scrollWidth": 1440,
+      "height": 1333,
+      "actionsY": 1241.328125,
+      "fields": [
+        {
+          "label": "Procedimento proposto",
+          "clientWidth": 708,
+          "scrollWidth": 708,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Região anatômica",
+          "clientWidth": 334,
+          "scrollWidth": 334,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Indicação clínica",
+          "clientWidth": 734,
+          "scrollWidth": 734,
+          "clientHeight": 93,
+          "scrollHeight": 141,
+          "textTransform": "none"
+        },
+        {
+          "label": "Diagnóstico ou hipótese diagnóstica",
+          "clientWidth": 734,
+          "scrollWidth": 734,
+          "clientHeight": 70,
+          "scrollHeight": 70,
+          "textTransform": "none"
+        },
+        {
+          "label": "Justificativa médica",
+          "clientWidth": 734,
+          "scrollWidth": 734,
+          "clientHeight": 93,
+          "scrollHeight": 141,
+          "textTransform": "none"
+        },
+        {
+          "label": "Materiais ou necessidades específicas",
+          "clientWidth": 734,
+          "scrollWidth": 734,
+          "clientHeight": 70,
+          "scrollHeight": 70,
+          "textTransform": "none"
+        },
+        {
+          "label": "Informações complementares",
+          "clientWidth": 734,
+          "scrollWidth": 734,
+          "clientHeight": 93,
+          "scrollHeight": 93,
+          "textTransform": "none"
+        }
+      ]
+    },
+    {
+      "kind": "surgical_order",
+      "n": 1,
+      "width": 390,
+      "scrollWidth": 390,
+      "height": 1664,
+      "actionsY": 1476.4375,
+      "fields": [
+        {
+          "label": "Procedimento proposto",
+          "clientWidth": 330,
+          "scrollWidth": 330,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Região anatômica",
+          "clientWidth": 330,
+          "scrollWidth": 330,
+          "clientHeight": 45,
+          "scrollHeight": 45,
+          "textTransform": "none"
+        },
+        {
+          "label": "Indicação clínica",
+          "clientWidth": 356,
+          "scrollWidth": 356,
+          "clientHeight": 93,
+          "scrollHeight": 285,
+          "textTransform": "none"
+        },
+        {
+          "label": "Diagnóstico ou hipótese diagnóstica",
+          "clientWidth": 356,
+          "scrollWidth": 356,
+          "clientHeight": 70,
+          "scrollHeight": 70,
+          "textTransform": "none"
+        },
+        {
+          "label": "Justificativa médica",
+          "clientWidth": 356,
+          "scrollWidth": 356,
+          "clientHeight": 93,
+          "scrollHeight": 285,
+          "textTransform": "none"
+        },
+        {
+          "label": "Materiais ou necessidades específicas",
+          "clientWidth": 356,
+          "scrollWidth": 356,
+          "clientHeight": 70,
+          "scrollHeight": 70,
+          "textTransform": "none"
+        },
+        {
+          "label": "Informações complementares",
+          "clientWidth": 356,
+          "scrollWidth": 356,
+          "clientHeight": 93,
+          "scrollHeight": 93,
+          "textTransform": "none"
+        }
+      ]
+    }
+  ],
+  "interactions": [
+    {
+      "kind": "prescription",
+      "afterAdd": {
+        "active": "Adicionar medicamento",
+        "dirty": null,
+        "items": 4
+      },
+      "nextAfterAdd": "<textarea rows=\"3\" maxlength=\"2000\" style=\"\">Dados fictícios — auditoria de UX.</textarea>",
+      "afterRemove": {
+        "active": "BODY",
+        "items": 3
+      },
+      "afterSave": [
+        "dipirona monoidratada DEMO",
+        "vitamina B12 DEMO",
+        "ITEM TEMPORÁRIO DEMO"
+      ]
+    },
+    {
+      "kind": "exam_request",
+      "afterAdd": {
+        "active": "Adicionar exame",
+        "dirty": null,
+        "items": 4
+      },
+      "nextAfterAdd": "<button class=\"button\" value=\"save\" aria-busy=\"false\" name=\"intent\"><span aria-live=\"polite\">Salvar rascunho</span></button>",
+      "afterRemove": {
+        "active": "BODY",
+        "items": 3
+      },
+      "afterSave": [
+        "HbA1c DEMO",
+        "β-hCG DEMO",
+        "ITEM TEMPORÁRIO DEMO"
+      ]
+    }
+  ],
+  "capitalization": [
+    {
+      "kind": "prescription",
+      "n": 1,
+      "input": [
+        "dipirona monoidratada DEMO"
+      ],
+      "rpc": [
+        "dipirona monoidratada DEMO"
+      ],
+      "preview": "RASCUNHO — NÃO ASSINADO / NÃO EMITIDO\n\nPrescrição\n\nAtleta Documentos DEMO\nMédico responsável\nDra. Clara DEMO\nIdentificação profissional\nCRM DEMO\nEstado\nRascunho\nAtualizado\n18/11/2026, 12:31\ndipirona monoidratada DEMO\n\nApresentação: Solução DEMO — 500 mg/mL\n\nDose: 1 mL\n\nVia: via oral — DEMO\n\nFrequência: Somente simulação: frequência extensa para verificar leitura integral em um campo de linha única\n\nDuração: DEMO\n\nQuantidade: DEMO\n\nInstruções: Texto sintético para inspeção de legibilidade: conferir todas as informações antes de qualquer uso. Texto sintético para inspeção de legibilidade: conferir todas as informações antes de qualquer uso. Texto sintético para inspeção de legibilidade: conferir todas as informações antes de qualquer uso. Texto sintético para inspeção de legibilidade: conferir todas as informações antes de qualquer uso.\n\nObservações\n\nDados fictícios — auditoria de UX.\n\nCriado em 18/11/2026, 12:31. Este documento não foi emitido nem assinado."
+    },
+    {
+      "kind": "prescription",
+      "n": 3,
+      "input": [
+        "dipirona monoidratada DEMO",
+        "DIPIRONA DEMO",
+        "vitamina B12 DEMO"
+      ],
+      "rpc": [
+        "dipirona monoidratada DEMO",
+        "DIPIRONA DEMO",
+        "vitamina B12 DEMO"
+      ]
+    },
+    {
+      "kind": "prescription",
+      "n": 6,
+      "input": [
+        "dipirona monoidratada DEMO",
+        "DIPIRONA DEMO",
+        "vitamina B12 DEMO",
+        "solução NaCl DEMO",
+        "fármaco β DEMO",
+        "Medicamento seis DEMO"
+      ],
+      "rpc": [
+        "dipirona monoidratada DEMO",
+        "DIPIRONA DEMO",
+        "vitamina B12 DEMO",
+        "solução NaCl DEMO",
+        "fármaco β DEMO",
+        "Medicamento seis DEMO"
+      ]
+    },
+    {
+      "kind": "exam_request",
+      "n": 1,
+      "input": [
+        "HbA1c DEMO"
+      ],
+      "rpc": [
+        "HbA1c DEMO"
+      ],
+      "preview": "RASCUNHO — NÃO ASSINADO / NÃO EMITIDO\n\nSolicitação de exames\n\nAtleta Documentos DEMO\nMédico responsável\nDra. Clara DEMO\nIdentificação profissional\nCRM DEMO\nEstado\nRascunho\nAtualizado\n18/11/2026, 12:31\n\nData do atendimento: 2026-11-18\n\nHbA1c DEMO\n\nTipo: Outro\n\nRegião: Joelho — DEMO\n\nLateralidade: Direita\n\nDetalhes técnicos: Texto sintético para inspeção de legibilidade: conferir todas as informações antes de qualquer uso. Texto sintético para inspeção de legibilidade: conferir todas as informações antes de qualquer uso. Texto sintético para inspeção de legibilidade: conferir todas as informações antes de qualquer uso. Texto sintético para inspeção de legibilidade: conferir todas as informações antes de qualquer uso.\n\nObservações: Conteúdo fictício; sem finalidade assistencial.\n\nIndicação: Texto sintético para inspeção de legibilidade: conferir todas as informações antes de qualquer uso. Texto sintético para inspeção de legibilidade: conferir todas as informações antes de qualquer uso. Texto sintético para inspeção de legibilidade: conferir todas as informações antes de qualquer uso. Texto sintético para inspeção de legibilidade: conferir todas as informações antes de qualquer uso.\n\nJustificativa: Texto sintético para inspeção de legibilidade: conferir todas as informações antes de qualquer uso. Texto sintético para inspeção de legibilidade: conferir todas as informações antes de qualquer uso. Texto sintético para inspeção de legibilidade: conferir todas as informações antes de qualquer uso. Texto sintético para inspeção de legibilidade: conferir todas as informações antes de qualquer uso.\n\nHipótese diagnóstica: Hipótese DEMO\n\nPrioridade: Eletiva\n\nOrientações: Orientação fictícia.\n\nCriado em 18/11/2026, 12:31. Este documento não foi emitido nem assinado."
+    },
+    {
+      "kind": "exam_request",
+      "n": 3,
+      "input": [
+        "HbA1c DEMO",
+        "RM de joelho DEMO",
+        "β-hCG DEMO"
+      ],
+      "rpc": [
+        "HbA1c DEMO",
+        "RM de joelho DEMO",
+        "β-hCG DEMO"
+      ]
+    },
+    {
+      "kind": "exam_request",
+      "n": 6,
+      "input": [
+        "HbA1c DEMO",
+        "RM de joelho DEMO",
+        "β-hCG DEMO",
+        "Hemograma completo DEMO",
+        "PCR DEMO",
+        "Exame seis DEMO"
+      ],
+      "rpc": [
+        "HbA1c DEMO",
+        "RM de joelho DEMO",
+        "β-hCG DEMO",
+        "Hemograma completo DEMO",
+        "PCR DEMO",
+        "Exame seis DEMO"
+      ]
+    },
+    {
+      "kind": "surgical_order",
+      "n": 1,
+      "input": [
+        "artroscopia de joelho — LCA DEMO"
+      ],
+      "rpc": "artroscopia de joelho — LCA DEMO",
+      "preview": "RASCUNHO — NÃO ASSINADO / NÃO EMITIDO\n\nPedido cirúrgico\n\nAtleta Documentos DEMO\nMédico responsável\nDra. Clara DEMO\nIdentificação profissional\nCRM DEMO\nEstado\nRascunho\nAtualizado\n18/11/2026, 12:31\nProcedimento proposto\n\nartroscopia de joelho — LCA DEMO\n\nRegião: Joelho DEMO\n\nLateralidade: Direita\n\nIndicação: Texto sintético para inspeção de legibilidade: conferir todas as informações antes de qualquer uso. Texto sintético para inspeção de legibilidade: conferir todas as informações antes de qualquer uso. Texto sintético para inspeção de legibilidade: conferir todas as informações antes de qualquer uso. Texto sintético para inspeção de legibilidade: conferir todas as informações antes de qualquer uso.\n\nDiagnóstico ou hipótese: LCA — DEMO\n\nJustificativa: Texto sintético para inspeção de legibilidade: conferir todas as informações antes de qualquer uso. Texto sintético para inspeção de legibilidade: conferir todas as informações antes de qualquer uso. Texto sintético para inspeção de legibilidade: conferir todas as informações antes de qualquer uso. Texto sintético para inspeção de legibilidade: conferir todas as informações antes de qualquer uso.\n\nPrioridade: Eletiva\n\nMateriais: Materiais DEMO\n\nInformações complementares: Somente inspeção visual.\n\nCriado em 18/11/2026, 12:31. Este documento não foi emitido nem assinado."
+    }
+  ],
+  "errors": [],
+  "extra": [
+    {
+      "kind": "prescription",
+      "tabOrder": [
+        {
+          "tag": "INPUT",
+          "label": "Nome do medicamento",
+          "outline": "3px none rgb(26, 26, 26)",
+          "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "INPUT",
+          "label": "Apresentação ou concentração",
+          "outline": "3px none rgb(26, 26, 26)",
+          "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "INPUT",
+          "label": "Dose",
+          "outline": "3px none rgb(26, 26, 26)",
+          "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "INPUT",
+          "label": "Unidade",
+          "outline": "3px none rgb(26, 26, 26)",
+          "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "INPUT",
+          "label": "Via de administração",
+          "outline": "3px none rgb(26, 26, 26)",
+          "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "INPUT",
+          "label": "Frequência",
+          "outline": "3px none rgb(26, 26, 26)",
+          "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "INPUT",
+          "label": "Duração",
+          "outline": "3px none rgb(26, 26, 26)",
+          "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "INPUT",
+          "label": "Quantidade",
+          "outline": "3px none rgb(26, 26, 26)",
+          "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "TEXTAREA",
+          "label": "Instruções complementares",
+          "outline": "3px none rgb(26, 26, 26)",
+          "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "BUTTON",
+          "outline": "3px solid rgb(0, 121, 213)",
+          "boxShadow": "none"
+        }
+      ],
+      "navigation": {
+        "dialogs": [],
+        "before": "dipirona monoidratada DEMO",
+        "reopened": "dipirona monoidratada DEMO",
+        "lostUnsaved": true
+      },
+      "mobile320": {
+        "width": 320,
+        "scrollWidth": 320
+      },
+      "removeLast": {
+        "empty": "Adicionar medicamento\nObservações gerais\n\nInforme o nome de ao menos um medicamento.\n\nSalvar rascunho\nApresentar para revisão\nPré-visualizar",
+        "dirty": null
+      }
+    },
+    {
+      "kind": "exam_request",
+      "tabOrder": [
+        {
+          "tag": "INPUT",
+          "label": "Nome do exame",
+          "outline": "3px none rgb(26, 26, 26)",
+          "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "SELECT",
+          "label": "Tipo",
+          "outline": "3px solid rgb(0, 121, 213)",
+          "boxShadow": "none"
+        },
+        {
+          "tag": "INPUT",
+          "label": "Região anatômica",
+          "outline": "3px none rgb(26, 26, 26)",
+          "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "SELECT",
+          "label": "Lateralidade",
+          "outline": "3px solid rgb(0, 121, 213)",
+          "boxShadow": "none"
+        },
+        {
+          "tag": "TEXTAREA",
+          "label": "Detalhes técnicos",
+          "outline": "3px none rgb(26, 26, 26)",
+          "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "TEXTAREA",
+          "label": "Observações do exame",
+          "outline": "3px none rgb(26, 26, 26)",
+          "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "BUTTON",
+          "outline": "3px solid rgb(0, 121, 213)",
+          "boxShadow": "none"
+        }
+      ],
+      "navigation": {
+        "dialogs": [],
+        "before": "HbA1c DEMO",
+        "reopened": "HbA1c DEMO",
+        "lostUnsaved": true
+      },
+      "mobile320": {
+        "width": 320,
+        "scrollWidth": 320
+      },
+      "removeLast": {
+        "empty": "Data do atendimento ou solicitação\nPrioridade\nNão informada\nEletiva\nPrioritária\nUrgente\nIndicação clínica\nJustificativa\nHipótese diagnóstica\nOrientações complementares\nAdicionar exame\n\nInforme o nome de ao menos um exame.\n\nSalvar rascunho\nApresentar para revisão\nPré-visualizar",
+        "dirty": null
+      }
+    },
+    {
+      "kind": "surgical_order",
+      "tabOrder": [
+        {
+          "tag": "INPUT",
+          "label": "Procedimento proposto",
+          "outline": "3px none rgb(26, 26, 26)",
+          "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "INPUT",
+          "label": "Região anatômica",
+          "outline": "3px none rgb(26, 26, 26)",
+          "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "SELECT",
+          "label": "Lateralidade",
+          "outline": "3px solid rgb(0, 121, 213)",
+          "boxShadow": "none"
+        },
+        {
+          "tag": "TEXTAREA",
+          "label": "Indicação clínica",
+          "outline": "3px none rgb(26, 26, 26)",
+          "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "TEXTAREA",
+          "label": "Diagnóstico ou hipótese diagnóstica",
+          "outline": "3px none rgb(26, 26, 26)",
+          "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "TEXTAREA",
+          "label": "Justificativa médica",
+          "outline": "3px none rgb(26, 26, 26)",
+          "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "tag": "SELECT",
+          "label": "Prioridade",
+          "outline": "3px solid rgb(0, 121, 213)",
+          "boxShadow": "none"
+        }
+      ],
+      "navigation": {
+        "dialogs": [],
+        "before": "artroscopia de joelho — LCA DEMO",
+        "reopened": "artroscopia de joelho — LCA DEMO",
+        "lostUnsaved": true
+      },
+      "mobile320": {
+        "width": 320,
+        "scrollWidth": 320
+      }
+    }
+  ],
+  "keyboardFocus": [
+    {
+      "kind": "prescription",
+      "tag": "INPUT",
+      "label": "Nome do medicamento",
+      "shadow": "rgba(35, 102, 178, 0.18) 0px 0px 0px 3px",
+      "border": "rgb(0, 121, 213)",
+      "outline": "3px none rgb(26, 26, 26)"
+    },
+    {
+      "kind": "exam_request",
+      "tag": "INPUT",
+      "label": "Data do atendimento ou solicitação",
+      "shadow": "rgba(35, 102, 178, 0.18) 0px 0px 0px 3px",
+      "border": "rgb(0, 121, 213)",
+      "outline": "3px none rgb(26, 26, 26)"
+    },
+    {
+      "kind": "surgical_order",
+      "tag": "INPUT",
+      "label": "Procedimento proposto",
+      "shadow": "rgba(35, 102, 178, 0.18) 0px 0px 0px 3px",
+      "border": "rgb(0, 121, 213)",
+      "outline": "3px none rgb(26, 26, 26)"
+    }
+  ]
+}

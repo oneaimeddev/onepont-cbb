@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1360" height="1110" viewBox="0 0 1360 1110"><style>text{font-family:Arial,sans-serif;fill:#0a1731}.muted{fill:#3a4660}.serif{font-family:Georgia,serif}</style><rect width="1360" height="1110" fill="#f4f6fa"/>
+<text x="32" y="34" font-size="18" font-weight="600" class="">007.10.2A · PROPOSTA CONCEITUAL — NÃO IMPLEMENTADA</text>
+<text x="32" y="60" font-size="14" font-weight="400" class="muted">Preservar identidade CBB, campos clínicos, limites e fluxo de revisão. Dados abaixo são fictícios.</text>
+<text x="32" y="104" font-size="17" font-weight="600" class="">Desktop · agrupamento e leitura</text>
+<text x="32" y="145" font-size="30" font-weight="400" class="serif">Atleta Documentos DEMO</text>
+<text x="32" y="174" font-size="14" font-weight="400" class="muted">Prescrição · Rascunho · Dra. Clara DEMO</text>
+<rect x="32" y="197" width="746" height="506" rx="10" fill="#fff" stroke="#e4e9f1"/>
+<text x="52" y="229" font-size="17" font-weight="600" class="">Medicamento 1 · dipirona monoidratada DEMO</text>
+<text x="678" y="229" font-size="14" font-weight="400" class="" style="fill:#3a4660">Remover</text>
+<text x="52" y="260" font-size="13" font-weight="600" class="">Nome do medicamento</text>
+<rect x="52" y="270" width="706" height="44" rx="10" fill="#fff" stroke="#e4e9f1"/>
+<text x="64" y="297" font-size="14" font-weight="400" class="">dipirona monoidratada DEMO</text>
+<text x="52" y="340" font-size="13" font-weight="600" class="">Apresentação ou concentração</text>
+<rect x="52" y="350" width="706" height="44" rx="10" fill="#fff" stroke="#e4e9f1"/>
+<text x="64" y="377" font-size="14" font-weight="400" class="">Solução DEMO — 500 mg/mL</text>
+<text x="52" y="420" font-size="13" font-weight="600" class="">Dose</text>
+<rect x="52" y="430" width="164" height="44" rx="10" fill="#fff" stroke="#e4e9f1"/>
+<text x="64" y="457" font-size="14" font-weight="400" class="">1</text>
+<text x="232" y="420" font-size="13" font-weight="600" class="">Unidade</text>
+<rect x="232" y="430" width="132" height="44" rx="10" fill="#fff" stroke="#e4e9f1"/>
+<text x="244" y="457" font-size="14" font-weight="400" class="">mL</text>
+<text x="380" y="420" font-size="13" font-weight="600" class="">Via de administração</text>
+<rect x="380" y="430" width="378" height="44" rx="10" fill="#fff" stroke="#e4e9f1"/>
+<text x="392" y="457" font-size="14" font-weight="400" class="">via oral — DEMO</text>
+<text x="52" y="500" font-size="13" font-weight="600" class="">Frequência · leitura em múltiplas linhas</text>
+<rect x="52" y="510" width="706" height="66" rx="10" fill="#fff" stroke="#e4e9f1"/>
+<text x="64" y="537" font-size="14" font-weight="400" class="">Texto extenso visível, mantendo o limite atual.</text>
+<text x="52" y="602" font-size="13" font-weight="600" class="">Duração</text>
+<rect x="52" y="612" width="345" height="44" rx="10" fill="#fff" stroke="#e4e9f1"/>
+<text x="64" y="639" font-size="14" font-weight="400" class="">DEMO</text>
+<text x="413" y="602" font-size="13" font-weight="600" class="">Quantidade</text>
+<rect x="413" y="612" width="345" height="44" rx="10" fill="#fff" stroke="#e4e9f1"/>
+<text x="425" y="639" font-size="14" font-weight="400" class="">DEMO</text>
+<text x="52" y="730" font-size="14" font-weight="400" class="muted">Instruções complementares: área com altura adaptável ao texto.</text>
+<rect x="32" y="755" width="746" height="50" rx="10" fill="#fff" stroke="#e4e9f1"/>
+<text x="52" y="786" font-size="15" font-weight="600" class="" style="fill:#0079d5">+ Adicionar medicamento</text>
+<text x="32" y="834" font-size="14" font-weight="400" class="muted">Próximo item recebe foco; remoção informa o nome e permite desfazer.</text>
+<rect x="32" y="855" width="746" height="62" rx="10" fill="#fff" stroke="#e4e9f1"/>
+<rect x="48" y="864" width="180" height="44" rx="10" fill="#007132" stroke="#007132"/>
+<text x="61" y="892" font-size="15" font-weight="600" class="" style="fill:#fff">Salvar rascunho</text>
+<text x="254" y="892" font-size="15" font-weight="400" class="">Apresentar para revisão</text>
+<text x="565" y="892" font-size="15" font-weight="400" class="" style="fill:#0079d5">Pré-visualizar</text>
+<text x="32" y="942" font-size="14" font-weight="400" class="muted">Barra disponível na rolagem, com espaço reservado e sem cobrir o foco.</text>
+<text x="826" y="104" font-size="17" font-weight="600" class="">Mobile · mesmos campos</text>
+<rect x="826" y="124" width="390" height="691" rx="10" fill="#fff" stroke="#e4e9f1"/>
+<text x="846" y="158" font-size="23" font-weight="400" class="serif">Atleta Documentos DEMO</text>
+<text x="846" y="185" font-size="14" font-weight="400" class="muted">Prescrição · Rascunho</text>
+<text x="846" y="222" font-size="17" font-weight="600" class="">Medicamento 1</text>
+<text x="846" y="246" font-size="15" font-weight="400" class="">dipirona monoidratada DEMO</text>
+<text x="846" y="278" font-size="13" font-weight="600" class="">Nome do medicamento</text>
+<rect x="846" y="288" width="350" height="44" rx="10" fill="#fff" stroke="#e4e9f1"/>
+<text x="858" y="315" font-size="14" font-weight="400" class="">dipirona monoidratada DEMO</text>
+<text x="846" y="360" font-size="13" font-weight="600" class="">Apresentação ou concentração</text>
+<rect x="846" y="370" width="350" height="44" rx="10" fill="#fff" stroke="#e4e9f1"/>
+<text x="858" y="397" font-size="14" font-weight="400" class="">Solução DEMO — 500 mg/mL</text>
+<text x="846" y="442" font-size="13" font-weight="600" class="">Dose</text>
+<rect x="846" y="452" width="166" height="44" rx="10" fill="#fff" stroke="#e4e9f1"/>
+<text x="858" y="479" font-size="14" font-weight="400" class="">1</text>
+<text x="1028" y="442" font-size="13" font-weight="600" class="">Unidade</text>
+<rect x="1028" y="452" width="168" height="44" rx="10" fill="#fff" stroke="#e4e9f1"/>
+<text x="1040" y="479" font-size="14" font-weight="400" class="">mL</text>
+<text x="846" y="524" font-size="13" font-weight="600" class="">Via de administração</text>
+<rect x="846" y="534" width="350" height="44" rx="10" fill="#fff" stroke="#e4e9f1"/>
+<text x="858" y="561" font-size="14" font-weight="400" class="">via oral — DEMO</text>
+<text x="846" y="606" font-size="13" font-weight="600" class="">Frequência</text>
+<rect x="846" y="616" width="350" height="66" rx="10" fill="#fff" stroke="#e4e9f1"/>
+<text x="858" y="643" font-size="14" font-weight="400" class="">Texto extenso com leitura integral</text>
+<text x="846" y="726" font-size="13" font-weight="400" class="muted">Demais campos seguem no fluxo.</text>
+<rect x="846" y="747" width="350" height="44" rx="10" fill="#007132" stroke="#007132"/>
+<text x="944" y="775" font-size="15" font-weight="600" class="" style="fill:#fff">Salvar rascunho</text>
+<text x="826" y="852" font-size="14" font-weight="400" class="">Exames: contexto curto → itens → justificativas.</text>
+<text x="826" y="878" font-size="14" font-weight="400" class="">Cirurgia: procedimento → contexto clínico</text>
+<text x="826" y="902" font-size="14" font-weight="400" class="">→ justificativa e complementos.</text>
+<text x="32" y="992" font-size="17" font-weight="600" class="">Ações de criação · comparação visual</text>
+<rect x="32" y="1010" width="250" height="52" rx="10" fill="#fff" stroke="#e4e9f1"/>
+<text x="49" y="1042" font-size="17" font-weight="600" class="">+ Novo documento  ▾</text>
+<text x="305" y="1042" font-size="15" font-weight="400" class="">A · recomendada: menu com três tipos escritos por extenso.</text>
+<text x="32" y="1091" font-size="14" font-weight="400" class="muted">B · alternativa: [ícone Prescrição]  [ícone Cirurgia]  [ícone Exames] — rótulos sempre visíveis.</text>
+</svg>
