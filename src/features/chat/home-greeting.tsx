@@ -12,6 +12,20 @@ function subscribeVisibility(listener: () => void) {
   return () => document.removeEventListener("visibilitychange", listener);
 }
 
+function GreetingText({ phrase, count = phrase.length }: {
+  phrase: string;
+  count?: number;
+}) {
+  const lastWord = phrase.lastIndexOf(" ") + 1;
+  const visible = phrase.slice(0, count);
+  return (
+    <>
+      {visible.slice(0, lastWord)}
+      <span style={{ color: "var(--ia-blue)" }}>{visible.slice(lastWord)}</span>
+    </>
+  );
+}
+
 export function HomeGreeting({ paused }: { paused: boolean }) {
   const reduced = useSyncExternalStore(
     subscribeMotion,
@@ -86,13 +100,13 @@ export function HomeGreeting({ paused }: { paused: boolean }) {
         className={`ia-greeting-typed${text.fading ? " is-fading" : ""}`}
         aria-hidden="true"
       >
-        {phrase.slice(0, text.count)}
+        <GreetingText phrase={phrase} count={text.count} />
         {text.count < phrase.length && !paused && !hidden && !reduced ? (
           <span className="ia-greeting-cursor" />
         ) : null}
       </span>
       <span className="ia-greeting-reduced" aria-hidden="true">
-        {phrase}
+        <GreetingText phrase={phrase} />
       </span>
     </h1>
   );
