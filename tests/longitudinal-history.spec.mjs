@@ -207,7 +207,8 @@ test("a consulta percorre o histórico autorizado e não revela o restante", asy
     payload: { procedure: surgeryName, region: "Joelho", laterality: "right", indication: "", diagnosis: "", justification: "", priority: "", additional: "", materials: "" },
   });
   expect(savedSurgery.data.status).toBe("draft");
-  sql(`update clinical.documents set created_at = timestamptz '2026-11-01 12:00:00+00', updated_at = timestamptz '2026-11-02 12:00:00+00' where id = '${exam}';`);
+  // Fix all document creation dates; the period must not depend on the runner's clock.
+  sql(`update clinical.documents set created_at = timestamptz '2026-11-01 12:00:00+00', updated_at = timestamptz '2026-11-02 12:00:00+00' where id in ('${exam}', '${prescription}', '${surgery}');`);
 
   const recent = await physician.client.rpc("chat_history_page", { target: athlete, filters: { from: "2026-05-17", to: "2026-11-17", page: "1", page_size: "20" }, mode: "text" });
   const recentIds = recent.data.records.map((item) => item.id);

@@ -1,0 +1,19 @@
+{
+  "README.md": "5aabf61e7c578200a416ffa0ed810447e1bc02c606a20f92ce54d6a8e25228d3",
+  "docs/adr/0019-longitudinal-history.md": "2613f26384668602028f5fa78bb9a5babcc4e2b9e97701c36a0d90e5a12aa0b5",
+  "docs/visual/handoff-007-5-2/analise-1440x900.png": "163e1345ed945cee808efd58d9c3e41b19476e608c5d2e83b6f4ae7dc3e8ff7f",
+  "docs/visual/handoff-007-5-2/analise-390x844.png": "ede5d99b8f32ff94b40d0b648fcce83aa8498605735ecce48c5611628b0f0b54",
+  "docs/visual/handoff-007-5-2/fonte-1440x900.png": "cea656e5287ca5b04117145d3d98e68c6838ff61e00bb100977ed7afdb1faf93",
+  "scripts/seed-demo-chart.mjs": "535349fa527c5114042fc85bc85e15158ea46f9b9a17f2d7ac6d3cdb27cbf217",
+  "src/app/api/inteligencia/historico/route.ts": "27e1deb4f039863c68399ee636cb25dea4744b18431531b5cd4c5f97eda380e3",
+  "src/features/chat/agent.ts": "cb9d6d2df67c51659e6f69d5858fbf3c933a1d4474fa70ce9aba271a21be3674",
+  "src/features/chat/history-analysis.ts": "cffa498c9413bbf7c0c02984ec420754d5003de7cec24ff45bbb0dc5b776d81d",
+  "src/features/chat/history-run.ts": "64d028fc4b8c7efb2107962034702cdc399d0a0c956e2c761e2a5a149a862a3a",
+  "src/features/chat/intelligence-home.tsx": "f3373f30672d91abd0d740604b9ba5d50e6f784d9dc49d438fa72dc3ee30c787",
+  "src/features/chat/intelligence.css": "de0336c4f655e805f5844b17bba2a17f0f85d66050edb998a6641c5aa45c1100",
+  "src/features/chat/longitudinal-card.tsx": "4453a76fe4fe7abffb3deabe2a1fb96b57eab07d4905e9d3f87facc789dc6695",
+  "src/features/chat/transcript.ts": "fc688d7c7399c85db24341b01c87de38ab3089f7b3243daa569b0f189690a5ca",
+  "supabase/migrations/20261117000200_longitudinal_history.sql": "57e5168f0d0f977a2eeac5595a12b27fd7e3771b393dad1dc37bea96d1e8ef5d",
+  "tests/longitudinal-history.spec.mjs": "a05122d7d9c0e6c00ee0edbd1967deb9c720ff1ed5e6197006b4680e33a5812f",
+  "tests/voice-history.spec.mjs": "b095859f89e2e7a632072e1d8f70618fc76f46a8d99a386b7e40e91d476d74dd"
+}

@@ -1,0 +1,41 @@
+{
+  "date": "2026-11-18",
+  "base_polish": "05a2c38",
+  "preservation_commits": {
+    "longitudinal": "20c698b",
+    "demo_seed": "f6608bc"
+  },
+  "fixture": "tests/longitudinal-history.spec.mjs",
+  "unchanged_original_files": 16,
+  "original_file_count": 17,
+  "checks": [
+    {
+      "command": "npx playwright test tests/longitudinal-history.spec.mjs --project=app --workers=1",
+      "exit_code": 0,
+      "passed": 1
+    },
+    {
+      "command": "npm run lint",
+      "exit_code": 0
+    },
+    {
+      "command": "npm run typecheck",
+      "exit_code": 0
+    },
+    {
+      "command": "npm run build",
+      "exit_code": 0
+    },
+    {
+      "command": "npx playwright test --workers=1",
+      "exit_code": 0,
+      "passed": 64,
+      "failed": 0,
+      "skipped": 0,
+      "duration": "4.4m"
+    }
+  ],
+  "runtime_implementation_changed": false,
+  "visual_changes": false,
+  "merge": false
+}
