@@ -1,0 +1,977 @@
+{
+  "date": "2026-11-18",
+  "commit": "88fe67175b15602ec35a34ed39e91ed17f600ee1",
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "scenarios": {
+    "athletes": 3,
+    "visibleEvolutions": 64,
+    "restrictedEvolutions": 1,
+    "medicalDocuments": 5,
+    "attachments": 1
+  },
+  "checks": [
+    {
+      "name": "Somente evoluções recentes na visão geral",
+      "pass": true,
+      "detail": {
+        "count": 3
+      }
+    },
+    {
+      "name": "Link do histórico recente expande a evolução",
+      "pass": false,
+      "detail": {
+        "hash": "#registro-8d67e564-da3d-4d83-87c4-fabd83c25eb0",
+        "openDetails": 0
+      }
+    },
+    {
+      "name": "Histórico extenso contém todas as evoluções autorizadas",
+      "pass": true,
+      "detail": {
+        "rendered": 64,
+        "expected": 64
+      }
+    },
+    {
+      "name": "Sigilo: título/ID restritos ausentes do HTML do médico",
+      "pass": true
+    },
+    {
+      "name": "Alteração não salva persiste ao alternar abas",
+      "pass": false,
+      "detail": {
+        "valuePreserved": false
+      }
+    },
+    {
+      "name": "Documentos disponíveis e claramente não assinados",
+      "pass": true
+    },
+    {
+      "name": "Documento mantém atleta no contexto",
+      "pass": true
+    },
+    {
+      "name": "Nova evolução mantém atleta",
+      "pass": true
+    },
+    {
+      "name": "Chat mantém o atleta no contexto",
+      "pass": true
+    },
+    {
+      "name": "Sem overflow horizontal: 07a-mobile-inicial",
+      "pass": true,
+      "detail": {
+        "width": 390,
+        "viewport": 390
+      }
+    },
+    {
+      "name": "Sem overflow horizontal: 07b-mobile-cadastro",
+      "pass": true,
+      "detail": {
+        "width": 390,
+        "viewport": 390
+      }
+    },
+    {
+      "name": "Sem overflow horizontal: 07c-mobile-timeline",
+      "pass": true,
+      "detail": {
+        "width": 390,
+        "viewport": 390
+      }
+    },
+    {
+      "name": "Sem overflow horizontal: 07d-mobile-documentos",
+      "pass": true,
+      "detail": {
+        "width": 390,
+        "viewport": 390
+      }
+    },
+    {
+      "name": "Sem overflow horizontal: 07e-mobile-anexos",
+      "pass": true,
+      "detail": {
+        "width": 390,
+        "viewport": 390
+      }
+    },
+    {
+      "name": "Sem overflow horizontal 320px",
+      "pass": true,
+      "detail": {
+        "width": 320,
+        "viewport": 320
+      }
+    },
+    {
+      "name": "Sigilo preservado no HTML: physio",
+      "pass": true
+    },
+    {
+      "name": "Sem habilitação médica: URL documentos negada physio",
+      "pass": true,
+      "detail": {
+        "status": 404
+      }
+    },
+    {
+      "name": "Documento privado do médico não acessível: physio",
+      "pass": true,
+      "detail": {
+        "status": 404
+      }
+    },
+    {
+      "name": "Fisioterapia pode iniciar evolução",
+      "pass": true
+    },
+    {
+      "name": "Anexo de outro autor ausente",
+      "pass": true
+    },
+    {
+      "name": "Autora vê seu próprio registro restrito",
+      "pass": true
+    },
+    {
+      "name": "Sem habilitação médica: URL documentos negada psych",
+      "pass": true,
+      "detail": {
+        "status": 404
+      }
+    },
+    {
+      "name": "Documento privado do médico não acessível: psych",
+      "pass": true,
+      "detail": {
+        "status": 404
+      }
+    },
+    {
+      "name": "Sigilo preservado no HTML: registry",
+      "pass": true
+    },
+    {
+      "name": "Sem habilitação médica: URL documentos negada registry",
+      "pass": true,
+      "detail": {
+        "status": 404
+      }
+    },
+    {
+      "name": "Documento privado do médico não acessível: registry",
+      "pass": true,
+      "detail": {
+        "status": 404
+      }
+    },
+    {
+      "name": "Cadastro sem leitura: não mostra atividade clínica",
+      "pass": true
+    },
+    {
+      "name": "Cadastro sem leitura: não oferece evolução",
+      "pass": true
+    },
+    {
+      "name": "RPC não devolve metadados restritos",
+      "pass": true,
+      "detail": {
+        "visibleRecords": 64
+      }
+    }
+  ],
+  "pages": [
+    {
+      "capture": "01-perfil-inicial-desktop",
+      "url": "/atletas/250a30b7-1f47-4b9e-9c63-80f1b5bd786d",
+      "title": "Marina Costa — Atleta DEMO",
+      "viewport": 1440,
+      "scrollWidth": 1440,
+      "height": 1000,
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "Marina Costa — Atleta DEMO"
+        },
+        {
+          "tag": "H2",
+          "text": "Histórico clínico"
+        },
+        {
+          "tag": "H2",
+          "text": "Contexto esportivo"
+        }
+      ],
+      "smallTargets": []
+    },
+    {
+      "capture": "03-linha-do-tempo-desktop",
+      "url": "/atletas/250a30b7-1f47-4b9e-9c63-80f1b5bd786d?aba=timeline",
+      "title": "Marina Costa — Atleta DEMO",
+      "viewport": 1440,
+      "scrollWidth": 1440,
+      "height": 3447,
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "Marina Costa — Atleta DEMO"
+        },
+        {
+          "tag": "H2",
+          "text": "Linha do tempo"
+        },
+        {
+          "tag": "H3",
+          "text": "Novembro de 2026"
+        },
+        {
+          "tag": "H3",
+          "text": "Outubro de 2026"
+        },
+        {
+          "tag": "H3",
+          "text": "Setembro de 2026"
+        },
+        {
+          "tag": "H3",
+          "text": "Agosto de 2026"
+        },
+        {
+          "tag": "H3",
+          "text": "Julho de 2026"
+        },
+        {
+          "tag": "H3",
+          "text": "Junho de 2026"
+        },
+        {
+          "tag": "H3",
+          "text": "Maio de 2026"
+        },
+        {
+          "tag": "H3",
+          "text": "Abril de 2026"
+        },
+        {
+          "tag": "H3",
+          "text": "Março de 2026"
+        }
+      ],
+      "smallTargets": []
+    },
+    {
+      "capture": "02-dados-pessoais-esportivos-desktop",
+      "url": "/atletas/250a30b7-1f47-4b9e-9c63-80f1b5bd786d?aba=cadastro",
+      "title": "Marina Costa — Atleta DEMO",
+      "viewport": 1440,
+      "scrollWidth": 1440,
+      "height": 2350,
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "Marina Costa — Atleta DEMO"
+        },
+        {
+          "tag": "H2",
+          "text": "Dados cadastrais"
+        },
+        {
+          "tag": "H2",
+          "text": "Foto de perfil"
+        },
+        {
+          "tag": "H2",
+          "text": "Dados pessoais"
+        },
+        {
+          "tag": "H2",
+          "text": "Contatos"
+        },
+        {
+          "tag": "H2",
+          "text": "Novo vínculo"
+        },
+        {
+          "tag": "H2",
+          "text": "Histórico esportivo"
+        }
+      ],
+      "smallTargets": []
+    },
+    {
+      "capture": "04-documentos-medicos-desktop",
+      "url": "/atletas/250a30b7-1f47-4b9e-9c63-80f1b5bd786d?aba=documentos",
+      "title": "Marina Costa — Atleta DEMO",
+      "viewport": 1440,
+      "scrollWidth": 1440,
+      "height": 1000,
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "Marina Costa — Atleta DEMO"
+        },
+        {
+          "tag": "H2",
+          "text": "Documentos"
+        }
+      ],
+      "smallTargets": [
+        {
+          "text": "Prescrição",
+          "w": 81,
+          "h": 21
+        },
+        {
+          "text": "Pedido cirúrgico",
+          "w": 121,
+          "h": 21
+        },
+        {
+          "text": "Solicitação de exames",
+          "w": 164,
+          "h": 21
+        },
+        {
+          "text": "Prescrição",
+          "w": 81,
+          "h": 21
+        },
+        {
+          "text": "Solicitação de exames",
+          "w": 164,
+          "h": 21
+        }
+      ]
+    },
+    {
+      "capture": "05-anexos-clinicos-desktop",
+      "url": "/atletas/250a30b7-1f47-4b9e-9c63-80f1b5bd786d?aba=anexos",
+      "title": "Marina Costa — Atleta DEMO",
+      "viewport": 1440,
+      "scrollWidth": 1440,
+      "height": 1000,
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "Marina Costa — Atleta DEMO"
+        },
+        {
+          "tag": "H2",
+          "text": "Documentos e Anexos"
+        }
+      ],
+      "smallTargets": []
+    },
+    {
+      "capture": "06-acoes-rapidas-desktop",
+      "url": "/atletas/250a30b7-1f47-4b9e-9c63-80f1b5bd786d",
+      "title": "Marina Costa — Atleta DEMO",
+      "viewport": 1440,
+      "scrollWidth": 1440,
+      "height": 1000,
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "Marina Costa — Atleta DEMO"
+        },
+        {
+          "tag": "H2",
+          "text": "Histórico clínico"
+        },
+        {
+          "tag": "H2",
+          "text": "Contexto esportivo"
+        }
+      ],
+      "smallTargets": []
+    },
+    {
+      "url": "/atletas/250a30b7-1f47-4b9e-9c63-80f1b5bd786d",
+      "title": "Marina Costa — Atleta DEMO",
+      "viewport": 1440,
+      "scrollWidth": 1440,
+      "height": 1000,
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "Marina Costa — Atleta DEMO"
+        },
+        {
+          "tag": "H2",
+          "text": "Histórico clínico"
+        },
+        {
+          "tag": "H2",
+          "text": "Contexto esportivo"
+        }
+      ],
+      "smallTargets": []
+    },
+    {
+      "capture": "09-atleta-recem-cadastrado",
+      "url": "/atletas/c2aed490-0895-4446-b729-cddf38d6cd54",
+      "title": "Lucas Almeida — Cadastro DEMO",
+      "viewport": 1440,
+      "scrollWidth": 1440,
+      "height": 1000,
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "Lucas Almeida — Cadastro DEMO"
+        },
+        {
+          "tag": "H2",
+          "text": "Histórico clínico"
+        },
+        {
+          "tag": "H2",
+          "text": "Contexto esportivo"
+        }
+      ],
+      "smallTargets": []
+    },
+    {
+      "capture": "10-multiplos-vinculos",
+      "url": "/atletas/53857ed3-2414-49d9-94b5-bdfa2e08f428",
+      "title": "Gabriela Ribeiro — Vínculos DEMO",
+      "viewport": 1440,
+      "scrollWidth": 1440,
+      "height": 1000,
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "Gabriela Ribeiro — Vínculos DEMO"
+        },
+        {
+          "tag": "H2",
+          "text": "Histórico clínico"
+        },
+        {
+          "tag": "H2",
+          "text": "Contexto esportivo"
+        }
+      ],
+      "smallTargets": []
+    },
+    {
+      "capture": "07a-mobile-inicial",
+      "url": "/atletas/250a30b7-1f47-4b9e-9c63-80f1b5bd786d",
+      "title": "Marina Costa — Atleta DEMO",
+      "viewport": 390,
+      "scrollWidth": 390,
+      "height": 1311,
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "Marina Costa — Atleta DEMO"
+        },
+        {
+          "tag": "H2",
+          "text": "Histórico clínico"
+        },
+        {
+          "tag": "H2",
+          "text": "Contexto esportivo"
+        }
+      ],
+      "smallTargets": []
+    },
+    {
+      "capture": "07b-mobile-cadastro",
+      "url": "/atletas/250a30b7-1f47-4b9e-9c63-80f1b5bd786d?aba=cadastro",
+      "title": "Marina Costa — Atleta DEMO",
+      "viewport": 390,
+      "scrollWidth": 390,
+      "height": 2818,
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "Marina Costa — Atleta DEMO"
+        },
+        {
+          "tag": "H2",
+          "text": "Dados cadastrais"
+        },
+        {
+          "tag": "H2",
+          "text": "Foto de perfil"
+        },
+        {
+          "tag": "H2",
+          "text": "Dados pessoais"
+        },
+        {
+          "tag": "H2",
+          "text": "Contatos"
+        },
+        {
+          "tag": "H2",
+          "text": "Novo vínculo"
+        },
+        {
+          "tag": "H2",
+          "text": "Histórico esportivo"
+        }
+      ],
+      "smallTargets": []
+    },
+    {
+      "capture": "07c-mobile-timeline",
+      "url": "/atletas/250a30b7-1f47-4b9e-9c63-80f1b5bd786d?aba=timeline",
+      "title": "Marina Costa — Atleta DEMO",
+      "viewport": 390,
+      "scrollWidth": 390,
+      "height": 6557,
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "Marina Costa — Atleta DEMO"
+        },
+        {
+          "tag": "H2",
+          "text": "Linha do tempo"
+        },
+        {
+          "tag": "H3",
+          "text": "Novembro de 2026"
+        },
+        {
+          "tag": "H3",
+          "text": "Outubro de 2026"
+        },
+        {
+          "tag": "H3",
+          "text": "Setembro de 2026"
+        },
+        {
+          "tag": "H3",
+          "text": "Agosto de 2026"
+        },
+        {
+          "tag": "H3",
+          "text": "Julho de 2026"
+        },
+        {
+          "tag": "H3",
+          "text": "Junho de 2026"
+        },
+        {
+          "tag": "H3",
+          "text": "Maio de 2026"
+        },
+        {
+          "tag": "H3",
+          "text": "Abril de 2026"
+        },
+        {
+          "tag": "H3",
+          "text": "Março de 2026"
+        }
+      ],
+      "smallTargets": []
+    },
+    {
+      "capture": "07d-mobile-documentos",
+      "url": "/atletas/250a30b7-1f47-4b9e-9c63-80f1b5bd786d?aba=documentos",
+      "title": "Marina Costa — Atleta DEMO",
+      "viewport": 390,
+      "scrollWidth": 390,
+      "height": 1290,
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "Marina Costa — Atleta DEMO"
+        },
+        {
+          "tag": "H2",
+          "text": "Documentos"
+        }
+      ],
+      "smallTargets": [
+        {
+          "text": "Prescrição",
+          "w": 81,
+          "h": 21
+        },
+        {
+          "text": "Pedido cirúrgico",
+          "w": 121,
+          "h": 21
+        },
+        {
+          "text": "Solicitação de exames",
+          "w": 164,
+          "h": 21
+        },
+        {
+          "text": "Prescrição",
+          "w": 81,
+          "h": 21
+        },
+        {
+          "text": "Solicitação de exames",
+          "w": 164,
+          "h": 21
+        }
+      ]
+    },
+    {
+      "capture": "07e-mobile-anexos",
+      "url": "/atletas/250a30b7-1f47-4b9e-9c63-80f1b5bd786d?aba=anexos",
+      "title": "Marina Costa — Atleta DEMO",
+      "viewport": 390,
+      "scrollWidth": 390,
+      "height": 1496,
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "Marina Costa — Atleta DEMO"
+        },
+        {
+          "tag": "H2",
+          "text": "Documentos e Anexos"
+        }
+      ],
+      "smallTargets": []
+    },
+    {
+      "capture": "07f-mobile-320-documentos",
+      "url": "/atletas/250a30b7-1f47-4b9e-9c63-80f1b5bd786d?aba=documentos",
+      "title": "Marina Costa — Atleta DEMO",
+      "viewport": 320,
+      "scrollWidth": 320,
+      "height": 1494,
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "Marina Costa — Atleta DEMO"
+        },
+        {
+          "tag": "H2",
+          "text": "Documentos"
+        }
+      ],
+      "smallTargets": [
+        {
+          "text": "Prescrição",
+          "w": 81,
+          "h": 21
+        },
+        {
+          "text": "Pedido cirúrgico",
+          "w": 121,
+          "h": 21
+        },
+        {
+          "text": "Solicitação de exames",
+          "w": 164,
+          "h": 21
+        },
+        {
+          "text": "Prescrição",
+          "w": 81,
+          "h": 21
+        },
+        {
+          "text": "Solicitação de exames",
+          "w": 164,
+          "h": 21
+        }
+      ]
+    },
+    {
+      "url": "/atletas/250a30b7-1f47-4b9e-9c63-80f1b5bd786d?aba=timeline",
+      "title": "Marina Costa — Atleta DEMO",
+      "viewport": 1440,
+      "scrollWidth": 1440,
+      "height": 3486,
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "Marina Costa — Atleta DEMO"
+        },
+        {
+          "tag": "H2",
+          "text": "Linha do tempo"
+        },
+        {
+          "tag": "H3",
+          "text": "Novembro de 2026"
+        },
+        {
+          "tag": "H3",
+          "text": "Outubro de 2026"
+        },
+        {
+          "tag": "H3",
+          "text": "Setembro de 2026"
+        },
+        {
+          "tag": "H3",
+          "text": "Agosto de 2026"
+        },
+        {
+          "tag": "H3",
+          "text": "Julho de 2026"
+        },
+        {
+          "tag": "H3",
+          "text": "Junho de 2026"
+        },
+        {
+          "tag": "H3",
+          "text": "Maio de 2026"
+        },
+        {
+          "tag": "H3",
+          "text": "Abril de 2026"
+        },
+        {
+          "tag": "H3",
+          "text": "Março de 2026"
+        }
+      ],
+      "smallTargets": []
+    },
+    {
+      "capture": "11-fisioterapia-perfil",
+      "url": "/atletas/250a30b7-1f47-4b9e-9c63-80f1b5bd786d",
+      "title": "Marina Costa — Atleta DEMO",
+      "viewport": 1440,
+      "scrollWidth": 1440,
+      "height": 1000,
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "Marina Costa — Atleta DEMO"
+        },
+        {
+          "tag": "H2",
+          "text": "Histórico clínico"
+        },
+        {
+          "tag": "H2",
+          "text": "Contexto esportivo"
+        }
+      ],
+      "smallTargets": []
+    },
+    {
+      "url": "/atletas/250a30b7-1f47-4b9e-9c63-80f1b5bd786d?aba=anexos",
+      "title": "Marina Costa — Atleta DEMO",
+      "viewport": 1440,
+      "scrollWidth": 1440,
+      "height": 1000,
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "Marina Costa — Atleta DEMO"
+        },
+        {
+          "tag": "H2",
+          "text": "Documentos e Anexos"
+        }
+      ],
+      "smallTargets": []
+    },
+    {
+      "url": "/atletas/250a30b7-1f47-4b9e-9c63-80f1b5bd786d?aba=timeline",
+      "title": "Marina Costa — Atleta DEMO",
+      "viewport": 1440,
+      "scrollWidth": 1440,
+      "height": 3486,
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "Marina Costa — Atleta DEMO"
+        },
+        {
+          "tag": "H2",
+          "text": "Linha do tempo"
+        },
+        {
+          "tag": "H3",
+          "text": "Novembro de 2026"
+        },
+        {
+          "tag": "H3",
+          "text": "Outubro de 2026"
+        },
+        {
+          "tag": "H3",
+          "text": "Setembro de 2026"
+        },
+        {
+          "tag": "H3",
+          "text": "Agosto de 2026"
+        },
+        {
+          "tag": "H3",
+          "text": "Julho de 2026"
+        },
+        {
+          "tag": "H3",
+          "text": "Junho de 2026"
+        },
+        {
+          "tag": "H3",
+          "text": "Maio de 2026"
+        },
+        {
+          "tag": "H3",
+          "text": "Abril de 2026"
+        },
+        {
+          "tag": "H3",
+          "text": "Março de 2026"
+        }
+      ],
+      "smallTargets": []
+    },
+    {
+      "url": "/atletas/250a30b7-1f47-4b9e-9c63-80f1b5bd786d?aba=timeline",
+      "title": "Página indisponível",
+      "viewport": 1440,
+      "scrollWidth": 1440,
+      "height": 1000,
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "Página indisponível"
+        }
+      ],
+      "smallTargets": []
+    },
+    {
+      "capture": "12-cadastro-sem-leitura-clinica",
+      "url": "/atletas/250a30b7-1f47-4b9e-9c63-80f1b5bd786d",
+      "title": "Marina Costa — Atleta DEMO",
+      "viewport": 1440,
+      "scrollWidth": 1440,
+      "height": 1000,
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "Marina Costa — Atleta DEMO"
+        },
+        {
+          "tag": "H2",
+          "text": "Histórico clínico"
+        },
+        {
+          "tag": "H2",
+          "text": "Contexto esportivo"
+        }
+      ],
+      "smallTargets": []
+    }
+  ],
+  "consoleErrors": [],
+  "registrationControls": [
+    {
+      "name": "$ACTION_ID_00141c400778ec9ffa62b08a615ae678b7a105196a",
+      "type": "hidden",
+      "value": ""
+    },
+    {
+      "name": "$ACTION_ID_401a8db3c0b62a5daf48220dc739e1163017d8d2fd",
+      "type": "hidden",
+      "value": ""
+    },
+    {
+      "name": "name",
+      "type": "text",
+      "value": "Marina Costa — Atleta DEMO"
+    },
+    {
+      "name": "social",
+      "type": "text",
+      "value": ""
+    },
+    {
+      "name": "birth",
+      "type": "date",
+      "value": "2007-04-12"
+    },
+    {
+      "name": "club",
+      "type": "hidden",
+      "value": "Clube Aurora DEMO"
+    },
+    {
+      "name": "category",
+      "type": "hidden",
+      "value": "Sub-19"
+    },
+    {
+      "name": "status",
+      "type": "select-one",
+      "value": "active"
+    },
+    {
+      "name": "",
+      "type": "file",
+      "value": ""
+    },
+    {
+      "name": "$ACTION_ID_40d13147749181ce52ea03a45d96dad718e990b083",
+      "type": "hidden",
+      "value": ""
+    },
+    {
+      "name": "",
+      "type": "text",
+      "value": ""
+    },
+    {
+      "name": "category_id",
+      "type": "hidden",
+      "value": ""
+    },
+    {
+      "name": "division",
+      "type": "select-one",
+      "value": ""
+    },
+    {
+      "name": "modality",
+      "type": "select-one",
+      "value": ""
+    },
+    {
+      "name": "position",
+      "type": "select-one",
+      "value": ""
+    },
+    {
+      "name": "",
+      "type": "text",
+      "value": ""
+    },
+    {
+      "name": "club_id",
+      "type": "hidden",
+      "value": ""
+    },
+    {
+      "name": "shirt",
+      "type": "text",
+      "value": ""
+    }
+  ]
+}

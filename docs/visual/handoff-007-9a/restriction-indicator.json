@@ -1,0 +1,12 @@
+{
+  "axe": [],
+  "checks": [
+    {
+      "name": "A autora reconhece visualmente a restrição do seu registro fechado",
+      "pass": false,
+      "rowFound": 1,
+      "status": "Finalizado"
+    }
+  ],
+  "measurements": {}
+}

@@ -1,0 +1,159 @@
+{
+  "axe": [
+    {
+      "page": "overview",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "page": "timeline",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "page": "registration",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "page": "documents",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "page": "attachments",
+      "violations": [],
+      "incomplete": []
+    }
+  ],
+  "checks": [
+    {
+      "name": "Teclado abre evolução com Enter",
+      "pass": true,
+      "focus": {
+        "outline": "3px solid rgb(0, 121, 213)",
+        "tag": "SUMMARY"
+      }
+    },
+    {
+      "name": "Proteção ao recarregar cadastro alterado",
+      "pass": false,
+      "dialogs": 0,
+      "changeLost": true
+    },
+    {
+      "name": "Editor médico 0",
+      "athletePreserved": true,
+      "type": "Prescrição",
+      "fields": 17
+    },
+    {
+      "name": "Editor médico 1",
+      "athletePreserved": true,
+      "type": "Pedido cirúrgico",
+      "fields": 16
+    },
+    {
+      "name": "Editor médico 2",
+      "athletePreserved": true,
+      "type": "Solicitação de exames",
+      "fields": 19
+    },
+    {
+      "name": "PDF real renderizado em canvas",
+      "pass": true
+    }
+  ],
+  "measurements": {
+    "typography": [
+      {
+        "element": "H1",
+        "font": "GeistSerifRegular, \"GeistSerifRegular Fallback\", \"Times New Roman\", Times, serif, \"Times New Roman\", serif",
+        "size": "32px"
+      },
+      {
+        "element": "DT",
+        "font": "Geist, \"Geist Fallback\", sans-serif",
+        "size": "12px"
+      },
+      {
+        "element": "DD",
+        "font": "Geist, \"Geist Fallback\", sans-serif",
+        "size": "15px"
+      },
+      {
+        "element": "DT",
+        "font": "Geist, \"Geist Fallback\", sans-serif",
+        "size": "12px"
+      },
+      {
+        "element": "DD",
+        "font": "Geist, \"Geist Fallback\", sans-serif",
+        "size": "15px"
+      },
+      {
+        "element": "DT",
+        "font": "Geist, \"Geist Fallback\", sans-serif",
+        "size": "12px"
+      },
+      {
+        "element": "DD",
+        "font": "Geist, \"Geist Fallback\", sans-serif",
+        "size": "15px"
+      },
+      {
+        "element": "DT",
+        "font": "Geist, \"Geist Fallback\", sans-serif",
+        "size": "12px"
+      },
+      {
+        "element": "DD",
+        "font": "Geist, \"Geist Fallback\", sans-serif",
+        "size": "15px"
+      },
+      {
+        "element": "H2",
+        "font": "Geist, \"Geist Fallback\", sans-serif",
+        "size": "17px"
+      },
+      {
+        "element": "INPUT",
+        "font": "Geist, \"Geist Fallback\", sans-serif",
+        "size": "16px"
+      },
+      {
+        "element": "INPUT",
+        "font": "Geist, \"Geist Fallback\", sans-serif",
+        "size": "16px"
+      },
+      {
+        "element": "INPUT",
+        "font": "Geist, \"Geist Fallback\", sans-serif",
+        "size": "15.2px"
+      },
+      {
+        "element": "INPUT",
+        "font": "Geist, \"Geist Fallback\", sans-serif",
+        "size": "15.2px"
+      }
+    ],
+    "mobileTabs": {
+      "scrollLeft": 0,
+      "clientWidth": 358,
+      "scrollWidth": 702,
+      "activeVisible": false,
+      "activeLeft": 616,
+      "activeRight": 718
+    },
+    "mobileRegistration": [
+      {
+        "section": "Contatos",
+        "top": 1440
+      },
+      {
+        "section": "Histórico esportivo",
+        "top": 2516
+      }
+    ]
+  }
+}
