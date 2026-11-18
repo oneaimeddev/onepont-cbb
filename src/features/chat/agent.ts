@@ -3,6 +3,9 @@ import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createOpenAI } from "@ai-sdk/openai";
 import { APICallError, streamText, stepCountIs, tool } from "ai";
 import { z } from "zod";
+import { activityFilterSchema, clinicalSearchBoard } from "../clinical-search/contract";
+import { clinicalSearchIntent } from "../clinical-search/intent";
+import { clinicalSearchConversation, runClinicalSearch } from "../clinical-search/service";
 import { attachmentConversation } from "../attachments/chat-service";
 import type { AttachmentBoard } from "../attachments/types";
 import { supabaseServer } from "../../lib/supabase";
@@ -25,6 +28,7 @@ const requestSchema = z.object({
   roster: z.array(z.string()).max(40).optional(),
   documentRoster: z.array(z.string()).max(20).optional(),
   attachmentRoster: z.array(z.string()).max(25).optional(),
+  clinicalSearchScope: z.unknown().nullable().optional(),
   createdDocumentIds: z.array(z.string()).max(8).optional(),
 }).strict();
 
@@ -201,6 +205,15 @@ async function prepareConversation(input: unknown) {
   const speech = documentRequest(utterance);
   const published: { reading: ReadingBoard | null } = { reading: null };
 
+  let clinicalPublished: Awaited<ReturnType<typeof runClinicalSearch>> | null = null;
+  const searchClinicalActivity = tool({
+    description: "Busca clínica transversal em atletas autorizados por tipos de registro e filtros esportivos/temporais. Períodos relativos são calculados no servidor. Solicitações de exame e anexos não comprovam realização. Não recebe SQL nem conteúdo clínico livre.",
+    inputSchema: activityFilterSchema,
+    execute: async (filters) => {
+      clinicalPublished=await runClinicalSearch(filters,parsed.data.inputMode??"text","agent");
+      return clinicalPublished.summary??{error:clinicalPublished.text};
+    },
+  });
   let attachmentPublished: AttachmentBoard | null = null;
   const listClinicalAttachments = tool({
     description: "Consulta somente metadados de anexos autorizados. Pode abrir um arquivo no visualizador; não lê nem interpreta PDF ou imagem.",
@@ -836,6 +849,7 @@ async function prepareConversation(input: unknown) {
   return {
     published,
     attachmentView: () => attachmentPublished,
+    clinicalView: () => clinicalPublished,
     request: {
       model: model.provider === "google"
         ? createGoogleGenerativeAI({ apiKey: model.apiKey }).chat(model.model)
@@ -843,6 +857,7 @@ async function prepareConversation(input: unknown) {
       system: [
         "Você é o CBB Intelligence, assistente do prontuário de um profissional autenticado.",
         "Responda em português, somente com fatos devolvidos pelas ferramentas.",
+        "Para buscas clínicas em vários atletas, use searchClinicalActivity com filtros tipados. Envie períodos relativos, sem calcular datas pelo seu relógio. Exames devem ser separados em solicitações e resultados/laudos anexados; não há confirmação estruturada de realização. Especialidade filtra apenas evoluções. Nunca substitua o atleta em contexto só porque fez uma busca transversal.",
         "Anexos: use listClinicalAttachments para consultar metadados e abrir o visualizador. Nunca afirme ter interpretado o conteúdo de um PDF ou imagem. Não há ferramenta de upload nem de análise automática de arquivos.",
         "Se a ferramenta não trouxer dados suficientes, diga isso. Não invente atendimentos, diagnósticos, resultados ou atletas.",
         "Se uma busca tiver mais de uma pessoa possível, peça confirmação antes de resumir ou abrir o prontuário.",
@@ -897,7 +912,7 @@ async function prepareConversation(input: unknown) {
       ].filter((line) => line.trim()).join("\n"),
       messages: parsed.data.messages,
       tools: {
-        listClinicalAttachments, searchAthletes, recallAthlete, getAthleteSummary, navigateToAthlete, selectAthleteContext, clearAthleteContext, prepareClinicalDraft, saveClinicalDraft, readClinicalEvolutions,
+        searchClinicalActivity, listClinicalAttachments, searchAthletes, recallAthlete, getAthleteSummary, navigateToAthlete, selectAthleteContext, clearAthleteContext, prepareClinicalDraft, saveClinicalDraft, readClinicalEvolutions,
         ...(canAuthorDocuments ? { preparePrescription, prepareSurgicalOrder, prepareExamRequest, listDocumentDrafts, openClinicalDocument, saveClinicalDocument, browseClinicalDocuments, readClinicalDocument } : {}),
       },
       stopWhen: stepCountIs(6),
@@ -913,6 +928,19 @@ function failureCode(error: unknown) {
 }
 
 export async function openIntelligenceStream(input: unknown): Promise<{ stream: ReadableStream<Uint8Array> } | { error: "unavailable" | "invalid" | "limit" | "provider" }> {
+  const clinicalInput=requestSchema.safeParse(input);
+  if(clinicalInput.success&&clinicalInput.data.messages.at(-1)?.role==="user") {
+    const message=clinicalInput.data.messages.at(-1)!.content;
+    const previous=clinicalSearchBoard(clinicalInput.data.clinicalSearchScope);
+    if(clinicalSearchIntent(message,previous)) {
+      const reply=await clinicalSearchConversation(message,previous,clinicalInput.data.inputMode??"text");
+      if(reply){
+        const payload={text:reply.text,clinicalSearch:reply.board,athletes:reply.athletes,navigation:null,search:null,draft:null,document:null,context:null};
+        const bytes=new TextEncoder().encode(`event: done\ndata: ${JSON.stringify(payload)}\n\n`);
+        return {stream:new ReadableStream<Uint8Array>({start(controller){controller.enqueue(bytes);controller.close();}})};
+      }
+    }
+  }
   const attachmentInput = requestSchema.safeParse(input);
   if (attachmentInput.success && attachmentInput.data.messages.at(-1)?.role === "user") {
     const reply=await attachmentConversation({message:attachmentInput.data.messages.at(-1)!.content,athleteId:attachmentInput.data.contextAthleteId??null,ids:attachmentInput.data.attachmentRoster,mode:attachmentInput.data.inputMode});
@@ -958,17 +986,19 @@ export async function openIntelligenceStream(input: unknown): Promise<{ stream: 
                 : view.kind === "search"
               ? compactDirectoryReply(view.search?.total ?? view.athletes.length, view.athletes.length)
               : replyText(modelText, view.athletes);
+        const clinical=prepared.clinicalView();
         send("done", {
-          text,
-          athletes: view.athletes,
+          clinicalSearch: clinical?.board??null,
+          text: clinical?.text??text,
+          athletes: clinical?.athletes??view.athletes,
           navigation: view.navigation,
           search: view.search,
           draft: view.draft,
           document: view.document,
           readings: prepared.published.reading,
           attachments: prepared.attachmentView(),
-          context: view.context,
-          contextCleared: view.contextCleared,
+          context: clinical ? null : view.context,
+          contextCleared: clinical ? false : view.contextCleared,
           sessionId: view.sessionId,
         });
       } catch (error) {

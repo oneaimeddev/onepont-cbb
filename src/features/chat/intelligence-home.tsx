@@ -1,5 +1,7 @@
 "use client";
 
+import { ClinicalSearchCards } from "../clinical-search/cards";
+import { clinicalSearchBoard, previousClinicalSearch, type ActivityResult } from "../clinical-search/contract";
 import { AttachmentUpload } from "../attachments/upload";
 import { AttachmentCards } from "../attachments/module";
 import { attachmentBoard } from "../attachments/types";
@@ -647,6 +649,7 @@ export function IntelligenceHome({
             inputMode,
           }).then((result) => ({ kind: "draft" as const, result }))
           : null;
+    const previousClinical = previousClinicalSearch(loadTurns());
     const roster = presentedRoster(loadTurns());
     const documentRoster = presentedDocumentRoster(loadTurns());
     const savedDocumentIds = createdDocumentIds(loadTurns());
@@ -680,6 +683,7 @@ export function IntelligenceHome({
           roster,
           documentRoster,
           attachmentRoster: attachmentRoster(loadTurns(),currentAthlete()),
+          clinicalSearchScope: previousClinical,
           createdDocumentIds: savedDocumentIds,
         }),
         signal: controller.signal,
@@ -719,13 +723,13 @@ export function IntelligenceHome({
           }
           if (!parsed || settled) continue;
           const data = parsed.data;
-          const record = data && typeof data === "object" ? data as { text?: unknown; athletes?: unknown; navigation?: unknown; search?: unknown; draft?: unknown; document?: unknown; readings?: unknown; attachments?: unknown; context?: unknown; contextCleared?: unknown; sessionId?: unknown; error?: unknown } : {};
+          const record = data && typeof data === "object" ? data as { text?: unknown; athletes?: unknown; navigation?: unknown; search?: unknown; draft?: unknown; document?: unknown; readings?: unknown; attachments?: unknown; clinicalSearch?: unknown; context?: unknown; contextCleared?: unknown; sessionId?: unknown; error?: unknown } : {};
           if (parsed.event === "delta" && typeof record.text === "string" && record.text) {
             patchTurns((current) => current.map((turn) => turn.id === assistantId && typeof record.text === "string" ? { ...turn, text: turn.text + record.text } : turn));
           } else if (parsed.event === "done") {
             const text = typeof record.text === "string" && record.text.trim() ? record.text.trim() : replies.provider;
             finishTurn(assistantId, text, presentedAthletes(record.athletes), presentedNavigation(record.navigation), presentedSearch(record.search), presentedDraft(record.draft), presentedDocument(record.document), presentedReadings(record.readings));
-            patchTurns(current=>current.map(turn=>turn.id===assistantId?{...turn,attachments:attachmentBoard(record.attachments)}:turn));
+            patchTurns(current=>current.map(turn=>turn.id===assistantId?{...turn,clinicalSearch:clinicalSearchBoard(record.clinicalSearch),attachments:attachmentBoard(record.attachments)}:turn));
             if (typeof record.sessionId === "string" && uuidPattern.test(record.sessionId) && !sessionRef.current) {
               sessionRef.current = record.sessionId;
               setOpenSessionId(record.sessionId);
@@ -1014,7 +1018,7 @@ export function IntelligenceHome({
                   {turn.role === "assistant" && turn.id === streamingId && !turn.text ? (
                     <p className="ia-pending" aria-live="polite">Consultando os registros autorizados.</p>
                   ) : null}
-                  {turn.athletes.length > 0 ? (
+                  {turn.athletes.length > 0 && !turn.clinicalSearch ? (
                     <AthleteResults
                       turn={turn}
                       selectedId={selectedId}
@@ -1027,6 +1031,13 @@ export function IntelligenceHome({
                   {turn.navigation && turn.athletes.length === 0 ? <Link className="ia-open" href={turn.navigation.href} prefetch={false}>Abrir prontuário de {turn.navigation.name}</Link> : null}
                   {turn.draft ? <ClinicalDraftCard draft={turn.draft} canFinalize={canFinalize && turn.draft.athleteId === selectedId} onChange={(next) => updateDraft(turn.id, next)} /> : null}
                   {turn.document ? <DocumentDraftCard draft={turn.document} onChange={(next) => updateDocument(turn.id, next)} /> : null}
+                  {turn.clinicalSearch ? <ClinicalSearchCards board={turn.clinicalSearch} onSelect={selectAthlete}
+                    onResults={(data:ActivityResult)=>{
+                      const athletes=presentedAthletes(data.items.map(item=>({id:item.athlete_id,name:item.name,category:item.category,club:item.club,division:item.division,facts:[item.category,item.club,item.division,item.modality].filter(Boolean)})));
+                      patchTurns(current=>current.map(item=>item.id===turn.id?{...item,athletes,clinicalSearch:{filters:data.filters,page:data.page}}:item));
+                      queuePersist(currentAthlete(),epochRef.current);
+                    }}
+                    onPage={page=>patchTurns(current=>current.map(item=>item.id===turn.id&&item.clinicalSearch?{...item,athletes:[],clinicalSearch:{...item.clinicalSearch,page}}:item))}/>:null}
                   {turn.attachments ? <AttachmentCards key={JSON.stringify(turn.attachments)} board={turn.attachments} /> : null}
                   {turn.readings ? (
                     <ClinicalReadings

@@ -1,0 +1,103 @@
+{
+  "athletes": 3000,
+  "matchingAthletes": 100,
+  "matchingRecords": 101,
+  "pageSize": 5,
+  "elapsedMs": 142,
+  "executionMs": 483.541,
+  "plan": {
+    "node": "Nested Loop",
+    "rows": 101,
+    "time": 483.146,
+    "plans": [
+      {
+        "node": "Nested Loop",
+        "rows": 3000,
+        "time": 28.704,
+        "plans": [
+          {
+            "node": "Nested Loop",
+            "rows": 3000,
+            "time": 10.199,
+            "plans": [
+              {
+                "node": "Bitmap Heap Scan",
+                "relation": "athlete_access",
+                "rows": 3000,
+                "time": 1.181,
+                "plans": [
+                  {
+                    "node": "Bitmap Index Scan",
+                    "index": "athlete_access_professional_id_athlete_id_idx",
+                    "rows": 3000,
+                    "time": 0.255
+                  }
+                ]
+              },
+              {
+                "node": "Index Scan",
+                "relation": "athletes",
+                "index": "athletes_pkey",
+                "rows": 1,
+                "time": 0.002
+              }
+            ]
+          },
+          {
+            "node": "Limit",
+            "rows": 0,
+            "time": 0.006,
+            "plans": [
+              {
+                "node": "Sort",
+                "rows": 0,
+                "time": 0.005,
+                "plans": [
+                  {
+                    "node": "Hash Join",
+                    "rows": 0,
+                    "time": 0.003,
+                    "plans": [
+                      {
+                        "node": "Seq Scan",
+                        "relation": "sport_options",
+                        "rows": 1,
+                        "time": 0.005
+                      },
+                      {
+                        "node": "Hash",
+                        "rows": 0,
+                        "time": 0.002,
+                        "plans": [
+                          {
+                            "node": "Index Scan",
+                            "relation": "sport_links",
+                            "index": "sport_links_athlete_id_option_id_idx",
+                            "rows": 0,
+                            "time": 0.002
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "node": "CTE Scan",
+        "rows": 3000,
+        "time": 79.647
+      },
+      {
+        "node": "Index Scan",
+        "relation": "documents",
+        "index": "clinical_activity_document_day",
+        "rows": 101,
+        "time": 0.127
+      }
+    ]
+  }
+}

@@ -1,3 +1,4 @@
+import { clinicalSearchBoard, type ClinicalSearchBoard } from "../clinical-search/contract";
 import { attachmentBoard, type AttachmentBoard } from "../attachments/types";
 import { presentedDraft, type ClinicalDraft } from "./clinical-draft";
 import { presentedDocument, storedDocument, type DocumentDraft } from "./document-draft";
@@ -24,6 +25,7 @@ export type ChatTurn = {
   document: DocumentDraft | null;
   readings: ReadingBoard | null;
   attachments?: AttachmentBoard | null;
+  clinicalSearch?: ClinicalSearchBoard | null;
 };
 
 export function turnCarriesContent(turn: Pick<ChatTurn, "text" | "athletes" | "navigation" | "draft" | "document" | "readings">) {
@@ -50,7 +52,7 @@ function storedTurn(value: unknown): ChatTurn | null {
   const document = row.role === "assistant" ? presentedDocument(row.document) : null;
   const readings = row.role === "assistant" ? presentedReadings(row.readings) : null;
   if (row.role === "user" && !text.trim()) return null;
-  return { attachments: row.role === "assistant" ? attachmentBoard(row.attachments) : null, id: row.id.slice(0, 80), role: row.role, text, athletes, navigation, search, draft, document, readings };
+  return { clinicalSearch: row.role === "assistant" ? clinicalSearchBoard(row.clinicalSearch) : null, attachments: row.role === "assistant" ? attachmentBoard(row.attachments) : null, id: row.id.slice(0, 80), role: row.role, text, athletes, navigation, search, draft, document, readings };
 }
 
 export function turnsFrom(raw: string): ChatTurn[] {

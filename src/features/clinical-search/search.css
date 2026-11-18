@@ -1,0 +1,97 @@
+.clinical-search {
+  color: #142c46;
+  margin-block: 16px;
+}
+.clinical-search-scope {
+  line-height: 1.6;
+  margin-bottom: 12px;
+}
+.clinical-search-note {
+  color: #536579;
+  font-size: 14px;
+  line-height: 1.6;
+  margin-block: 8px;
+  max-width: 80ch;
+}
+.clinical-search-count {
+  margin-block: 16px;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+.clinical-search .clinical-search-cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  padding: 0;
+  list-style: none;
+  gap: 16px;
+}
+.clinical-search .clinical-search-card {
+  display: block;
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid #dce2e8;
+  border-radius: 12px;
+  background: #fff;
+}
+.clinical-search-card h3 {
+  font-size: 18px;
+  margin: 0 0 8px;
+}
+.clinical-search-card header p {
+  color: #536579;
+  font-size: 14px;
+}
+.clinical-search-card p {
+  margin-block: 8px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.clinical-search .clinical-source-list {
+  list-style: none;
+  padding: 0;
+  margin-block: 16px;
+}
+.clinical-source-list > li {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
+  padding-block: 16px;
+  border-top: 1px solid #e5eaf0;
+  font-size: 14px;
+}
+.clinical-source-list > li > div {
+  min-width: 0;
+}
+.clinical-source-list .ia-more {
+  flex-shrink: 0;
+}
+.clinical-search-actions,
+.clinical-search-pagination,
+.clinical-search-open > header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin-block: 16px;
+}
+.clinical-search-open {
+  padding: 20px;
+  border-top: 1px solid #dce2e8;
+}
+.clinical-search-pagination button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.clinical-source-detail {
+  margin-top: 16px;
+  border-top: 1px solid #dce2e8;
+}
+@media (max-width: 700px) {
+  .clinical-search .clinical-search-card {
+    padding: 16px;
+  }
+  .clinical-source-list > li {
+    flex-direction: column;
+  }
+}
