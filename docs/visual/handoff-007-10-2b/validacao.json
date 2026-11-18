@@ -1,0 +1,48 @@
+{
+  "baseline": "4a581d7",
+  "parentWithAudit": "b52aab4",
+  "branch": "feat/handoff-007-10-2b-medical-documents",
+  "checks": [
+    {
+      "command": "npm run lint",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run typecheck",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run build",
+      "exitCode": 0
+    },
+    {
+      "command": "npm test -- --workers=1",
+      "exitCode": 0
+    }
+  ],
+  "playwright": {
+    "passed": 68,
+    "failed": 0,
+    "skipped": 0,
+    "duration": "5.2m",
+    "workers": 1
+  },
+  "axe": {
+    "version": "4.14.0",
+    "scans": 21,
+    "violations": 0,
+    "incomplete": 0,
+    "scope": "main dos três editores; WCAG 2 A/AA e 2.1 AA"
+  },
+  "screenshots": 33,
+  "protectedAreasUnchanged": true,
+  "temporaryUxDocAccountsRemaining": 0,
+  "historicalArtifactsRestored": 93,
+  "mergePerformed": false,
+  "observedIntermittency": "Teste preexistente catalog.spec.mjs:125 falhou em execução paralela preliminar; passou isoladamente e na suíte sequencial final. Causa não comprovada; código e teste do catálogo não alterados.",
+  "limitations": [
+    "Mobile emulado; teclado virtual e leitor de tela em dispositivos reais pendentes.",
+    "Histórico depende de eventos canceláveis/interceptáveis da Navigation API.",
+    "Caso concreto de capitalização pelo agente ainda precisa ser reproduzido."
+  ]
+}

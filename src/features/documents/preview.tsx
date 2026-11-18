@@ -30,6 +30,7 @@ export function DocumentPreview({ document, athleteName }: { document: PreviewDo
   const kind = documentKinds[document.document_type];
   return (
     <article className="document-sheet" aria-label="Pré-visualização do rascunho">
+      <p className="document-save-state">Pré-visualização da última versão salva.</p>
       <p className="document-banner">RASCUNHO — NÃO ASSINADO / NÃO EMITIDO</p>
       <header>
         <p className="document-type">{kind.title}</p>

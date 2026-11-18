@@ -1,0 +1,128 @@
+[
+  {
+    "scenario": "prescricao-1",
+    "width": 1440,
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "scenario": "prescricao-1",
+    "width": 390,
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "scenario": "prescricao-1",
+    "width": 320,
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "scenario": "prescricao-3",
+    "width": 1440,
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "scenario": "prescricao-3",
+    "width": 390,
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "scenario": "prescricao-3",
+    "width": 320,
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "scenario": "prescricao-6",
+    "width": 1440,
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "scenario": "prescricao-6",
+    "width": 390,
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "scenario": "prescricao-6",
+    "width": 320,
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "scenario": "exames-1",
+    "width": 1440,
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "scenario": "exames-1",
+    "width": 390,
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "scenario": "exames-1",
+    "width": 320,
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "scenario": "exames-3",
+    "width": 1440,
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "scenario": "exames-3",
+    "width": 390,
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "scenario": "exames-3",
+    "width": 320,
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "scenario": "exames-6",
+    "width": 1440,
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "scenario": "exames-6",
+    "width": 390,
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "scenario": "exames-6",
+    "width": 320,
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "scenario": "cirurgia",
+    "width": 1440,
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "scenario": "cirurgia",
+    "width": 390,
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "scenario": "cirurgia",
+    "width": 320,
+    "violations": [],
+    "incomplete": []
+  }
+]

@@ -9,6 +9,7 @@ import { listDocuments, medicalCapability } from "../../../../features/documents
 import { ProfileTabs } from "../../../../features/athletes/profile-navigation";
 import { ProfileTimeline } from "../../../../features/athletes/profile-timeline";
 import { ProfileRegistration } from "../../../../features/athletes/profile-registration";
+import { CreateDocumentMenu } from "../../../../features/documents/create-menu";
 import { ProfileDocumentList } from "../../../../features/documents/profile-list";
 import { requireProfile } from "../../../../lib/profile";
 import { AttachmentModule } from "../../../../features/attachments/module";
@@ -180,11 +181,7 @@ export default async function AthletePage({ params, searchParams }: {
           <section aria-labelledby="documentos-clinicos">
             <div className="record-mast-top">
               <h2 id="documentos-clinicos">Documentos médicos</h2>
-              <div className="record-actions">
-                <Link className="outline" href={`${base}/documentos/nova?tipo=prescricao`} prefetch={false}>Nova prescrição</Link>
-                <Link className="outline" href={`${base}/documentos/nova?tipo=cirurgia`} prefetch={false}>Novo pedido cirúrgico</Link>
-                <Link className="outline" href={`${base}/documentos/nova?tipo=exames`} prefetch={false}>Nova solicitação de exames</Link>
-              </div>
+              <CreateDocumentMenu base={base} />
             </div>
             <p>Rascunhos privados deste médico. Nenhum documento desta lista é emitido ou assinado.</p>
             <ProfileDocumentList documents={documents} base={base} />
