@@ -24,6 +24,7 @@ export function profileSql(input) {
       "-d",
       "postgres",
       "-tA",
+      "-q",
       "-v",
       "ON_ERROR_STOP=1",
     ],
@@ -235,19 +236,89 @@ export async function cleanupProfileFixture() {
 }
 
 export async function createProfileFixture() {
- const owner=await account(),physio=await account(false),psych=await account(false),registry=await account(false);
- const rich=athlete(owner,"Marina Perfil DEMO"),fresh=athlete(owner,"Lucas Cadastro DEMO"),multi=athlete(owner,"Gabriela Vínculos DEMO");
- profileSql(`update clinical.athletes set birth_date='2007-04-12',gender_identity='feminino',document_id='DEMO-PERFIL' where id='${rich}';insert into clinical.athlete_contacts(athlete_id,phone,email,guardian_name,guardian_relation,guardian_contact,emergency_contact) values('${rich}','(11) 0000-0000','atleta.demo@example.com','Responsável DEMO','Mãe','(11) 0000-0001','Contato DEMO');`);
- for(const user of [physio,psych,registry]) for(const id of [rich,fresh,multi]) profileSql(`insert into clinical.athlete_access(athlete_id,professional_id,can_read_records,can_write,can_edit) values('${id}','${user.id}',${user!==registry},${user!==registry},false)`);
- for(const id of [rich,multi]) {await sport(owner,id,"Sub-19","Feminino");await sport(owner,id,"Adulto","Feminino");}
- const recent=[];
- for(let i=0;i<65;i++) {
-  const date=new Date('2026-11-17T12:00:00-03:00');date.setUTCDate(date.getUTCDate()-i*4);
-  recent.push(evolution(i%3===0?owner:physio,rich,date.toISOString(),{title:`Acompanhamento ${String(i).padStart(2,"0")} DEMO`,specialty:i%3===0?"Medicina":"Fisioterapia",status:i===0||i===1?"draft":"finalized"}));
- }
- const privateId=evolution(psych,rich,'2026-11-18T11:00:00-03',{title:'Conteúdo PRIVADO DEMO',specialty:'Psicologia',visibility:'author_only'});
- const docs=['prescription','surgical_order','exam_request','prescription','exam_request'].map((kind,i)=>document(owner,rich,kind,`2026-11-${String(17-i).padStart(2,"0")}T12:00:00-03`,'2026-11-15'));
- profileSql(`update clinical.documents set status='ready_for_review',version=2 where id='${docs[1]}'`);
- const file=await attachment(owner,rich,'2026-11-15');
- return {owner,physio,psych,registry,rich,fresh,multi,recent,privateId,docs,file};
+  const owner = await account(),
+    physio = await account(false),
+    psych = await account(false),
+    registry = await account(false);
+  for (const [user, name, profession] of [
+    [owner, "Dra. Clara DEMO", "Medicina"],
+    [physio, "Dr. André DEMO", "Fisioterapia"],
+    [psych, "Dra. Bianca DEMO", "Psicologia"],
+    [registry, "Cadastro DEMO", "Administrativo"],
+  ]) {
+    const r = await admin
+      .from("profiles")
+      .update({ display_name: name, profession })
+      .eq("id", user.id);
+    if (r.error) throw r.error;
+  }
+  const rich = athlete(owner, "Marina Perfil DEMO"),
+    fresh = athlete(owner, "Lucas Cadastro DEMO"),
+    multi = athlete(owner, "Gabriela Vínculos DEMO");
+  profileSql(
+    `update clinical.athletes set birth_date='2007-04-12',gender_identity='feminino',document_id='DEMO-PERFIL' where id='${rich}';insert into clinical.athlete_contacts(athlete_id,phone,email,guardian_name,guardian_relation,guardian_contact,emergency_contact) values('${rich}','(11) 0000-0000','atleta.demo@example.com','Responsável DEMO','Mãe','(11) 0000-0001','Contato DEMO');`,
+  );
+  for (const user of [physio, psych, registry])
+    for (const id of [rich, fresh, multi])
+      profileSql(
+        `insert into clinical.athlete_access(athlete_id,professional_id,can_read_records,can_write,can_edit) values('${id}','${user.id}',${user !== registry},${user !== registry},false)`,
+      );
+  for (const id of [rich, multi]) {
+    await sport(owner, id, "Sub-19", "Feminino");
+    await sport(owner, id, "Adulto", "Feminino");
+  }
+  const historic = randomUUID();
+  options.push(historic);
+  profileSql(
+    `insert into clinical.sport_options(id,category,modality,division,season) values('${historic}','Categoria histórica DEMO ${stamp}','5x5','Feminino',2025);insert into clinical.sport_links(athlete_id,option_id,club,starts_on,ends_on) values('${rich}','${historic}','Clube anterior DEMO','2025-01-01','2025-12-31')`,
+  );
+  const recent = [];
+  for (let i = 0; i < 65; i++) {
+    const date = new Date("2026-11-17T12:00:00-03:00");
+    date.setUTCDate(date.getUTCDate() - i * 4);
+    recent.push(
+      evolution(i % 3 === 0 ? owner : physio, rich, date.toISOString(), {
+        title: `Acompanhamento ${String(i).padStart(2, "0")} DEMO`,
+        specialty: i % 3 === 0 ? "Medicina" : "Fisioterapia",
+        status: i === 0 || i === 1 ? "draft" : "finalized",
+      }),
+    );
+  }
+  const privateId = evolution(psych, rich, "2026-11-18T11:00:00-03", {
+    title: "Conteúdo PRIVADO DEMO",
+    specialty: "Psicologia",
+    visibility: "author_only",
+  });
+  const docs = [
+    "prescription",
+    "surgical_order",
+    "exam_request",
+    "prescription",
+    "exam_request",
+  ].map((kind, i) =>
+    document(
+      owner,
+      rich,
+      kind,
+      `2026-11-${String(17 - i).padStart(2, "0")}T12:00:00-03`,
+      "2026-11-15",
+    ),
+  );
+  profileSql(
+    `update clinical.documents set status='ready_for_review',version=2 where id='${docs[1]}'`,
+  );
+  const file = await attachment(owner, rich, "2026-11-15");
+  return {
+    owner,
+    physio,
+    psych,
+    registry,
+    rich,
+    fresh,
+    multi,
+    recent,
+    privateId,
+    docs,
+    file,
+  };
 }

@@ -17,7 +17,10 @@ export function RecordTarget({ recordId }: { recordId: string | null }) {
     };
     const frame = requestAnimationFrame(reveal);
     window.addEventListener("hashchange", reveal);
-    return () => { cancelAnimationFrame(frame); window.removeEventListener("hashchange", reveal); };
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("hashchange", reveal);
+    };
   }, [recordId]);
   return null;
 }

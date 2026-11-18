@@ -1,46 +1,17 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Avatar } from "../../../../components/avatar";
-import { EmptyState } from "../../../../components/empty-state";
 import { Icon } from "../../../../components/icon";
-import { SubmitButton } from "../../../../components/submit-button";
 import { WorkspaceArea } from "../../../../components/workspace-area";
 import { AccessPanel } from "../../../../features/athletes/access-panel";
-import { accessRoster, eventDate, loadAthlete, loadCatalog, loadRegistration, searchProfessionals, uuidPattern } from "../../../../features/athletes/data";
-import { SportLinkForm } from "../../../../features/athletes/registration-form";
-import { documentKinds, statusLabels } from "../../../../features/documents/content";
+import { accessRoster, loadAthlete, loadCatalog, loadRegistration, searchProfessionals, uuidPattern } from "../../../../features/athletes/data";
 import { listDocuments, medicalCapability } from "../../../../features/documents/data";
 import { ProfileTabs } from "../../../../features/athletes/profile-navigation";
-import { RecordTarget } from "../../../../features/athletes/record-target";
-import { RegistrationGuard } from "../../../../features/athletes/registration-guard";
-import { PhotoEditor } from "../../../../features/athletes/photo-editor";
+import { ProfileTimeline } from "../../../../features/athletes/profile-timeline";
+import { ProfileRegistration } from "../../../../features/athletes/profile-registration";
+import { ProfileDocumentList } from "../../../../features/documents/profile-list";
 import { requireProfile } from "../../../../lib/profile";
 import { AttachmentModule } from "../../../../features/attachments/module";
-import { editAthlete } from "./edit-actions";
-
-const dayKey = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo", year: "numeric", month: "2-digit", day: "2-digit" });
-const monthName = new Intl.DateTimeFormat("pt-BR", { timeZone: "America/Sao_Paulo", month: "long", year: "numeric" });
-
-function recordWhen(iso: string) {
-  const key = dayKey.format(new Date(iso));
-  const label = monthName.format(new Date(iso));
-  return {
-    monthId: key.slice(0, 7),
-    monthLabel: label.charAt(0).toLocaleUpperCase("pt-BR") + label.slice(1),
-    day: String(Number(key.slice(8))),
-  };
-}
-
-function groupsOf<T extends { occurred_at: string }>(records: T[]) {
-  const groups: { id: string; label: string; records: T[] }[] = [];
-  for (const record of records) {
-    const when = recordWhen(record.occurred_at);
-    const current = groups.at(-1);
-    if (current?.id === when.monthId) current.records.push(record);
-    else groups.push({ id: when.monthId, label: when.monthLabel, records: [record] });
-  }
-  return groups;
-}
 
 export default async function AthletePage({ params, searchParams }: {
   params: Promise<{ id: string }>;
@@ -90,9 +61,6 @@ export default async function AthletePage({ params, searchParams }: {
   const { athlete, can_read_records, records, can_edit, can_write, sports, counts, recent_records } = workspace;
   const registration = can_edit ? await loadRegistration(athlete.id) : null;
   const registrationCatalog = can_edit ? await loadCatalog() : null;
-  const genderLabels: Record<string, string> = {
-    feminino: "Feminino", masculino: "Masculino", nao_binario: "Não binário", outro: "Outro", nao_informado: "Prefere não informar",
-  };
   const name = athlete.social_name || athlete.full_name;
   const base = `/atletas/${athlete.id}`;
   const returnTo = retorno && /^\/(atletas|prontuarios|evolucoes)(\?|$)/.test(retorno) ? retorno : "/atletas";
@@ -118,7 +86,6 @@ export default async function AthletePage({ params, searchParams }: {
     ...(capability.enabled && can_read_records ? [["documentos", "Documentos médicos"] as const] : []),
     ...(roster ? [["acesso", "Acesso"] as const] : []),
   ] as const;
-  const history = records ?? [];
   if ((aba === "documentos" || aba === "anexos") && !can_read_records) notFound();
   const documents = aba === "documentos" ? await listDocuments(athlete.id) : null;
   if (aba === "documentos" && !documents) notFound();
@@ -143,7 +110,7 @@ export default async function AthletePage({ params, searchParams }: {
                 {lede && <p className="record-lede">{lede}</p>}
                 {athlete.status !== "active" && <span className="pill">Inativo</span>}
               </div>
-              <Link className="record-chat" href={`/?atleta=${athlete.id}`} prefetch={false} aria-label="Abrir no chat" title="Abrir no CBB Intelligence">
+              <Link className="record-chat" href={`/?atleta=${athlete.id}`} prefetch={false} aria-label="Abrir no chat — CBB Intelligence" title="Abrir no CBB Intelligence">
                 <Icon name="chat" size={18} /><span className="profile-chat-label">CBB Intelligence</span>
               </Link>
             </div>
@@ -185,7 +152,7 @@ export default async function AthletePage({ params, searchParams }: {
                     </li>
                   ))}
                 </ol>
-              ) : <p className="muted">Nenhum registro recente disponível para este perfil.</p>}
+              ) : <p className="muted">Nenhum registro recente disponível para este perfil. {can_write ? "Use Nova evolução para iniciar um registro deste atleta." : "Consulte os dados cadastrais disponíveis ou a equipe responsável pelo acompanhamento."}</p>}
               {can_read_records && <Link className="clinical-link" href={tabHref("timeline")} prefetch={false}>Ver todas as evoluções</Link>}
             </section>
             <aside className="record-context">
@@ -207,38 +174,7 @@ export default async function AthletePage({ params, searchParams }: {
           </div>
         )}
 
-        {aba === "timeline" && (
-          <section aria-labelledby="linha-do-tempo">
-            <h2 id="linha-do-tempo">Linha do tempo</h2>
-            <RecordTarget recordId={registro} />
-            {history.length === 0 ? (
-              <EmptyState icon="records" title="Nenhum registro disponível para este perfil.">
-                <p>Os registros autorizados para o seu perfil aparecem aqui, do mais recente ao mais antigo.</p>
-              </EmptyState>
-            ) : groupsOf(history).map((group) => (
-              <section key={group.id} aria-label={group.label}>
-                <h3 className="timeline-month">{group.label}</h3>
-                <ol className="clinical-list timeline">
-                  {group.records.map((record) => (
-                    <li id={`registro-${record.id}`} key={record.id} className={record.status === "draft" ? "is-draft" : undefined}>
-                      <div className="timeline-head">
-                        <time className="timeline-day" dateTime={record.occurred_at}>{recordWhen(record.occurred_at).day}</time>
-                        <details open={registro === record.id.toLowerCase()}>
-                          <summary>{record.title}</summary>
-                          <p className="record-body">{record.body}</p>
-                          {can_write && record.is_author && record.status === "draft" && <Link className="clinical-link" prefetch={false} href={`${base}/evolucao?registro=${record.id}`}>Revisar rascunho</Link>}
-                          {record.encounter_status && <p>Atendimento {record.encounter_status === "open" ? "aberto" : "encerrado"}</p>}
-                        </details>
-                        <p className="timeline-byline">{record.author_name}, {record.specialty}{record.is_author && record.is_restricted && <span className="record-restriction"> · Restrito ao autor</span>}</p>
-                        <span className={record.status === "draft" ? "pill pill-draft" : "pill pill-success"}>{record.status === "draft" ? "Rascunho" : "Finalizado"}</span>
-                      </div>
-                    </li>
-                  ))}
-                </ol>
-              </section>
-            ))}
-          </section>
-        )}
+        {aba === "timeline" && <ProfileTimeline key={athlete.id} records={records ?? []} recordId={registro} canWrite={can_write} base={base} />}
 
         {aba === "documentos" && documents && (
           <section aria-labelledby="documentos-clinicos">
@@ -251,79 +187,14 @@ export default async function AthletePage({ params, searchParams }: {
               </div>
             </div>
             <p>Rascunhos privados deste médico. Nenhum documento desta lista é emitido ou assinado.</p>
-            {documents.length === 0 ? (
-              <EmptyState icon="records" title="Nenhum rascunho deste atleta.">
-                <p>Uma prescrição, um pedido cirúrgico ou uma solicitação de exames preparada aqui fica vinculada a este atleta e a você.</p>
-              </EmptyState>
-            ) : (
-              <ol className="clinical-list">
-                {documents.map((document) => (
-                  <li key={document.id}>
-                    <Link href={`${base}/documentos/${document.id}`} prefetch={false}>{documentKinds[document.document_type].title}</Link>
-                    <p>{statusLabels[document.status]} · <time dateTime={document.updated_at}>{eventDate.format(new Date(document.updated_at))}</time></p>
-                  </li>
-                ))}
-              </ol>
-            )}
+            <ProfileDocumentList documents={documents} base={base} />
           </section>
         )}
 
         {aba === "anexos" && can_read_records && <AttachmentModule key={athlete.id} athleteId={athlete.id} />}
 
-        {aba === "cadastro" && (
-          <section aria-labelledby="dados-cadastrais">
-            <h2 id="dados-cadastrais">Dados cadastrais</h2>
-            {can_edit && (
-              <RegistrationGuard><form action={editAthlete} className="athlete-form composer-panel">
-                <input type="hidden" name="id" value={id} />
-                <label>Nome completo<input name="name" required maxLength={160} defaultValue={athlete.full_name} /></label>
-                <label>Nome social<input name="social" maxLength={160} defaultValue={athlete.social_name ?? ""} /></label>
-                <label>Nascimento<input type="date" name="birth" defaultValue={athlete.birth_date ?? ""} /></label>
-                <input type="hidden" name="club" value={athlete.team ?? ""} />
-                <input type="hidden" name="category" value={athlete.category ?? ""} />
-                <label>Status<select name="status" defaultValue={athlete.status}><option value="active">Ativo</option><option value="inactive">Inativo</option></select></label>
-                <SubmitButton pendingLabel="Salvando…">Salvar cadastro</SubmitButton>
-              </form></RegistrationGuard>
-            )}
-            {can_edit && <PhotoEditor athleteId={id} />}
-            {registration && (
-              <div className="record-work registration-facts">
-                <section aria-labelledby="dados-pessoais">
-                  <h2 id="dados-pessoais">Dados pessoais</h2>
-                  <dl className="record-spec">
-                    <div><dt>Identidade de gênero</dt><dd>{registration.gender_identity ? genderLabels[registration.gender_identity] : "Não informada"}</dd></div>
-                    <div><dt>Identificador</dt><dd>{registration.document_id ?? "Não informado"}</dd></div>
-                  </dl>
-                </section>
-                <section aria-labelledby="contatos-cadastro">
-                  <h2 id="contatos-cadastro">Contatos</h2>
-                  <dl className="record-spec">
-                    <div><dt>Telefone</dt><dd>{registration.phone ?? "Não informado"}</dd></div>
-                    <div><dt>E-mail</dt><dd>{registration.email ?? "Não informado"}</dd></div>
-                    <div><dt>Responsável legal</dt><dd>{registration.guardian_name ?? "Não informado"}</dd></div>
-                    <div><dt>Relação</dt><dd>{registration.guardian_relation ?? "Não informada"}</dd></div>
-                    <div><dt>Contato do responsável</dt><dd>{registration.guardian_contact ?? "Não informado"}</dd></div>
-                    <div><dt>Contato de emergência</dt><dd>{registration.emergency_contact ?? "Não informado"}</dd></div>
-                  </dl>
-                </section>
-              </div>
-            )}
-            {registrationCatalog && <SportLinkForm athleteId={athlete.id} catalog={registrationCatalog} />}
-            {sports.length > 0 && (
-              <section className="sport-history" aria-labelledby="historico-esportivo">
-                <h2 id="historico-esportivo">Histórico esportivo</h2>
-                <ul className="season-lines">
-                  {sports.map((sport) => (
-                    <li key={sport.id}>
-                      <strong>{[sport.category, sport.modality, sport.division].filter(Boolean).join(", ")}</strong>
-                      <span>{[sport.club, sport.position, sport.shirt_number ? `camisa ${sport.shirt_number}` : null].filter(Boolean).join(", ") || "Sem clube"}, temporada {sport.season}{sport.ends_on ? `, até ${sport.ends_on}` : ""}</span>
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            )}
-          </section>
-        )}
+        {aba === "cadastro" && <ProfileRegistration athlete={athlete} canEdit={can_edit} registration={registration} catalog={registrationCatalog} sports={sports} />}
+
       </main>
     </WorkspaceArea>
   );

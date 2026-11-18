@@ -1,0 +1,122 @@
+[
+  {
+    "section": "profile",
+    "width": 1440,
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "section": "registration",
+    "width": 1440,
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "section": "timeline",
+    "width": 1440,
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "section": "documents",
+    "width": 1440,
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "section": "attachments",
+    "width": 1440,
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "section": "profile",
+    "width": 390,
+    "violations": [],
+    "incomplete": [
+      "color-contrast",
+      "label-content-name-mismatch"
+    ]
+  },
+  {
+    "section": "registration",
+    "width": 390,
+    "violations": [],
+    "incomplete": [
+      "color-contrast",
+      "label-content-name-mismatch"
+    ]
+  },
+  {
+    "section": "timeline",
+    "width": 390,
+    "violations": [],
+    "incomplete": [
+      "color-contrast",
+      "label-content-name-mismatch"
+    ]
+  },
+  {
+    "section": "documents",
+    "width": 390,
+    "violations": [],
+    "incomplete": [
+      "color-contrast",
+      "label-content-name-mismatch"
+    ]
+  },
+  {
+    "section": "attachments",
+    "width": 390,
+    "violations": [],
+    "incomplete": [
+      "color-contrast",
+      "label-content-name-mismatch"
+    ]
+  },
+  {
+    "section": "profile",
+    "width": 320,
+    "violations": [],
+    "incomplete": [
+      "color-contrast",
+      "label-content-name-mismatch"
+    ]
+  },
+  {
+    "section": "registration",
+    "width": 320,
+    "violations": [],
+    "incomplete": [
+      "color-contrast",
+      "label-content-name-mismatch"
+    ]
+  },
+  {
+    "section": "timeline",
+    "width": 320,
+    "violations": [],
+    "incomplete": [
+      "color-contrast",
+      "label-content-name-mismatch"
+    ]
+  },
+  {
+    "section": "documents",
+    "width": 320,
+    "violations": [],
+    "incomplete": [
+      "color-contrast",
+      "label-content-name-mismatch"
+    ]
+  },
+  {
+    "section": "attachments",
+    "width": 320,
+    "violations": [],
+    "incomplete": [
+      "color-contrast",
+      "label-content-name-mismatch"
+    ]
+  }
+]

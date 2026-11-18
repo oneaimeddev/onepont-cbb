@@ -54,9 +54,11 @@ test("foto privada, edição, rascunho, revisão, finalização e bloqueios",asy
  insert into clinical.athlete_access(athlete_id,professional_id,can_read_records,can_edit,can_write,can_finalize)
  values('${otherAthlete}','${full.id}',true,true,true,true),('${athlete}','${limited.id}',true,false,false,false);`);
  await page.goto(`/atletas/${athlete}?aba=cadastro`);
+ await page.getByText("Editar identificação e status",{exact:true}).click();
  await page.getByLabel("Nome completo",{exact:true}).fill("Atleta QA editado");
  await page.getByRole("button",{name:"Salvar cadastro",exact:true}).click();
  await expect(page.getByText("Cadastro salvo.",{exact:true})).toBeVisible();
+ await page.getByText("Atualizar fotografia",{exact:true}).click();
  const image=await sharp({create:{width:800,height:600,channels:3,background:"#0b9649"}}).png().toBuffer();
  await page.getByLabel("JPEG, PNG ou WebP, até 5 MB").setInputFiles({name:"qa.png",mimeType:"image/png",buffer:image});
  await expect(page.getByAltText("Pré-visualização da foto")).toBeVisible();
@@ -100,7 +102,7 @@ test("foto privada, edição, rascunho, revisão, finalização e bloqueios",asy
  await page.getByLabel("Revisei esta versão e confirmo a finalização para este atleta.").check();
  await page.getByRole("button",{name:"Confirmar finalização",exact:true}).click();
  await expect(page.getByText("Evolução sintética QA",{exact:true})).toBeVisible();
- await expect(page.getByText("Finalizado",{exact:true})).toBeVisible();
+ await expect(page.locator(".timeline .pill").filter({hasText:"Finalizado"})).toBeVisible();
  expect((await full.client.rpc("clinical_save",{...stale,expected_version:2,finalize:true})).data.version).toBe(3);
  await page.screenshot({path:testInfo.outputPath("evolution-desktop.png"),fullPage:true});
  await page.setViewportSize({width:390,height:844});

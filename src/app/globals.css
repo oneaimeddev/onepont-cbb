@@ -455,7 +455,7 @@ img.avatar { object-fit: cover; }
 
 /* Athlete profile refinements retain the Clinical Design North Star. */
 .profile-tab-controls { display: none; }
-.record-chat { width: auto; gap: .5rem; padding-inline: .5rem; }
+.record-mast .record-chat { width: auto; gap: .5rem; padding-inline: .5rem; }
 .profile-chat-label { font-size: .8125rem; }
 .recent-evolutions .timeline-head { grid-template-columns: 6rem minmax(0, 1fr) minmax(9rem, 16rem) auto; }
 .timeline li[id] { scroll-margin-top: 1.5rem; }
@@ -471,3 +471,30 @@ img.avatar { object-fit: cover; }
   .profile-chat-label { display: none; }
   .recent-evolutions .timeline-head { grid-template-columns: 6rem minmax(0, 1fr); }
 }
+.profile-filters { display: flex; flex-wrap: wrap; gap: .75rem; align-items: end; margin-block: 1rem; }
+.profile-filters label { flex: 1 1 160px; min-width: 0; font-size: .875rem; }
+.profile-filters :is(input, select) { width: 100%; }
+.profile-filter-summary { color: #3a4660; font-size: .875rem; margin-block: .75rem 1rem; }
+.profile-target-record { border-left: 2px solid #0079d5; padding-left: 1rem; margin-block: 1rem 2rem; }
+.profile-target-record > h3 { font-size: 1rem; }
+.profile-show-more { margin-top: 1rem; }
+.profile-registration-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem 2rem; margin-top: 1.25rem; }
+.profile-registration-grid h3, .profile-sports-section h3, .sport-history h3 { font-size: 1.0625rem; font-weight: 600; margin-bottom: .5rem; }
+.profile-contact-section { grid-column: 1 / -1; }
+.profile-registration-grid .record-spec { margin-top: .5rem; gap: 1rem 2rem; }
+.profile-registration-grid dd { overflow-wrap: anywhere; }
+.profile-registration-grid a { color: #0069b5; text-decoration: underline; text-underline-offset: 3px; }
+.profile-sports-section { margin-block: 1.5rem; }
+.profile-edit-disclosure { padding-block: 1rem; border-top: 1px solid #e4e9f1; }
+.profile-edit-disclosure > summary { min-height: 44px; display: list-item; list-style: disclosure-closed inside; cursor: pointer; font-weight: 600; padding-block: .6rem; }
+.profile-edit-disclosure[open] > summary { list-style-type: disclosure-open; }
+.profile-document-list > li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .25rem 1rem; }
+.profile-document-list > li > p:last-child { grid-column: 1 / -1; color: #3a4660; font-size: .875rem; }
+@media (max-width: 760px) {
+  .profile-registration-grid { grid-template-columns: 1fr; }
+  .profile-filters { flex-direction: column; align-items: stretch; }
+  .profile-filters label { flex: auto; }
+  .profile-document-list > li { grid-template-columns: 1fr; }
+}
+
+.clinical-page .clinical-link { color: #0069b5; }

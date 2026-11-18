@@ -208,6 +208,7 @@ test("cadastra dados mínimos ou enriquecidos e preserva o histórico esportivo"
   await expect(page.getByText("(11) 98888-0000")).toBeVisible();
   await expect(page.getByText("qa.catalogo@example.com")).toBeVisible();
 
+  await page.getByText("Registrar novo vínculo esportivo", { exact: true }).click();
   const linkForm = page.locator("form").filter({ has: page.getByRole("heading", { name: "Novo vínculo" }) });
   await addOption(linkForm, "Categoria", historyCategory);
   await linkForm.getByLabel("Feminino ou masculino").selectOption("Masculino");
@@ -215,8 +216,8 @@ test("cadastra dados mínimos ou enriquecidos e preserva o histórico esportivo"
   await addOption(linkForm, "Clube ou equipe (opcional)", historyClub);
   await linkForm.getByRole("button", { name: "Registrar vínculo" }).click();
   await expect(page.getByText("Cadastro salvo.")).toBeVisible();
-  await expect(page.getByText(new RegExp(`${newClub}.*até`))).toBeVisible();
-  await expect(page.getByText(`${historyClub}, temporada`)).toBeVisible();
+  await expect(page.locator(".sport-history li").filter({ hasText: newClub })).toContainText("até");
+  await expect(page.getByRole("region", { name: "Histórico de vínculos" })).toContainText(historyClub);
   const clubs = sql(`
     select club || '|' || coalesce(ends_on::text, 'aberto') from clinical.sport_links
     where athlete_id = '${enrichedId}' order by starts_on, id;
@@ -259,5 +260,5 @@ test("cadastra dados mínimos ou enriquecidos e preserva o histórico esportivo"
   await expect(page.getByText("Identidade de gênero")).toHaveCount(0);
   await expect(page.getByText("Responsável legal")).toHaveCount(0);
   await expect(page.getByText(documentId)).toHaveCount(0);
-  await expect(page.getByText(`${historyClub}, temporada`)).toBeVisible();
+  await expect(page.getByRole("region", { name: "Histórico de vínculos" })).toContainText(historyClub);
 });

@@ -1,9 +1,10 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 export function PhotoEditor({ athleteId }: { athleteId: string }) {
   const router = useRouter();
+  const input = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File>();
   const [preview, setPreview] = useState("");
   const [status, setStatus] = useState("");
@@ -23,6 +24,7 @@ export function PhotoEditor({ athleteId }: { athleteId: string }) {
       setStatus(remove ? "Foto removida." : "Foto salva.");
       setFile(undefined);
       setPreview("");
+      if (input.current) { input.current.value = ""; input.current.dispatchEvent(new Event("change", { bubbles: true })); }
       router.refresh();
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Falha ao salvar. Tente novamente.");
@@ -33,7 +35,7 @@ export function PhotoEditor({ athleteId }: { athleteId: string }) {
     <section className="photo-editor">
       <h2>Foto de perfil</h2>
       <label htmlFor="photo">JPEG, PNG ou WebP, até 5 MB</label>
-      <input id="photo" type="file" accept="image/jpeg,image/png,image/webp" disabled={busy}
+      <input ref={input} id="photo" type="file" accept="image/jpeg,image/png,image/webp" disabled={busy}
         onChange={(event) => {
           const selected = event.target.files?.[0];
           setFile(selected);
