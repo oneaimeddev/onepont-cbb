@@ -1,0 +1,96 @@
+[
+  {
+    "name": "nascimento-edicao",
+    "width": 1440,
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "name": "nascimento-edicao",
+    "width": 390,
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "name": "nascimento-edicao",
+    "width": 320,
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "name": "nascimento-pagina",
+    "width": 1440,
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "name": "nascimento-pagina",
+    "width": 390,
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "name": "nascimento-pagina",
+    "width": 320,
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "name": "nascimento-modal",
+    "width": 1440,
+    "violations": [],
+    "incomplete": [
+      "color-contrast"
+    ]
+  },
+  {
+    "name": "nascimento-modal",
+    "width": 390,
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "name": "nascimento-modal",
+    "width": 320,
+    "violations": [],
+    "incomplete": [
+      "color-contrast"
+    ]
+  },
+  {
+    "name": "lista-10",
+    "width": 1440,
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "name": "lista-10",
+    "width": 390,
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "name": "lista-10",
+    "width": 320,
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "name": "vinculo-filtrado",
+    "width": 1440,
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "name": "vinculo-filtrado",
+    "width": 390,
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "name": "vinculo-filtrado",
+    "width": 320,
+    "violations": [],
+    "incomplete": []
+  }
+]

@@ -162,7 +162,9 @@ test("cadastra dados mínimos ou enriquecidos e preserva o histórico esportivo"
   await page.getByRole("tab", { name: "Dados pessoais" }).click();
   await expect(page.getByLabel("Nome completo")).toHaveValue(enrichedName);
   await page.getByLabel("Nome social (opcional)").fill(socialName);
-  await page.getByLabel("Data de nascimento (opcional)").fill("2010-04-12");
+  await page.getByRole("combobox", { name: "Dia", exact: true }).selectOption("12");
+  await page.getByRole("combobox", { name: "Mês", exact: true }).selectOption("4");
+  await page.getByRole("combobox", { name: "Ano", exact: true }).selectOption("2010");
   await page.getByLabel("CPF ou identificador institucional (opcional)").fill(documentId);
   await page.getByLabel("Identidade de gênero (opcional)").selectOption("nao_binario");
 

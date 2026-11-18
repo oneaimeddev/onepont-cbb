@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { BirthDateField } from "./birth-date-field";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useMemo, useRef, useState, type Dispatch, type FormEvent, type SetStateAction } from "react";
 import { Icon } from "../../components/icon";
@@ -160,7 +161,7 @@ function CatalogCombobox({ name, label, optional = true, options, value, onChang
   );
 }
 
-export function RegistrationForm({ catalog, onDone }: { catalog: RegistrationCatalog; onDone?: () => void }) {
+export function RegistrationForm({ catalog, initialToday, onDone }: { catalog: RegistrationCatalog; initialToday: string; onDone?: () => void }) {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
   const dirty = useRef(false);
@@ -218,7 +219,15 @@ export function RegistrationForm({ catalog, onDone }: { catalog: RegistrationCat
   }
 
   return (
-    <form ref={formRef} className="athlete-form registration-form" data-dirty="false" onSubmit={onSubmit} onInput={() => { dirty.current = true; if (formRef.current) formRef.current.dataset.dirty = "true"; }}>
+    <form ref={formRef} className="athlete-form registration-form" data-dirty="false" onInvalidCapture={(event) => {
+      const control = event.target;
+      if (control instanceof HTMLSelectElement && control.name.startsWith("birth_")) {
+        event.preventDefault();
+        setSection("pessoais");
+        const group = control.closest("fieldset");
+        requestAnimationFrame(() => group?.querySelector<HTMLSelectElement>("select:invalid")?.focus());
+      }
+    }} onSubmit={onSubmit} onInput={() => { dirty.current = true; if (formRef.current) formRef.current.dataset.dirty = "true"; }}>
       <p className="notice"><Icon name="info" size={16} />Use dados fictícios no ambiente de demonstração. Nome completo basta para salvar.</p>
       <input type="hidden" name="creation_id" value={creationId} suppressHydrationWarning />
       <div className="section-tabs" role="tablist" aria-label="Seções do cadastro">
@@ -233,8 +242,7 @@ export function RegistrationForm({ catalog, onDone }: { catalog: RegistrationCat
         <label>Nome completo<input name="name" required maxLength={160} autoComplete="off" aria-invalid={Boolean(errors.name)} aria-describedby={errors.name ? "erro-name" : undefined} /></label>
         {errors.name && <p id="erro-name" className="field-error" role="alert">{errors.name}</p>}
         <label>Nome social<Optional /><input name="social" maxLength={160} autoComplete="off" /></label>
-        <label>Data de nascimento<Optional /><input name="birth" type="date" min="1900-01-01" max={new Date().toISOString().slice(0, 10)} aria-invalid={Boolean(errors.birth)} /></label>
-        {errors.birth && <p className="field-error" role="alert">{errors.birth}</p>}
+        <BirthDateField initialToday={initialToday} error={errors.birth} onChange={() => setErrors((current) => ({ ...current, birth: "" }))} />
         <label>Fotografia<Optional /><input name="photo" type="file" accept="image/jpeg,image/png,image/webp" /></label>
         {errors.photo && <p className="field-error" role="alert">{errors.photo}</p>}
         <label>CPF ou identificador institucional<Optional /><input name="document" maxLength={40} autoComplete="off" spellCheck={false} aria-invalid={Boolean(errors.document)} /></label>
@@ -337,7 +345,7 @@ export function SportLinkForm({ athleteId, catalog }: { athleteId: string; catal
   );
 }
 
-export function RegistrationEntry({ catalog }: { catalog: RegistrationCatalog }) {
+export function RegistrationEntry({ catalog, initialToday }: { catalog: RegistrationCatalog; initialToday: string }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   return (
     <>
@@ -349,7 +357,7 @@ export function RegistrationEntry({ catalog }: { catalog: RegistrationCatalog })
           <h2 id="cadastro-titulo">Cadastrar atleta</h2>
           <button type="button" className="record-chat" aria-label="Fechar" onClick={() => closeRegistration(dialogRef.current)}><Icon name="close" size={18} /></button>
         </header>
-        <RegistrationForm catalog={catalog} onDone={() => closeRegistration(dialogRef.current)} />
+        <RegistrationForm catalog={catalog} initialToday={initialToday} onDone={() => closeRegistration(dialogRef.current)} />
       </dialog>
     </>
   );

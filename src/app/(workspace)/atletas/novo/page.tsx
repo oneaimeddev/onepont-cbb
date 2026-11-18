@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { saoPauloToday } from "../../../../features/athletes/birth-date";
 import { notFound } from "next/navigation";
 import { Icon } from "../../../../components/icon";
 import { listAthletes, loadCatalog } from "../../../../features/athletes/data";
@@ -21,7 +22,7 @@ export default async function NewAthletePage({ searchParams }: {
         </div>
       </header>
       {erro && <p role="alert">Não foi possível salvar o cadastro. Confira os dados e tente novamente.</p>}
-      <RegistrationForm catalog={catalog} />
+      <RegistrationForm catalog={catalog} initialToday={saoPauloToday()} />
     </main>
   );
 }

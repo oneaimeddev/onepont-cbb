@@ -1,3 +1,5 @@
+import { BirthDateField } from "./birth-date-field";
+import { saoPauloToday } from "./birth-date";
 import { SubmitButton } from "../../components/submit-button";
 import { editAthlete } from "../../app/(workspace)/atletas/[id]/edit-actions";
 import { SportLinkForm } from "./registration-form";
@@ -236,14 +238,7 @@ export function ProfileRegistration({
                   defaultValue={athlete.social_name ?? ""}
                 />
               </label>
-              <label>
-                Nascimento
-                <input
-                  type="date"
-                  name="birth"
-                  defaultValue={athlete.birth_date ?? ""}
-                />
-              </label>
+              <BirthDateField initialValue={athlete.birth_date ?? ""} initialToday={saoPauloToday()} />
               <input type="hidden" name="club" value={athlete.team ?? ""} />
               <input
                 type="hidden"

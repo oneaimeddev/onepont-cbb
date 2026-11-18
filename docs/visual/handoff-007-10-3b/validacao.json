@@ -1,0 +1,69 @@
+{
+  "handoff": "007.10.3B",
+  "baseline": "c5c0154",
+  "start_commit": "479e5f5",
+  "branch": "feat/handoff-007-10-3b-athlete-directory",
+  "browser": "Chromium headless",
+  "locale": "pt-BR",
+  "timezone": "America/Sao_Paulo",
+  "viewports": [
+    1440,
+    390,
+    320
+  ],
+  "screenshots": 38,
+  "checks": [
+    {
+      "command": "npm test -- --workers=1",
+      "exit_code": 0,
+      "passed": 73,
+      "duration": "5.9m"
+    },
+    {
+      "command": "npx playwright test tests/athlete-directory-ux.spec.mjs tests/catalog.spec.mjs --workers=1",
+      "exit_code": 0,
+      "passed": 6,
+      "duration": "49.7s",
+      "note": "Execução final após ampliar verificações de nome social/status/vínculo encerrado e normalizar localidade/posição das capturas."
+    },
+    {
+      "command": "npm run lint",
+      "exit_code": 0
+    },
+    {
+      "command": "npm run typecheck",
+      "exit_code": 0
+    },
+    {
+      "command": "npm run build",
+      "exit_code": 0
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0
+    }
+  ],
+  "axe": {
+    "evaluations": 15,
+    "violations": 0,
+    "incomplete": [
+      "color-contrast"
+    ]
+  },
+  "fixtures_cleanup": {
+    "remaining_test_users": 0,
+    "remaining_test_sport_options": 0
+  },
+  "preservation": {
+    "historical_artifacts_restored": 104,
+    "backend_changed": false,
+    "dependencies_changed": false,
+    "merge": false,
+    "published": false
+  },
+  "limitations": [
+    "Viewports simulados em Chromium; sem aparelho físico, Safari ou leitor de tela real.",
+    "Verificações automáticas não certificam toda a aplicação.",
+    "Correspondência esportiva ambígua mostra todos os vínculos autorizados."
+  ]
+}
