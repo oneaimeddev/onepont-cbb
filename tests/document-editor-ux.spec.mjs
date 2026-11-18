@@ -15,7 +15,7 @@ let physician;
 let blocked;
 const require = createRequire(import.meta.url);
 const accessibility = [];
-const shots = "docs/visual/handoff-007-10-2b";
+const shots = "docs/visual/fix-document-navigation";
 const long = "Texto sintético para inspeção de legibilidade: conferir todas as informações antes de qualquer uso. ".repeat(4).trim();
 const sql = (input) => execFileSync("docker", ["exec", "-i", "supabase_db_prontuario-cbb", "psql", "-X", "-U", "postgres", "-Atq", "-v", "ON_ERROR_STOP=1"], { input, encoding: "utf8" });
 
@@ -114,6 +114,7 @@ test("medicamentos e exames: 1/3/6 itens, foco, desfazer, integridade e responsi
     const names = page.getByLabel(kind === "prescription" ? "Nome do medicamento" : "Nome do exame");
     await expect(names).toHaveCount(count);
     expect(await contentOf(page)).toEqual(doc.content);
+    await page.getByRole("button", { name: "Conferir todos", exact: true }).click();
     await responsive(page, `${kind === "prescription" ? "prescricao" : "exames"}-${count}`);
     if (kind === "exam_request") {
       expect(await page.getByRole("heading", { name: "Exames solicitados" }).evaluate((el) => el.getBoundingClientRect().top + scrollY)).toBeLessThan(await page.getByLabel("Justificativa").evaluate((el) => el.getBoundingClientRect().top + scrollY));
@@ -236,6 +237,10 @@ test("menu por teclado, Escape, foco e autorização preservada", async ({ page 
     await trigger.focus();
     await page.keyboard.press("Enter");
     await expect(trigger).toHaveAttribute("aria-expanded", "true");
+    const buttonBox = await trigger.boundingBox();
+    const menuBox = await page.getByRole("navigation", { name: "Tipos de documento" }).boundingBox();
+    expect(Math.abs(menuBox.x - buttonBox.x)).toBeLessThan(2);
+    expect(menuBox.y).toBeGreaterThanOrEqual(buttonBox.y + buttonBox.height);
     await page.keyboard.press("Tab");
     await expect(page.getByRole("link", { name: "Nova prescrição", exact: true })).toBeFocused();
     await page.screenshot({ path: `${shots}/menu-${width}.png`, fullPage: true });
@@ -255,5 +260,67 @@ test("menu por teclado, Escape, foco e autorização preservada", async ({ page 
   for (const slug of ["prescricao", "cirurgia", "exames"]) {
     await page.goto(`/atletas/${athlete}/documentos/nova?tipo=${slug}`);
     await expect(page.getByRole("heading", { name: "Página indisponível" })).toBeVisible();
+  }
+});
+
+
+test("edição por item mantém a área de trabalho ao adicionar e alternar", async ({ page }) => {
+  test.setTimeout(90_000);
+  await login(page);
+  for (const kind of ["prescription", "exam_request"]) {
+    const doc = await seed(kind, 6);
+    await page.goto(doc.path);
+    await page.waitForLoadState("networkidle");
+    const noun = kind === "prescription" ? "medicamento" : "exame";
+    const selector = page.getByLabel(`${noun === "medicamento" ? "Medicamento" : "Exame"} em edição`);
+    const visibleItems = page.locator("fieldset.document-item:visible");
+    await expect(visibleItems).toHaveCount(1);
+    const firstName = page.locator(`[data-item-name="${doc.content.items[0].id}"]`);
+    await firstName.fill("NOME PRESERVADO DEMO");
+    for (const width of [1440, 390, 320]) {
+      await page.setViewportSize({ width, height: width === 1440 ? 900 : 844 });
+      await selector.selectOption(doc.content.items[0].id);
+      await page.locator(".document-item-navigation").evaluate((el) => el.scrollIntoView({ block: "start" }));
+      const addButton = page.getByRole("button", { name: `Adicionar ${noun}`, exact: true });
+      // Measure from a clickable button, after Playwright has cleared any sticky shell header.
+      await addButton.click({ trial: true });
+      const before = await page.evaluate(() => scrollY);
+      const formTop = await visibleItems.evaluate((el) => el.getBoundingClientRect().top + scrollY);
+      await addButton.click();
+      const name = visibleItems.locator("[data-item-name]");
+      await expect(name).toBeFocused();
+      await expect(name).toBeInViewport({ ratio: 1 });
+      const afterTop = await visibleItems.evaluate((el) => el.getBoundingClientRect().top + scrollY);
+      expect(Math.abs(afterTop - formTop)).toBeLessThan(3);
+      // Mobile may minimally reveal the focused name, but never jump to another stacked form.
+      expect(Math.abs(await page.evaluate(() => scrollY) - before)).toBeLessThan(width === 1440 ? 3 : 422);
+      await expect(visibleItems).toHaveCount(1);
+      await name.fill(`ITEM NOVO ${width} DEMO`);
+      const original = await contentOf(page);
+      await visibleItems.getByRole("button", { name: /^Remover/ }).click();
+      await expect(visibleItems.locator("[data-item-name]")).toBeFocused();
+      await page.getByRole("button", { name: /^Desfazer remoção de/ }).click();
+      expect(await contentOf(page)).toEqual(original);
+      await addButton.click({ trial: true });
+      const nextPosition = await page.evaluate(() => scrollY);
+      await addButton.click();
+      await expect(visibleItems.locator("[data-item-name]")).toBeFocused();
+      expect(Math.abs(await page.evaluate(() => scrollY) - nextPosition)).toBeLessThan(3);
+      await visibleItems.locator("[data-item-name]").fill(`SEGUNDO NOVO ${width} DEMO`);
+      await selector.selectOption(doc.content.items[0].id);
+      await expect(firstName).toHaveValue("NOME PRESERVADO DEMO");
+      await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      await page.evaluate(() => window.scrollTo(0, 0));
+      await page.screenshot({ path: `${shots}/editar-${kind}-${width}.png`, fullPage: true });
+    }
+    const beforeReview = await contentOf(page);
+    await page.getByRole("button", { name: "Conferir todos", exact: true }).click();
+    await expect(visibleItems).toHaveCount(12);
+    expect(await contentOf(page)).toEqual(beforeReview);
+    await page.getByRole("button", { name: "Editar por item", exact: true }).click();
+    await expect(visibleItems).toHaveCount(1);
+    await save(page);
+    await page.reload();
+    expect(await contentOf(page)).toEqual(beforeReview);
   }
 });

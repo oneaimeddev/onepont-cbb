@@ -68,7 +68,7 @@ export function DocumentTextarea({ value, ...props }: TextareaHTMLAttributes<HTM
   const ref = useRef<HTMLTextAreaElement>(null);
   const fit = () => {
     const field = ref.current;
-    if (!field) return;
+    if (!field || !field.getClientRects().length) return;
     field.style.minHeight = "";
     field.style.height = "auto";
     const height = `${field.scrollHeight + field.offsetHeight - field.clientHeight}px`;
@@ -100,20 +100,30 @@ export function useDocumentItems<T extends { id: string; name: string }>(items: 
   const focusTo = useRef<string | null | undefined>(undefined);
   const [removed, setRemoved] = useState<{ item: T; index: number }[]>([]);
   const [announcement, setAnnouncement] = useState("");
+  const [selected, setSelected] = useState(items[0]?.id ?? "");
+  const [reviewAll, setReviewAll] = useState(false);
+  const activeId = items.some((item) => item.id === selected) ? selected : (items[0]?.id ?? "");
   useLayoutEffect(() => {
     if (focusTo.current === undefined) return;
     const target = focusTo.current === null ? addButton.current : root.current?.querySelector<HTMLInputElement>(`[data-item-name="${focusTo.current}"]`);
     focusTo.current = undefined;
-    target?.focus();
-    target?.scrollIntoView({ block: "nearest" });
-  }, [items]);
+    target?.focus({ preventScroll: !reviewAll });
+    if (target) {
+      const bounds = target.getBoundingClientRect();
+      const viewport = window.visualViewport;
+      const top = viewport?.offsetTop ?? 0;
+      if (reviewAll || bounds.top < top || bounds.bottom > top + (viewport?.height ?? innerHeight)) target.scrollIntoView({ block: "nearest" });
+    }
+  }, [items, activeId, reviewAll]);
   const add = (item: T) => {
     focusTo.current = item.id;
+    setSelected(item.id);
     update([...items, item]);
     setAnnouncement(`${noun} adicionado.`);
   };
   const remove = (item: T, index: number) => {
     focusTo.current = items[index + 1]?.id ?? items[index - 1]?.id ?? null;
+    setSelected(focusTo.current ?? "");
     setRemoved((current) => [...current, { item, index }]);
     update(items.filter((entry) => entry.id !== item.id));
     setAnnouncement(`${noun} removido: ${item.name.trim() || `item ${index + 1}`}.`);
@@ -124,16 +134,41 @@ export function useDocumentItems<T extends { id: string; name: string }>(items: 
     const restored = [...items];
     restored.splice(Math.min(last.index, restored.length), 0, last.item);
     focusTo.current = last.item.id;
+    setSelected(last.item.id);
     update(restored);
     setRemoved((current) => current.slice(0, -1));
     setAnnouncement(`${noun} restaurado: ${last.item.name.trim() || "item sem nome"}.`);
   };
-  return { root, addButton, add, remove, undo, announcement, removed: removed.at(-1) };
+  return { root, addButton, add, remove, undo, announcement, removed: removed.at(-1), activeId, select: setSelected, reviewAll, setReviewAll };
 }
 
 export function RemovalNotice({ announcement, name, undo }: { announcement: string; name?: string; undo: () => void }) {
   return <div className="document-removal">
     <p aria-live="polite" aria-atomic="true">{announcement}</p>
     {name !== undefined && <button type="button" className="outline" onClick={undo}>Desfazer remoção de {name || "item sem nome"}</button>}
+  </div>;
+}
+
+
+export function DocumentItemNavigation({ items, activeId, select, reviewAll, setReviewAll, noun, children }: {
+  items: { id: string; name: string }[];
+  activeId: string;
+  select: (id: string) => void;
+  reviewAll: boolean;
+  setReviewAll: (all: boolean) => void;
+  noun: string;
+  children: ReactNode;
+}) {
+  return <div className="document-item-navigation">
+    {!reviewAll && items.length > 0 && <label>{noun} em edição
+      <select value={activeId} onChange={(event) => select(event.target.value)}>
+        {items.map((item, index) => <option key={item.id} value={item.id}>{index + 1} de {items.length} · {item.name.trim() || "Sem nome"}</option>)}
+      </select>
+    </label>}
+    <div className="document-item-navigation-actions">
+      {children}
+      <button type="button" className="outline" aria-pressed={reviewAll} onClick={() => setReviewAll(!reviewAll)}>{reviewAll ? "Editar por item" : "Conferir todos"}</button>
+    </div>
+    <p className="document-navigation-help">{reviewAll ? "Todos os itens estão abertos para conferência." : "Edite um item por vez. Use a lista para alternar; os dados preenchidos são mantidos."}</p>
   </div>;
 }

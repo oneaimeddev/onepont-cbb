@@ -1,5 +1,5 @@
-.document-create { position: relative; }
-.document-create-options { position: absolute; top: calc(100% + .5rem); right: 0; z-index: 10; min-width: 16rem; max-width: calc(100vw - 2rem); padding: .4rem; display: grid; background: var(--paper); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow-sm); }
+.document-create { position: relative; justify-self: start; width: max-content; max-width: 100%; }
+.document-create-options { position: absolute; top: calc(100% + .5rem); left: 0; z-index: 10; min-width: 16rem; max-width: calc(100vw - 2rem); padding: .4rem; display: grid; background: var(--paper); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow-sm); }
 .document-create-options a { display: flex; align-items: center; min-height: 44px; padding: .65rem .75rem; border-radius: 8px; color: var(--ink); text-decoration: none; }
 .document-create-options a:hover { background: var(--surface); }
 @media (max-width: 720px) {

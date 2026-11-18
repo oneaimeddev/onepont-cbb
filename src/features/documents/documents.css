@@ -73,3 +73,14 @@
   .document-actions :is(button, a) { width: 100%; }
   .document-add { justify-self: stretch; }
 }
+
+.document-item[hidden] { display: none; }
+.document-item-navigation { display: grid; gap: .75rem; padding-block: .5rem 1rem; border-bottom: 1px solid var(--line); }
+.document-item-navigation-actions { display: flex; flex-wrap: wrap; gap: .75rem; align-items: center; }
+.document-navigation-help { margin: 0; font-size: .875rem; color: var(--muted); }
+.document-item-navigation select { width: 100%; }
+@media (max-width: 720px) {
+  .document-item-navigation-actions { display: grid; grid-template-columns: minmax(0, 1fr); }
+}
+/* Switching the active item must not anchor the page to the fields being hidden. */
+.document-edit-scope { overflow-anchor: none; }

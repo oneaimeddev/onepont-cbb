@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { SubmitButton } from "../../components/submit-button";
-import { DocumentEditorFrame, DocumentTextarea, RemovalNotice, useDocumentItems } from "./editor-controls";
+import { DocumentEditorFrame, DocumentItemNavigation, DocumentTextarea, RemovalNotice, useDocumentItems } from "./editor-controls";
 import { saveDocument } from "./actions";
 import {
   emptyExamItem, emptyMedication, examSuggestions, examTypeLabels, lateralityLabels, prescriptionPending, priorityLabels, surgicalPending, examPending,
@@ -68,7 +68,7 @@ export function PrescriptionEditor({ athleteId, documentId, version, initial, re
   const [content, setContent] = useState(initial);
   const dirty = JSON.stringify(content) !== JSON.stringify(initial);
   const pending = prescriptionPending(content);
-  const { root: itemsRootRef, addButton: addButtonRef, add, remove, undo, announcement, removed } = useDocumentItems(content.items, (items) => setContent((current) => ({ ...current, items })), "Medicamento");
+  const { root: itemsRootRef, addButton: addButtonRef, add, remove, undo, announcement, removed, activeId, select, reviewAll, setReviewAll } = useDocumentItems(content.items, (items) => setContent((current) => ({ ...current, items })), "Medicamento");
 
   function updateItem(id: string, patch: Partial<MedicationItem>) {
     setContent((current) => ({
@@ -80,8 +80,11 @@ export function PrescriptionEditor({ athleteId, documentId, version, initial, re
   return (
     <DocumentEditorFrame dirty={dirty}>
     <div className="document-editor" ref={itemsRootRef}>
+      <DocumentItemNavigation items={content.items} activeId={activeId} select={select} reviewAll={reviewAll} setReviewAll={setReviewAll} noun="Medicamento">
+        <button ref={addButtonRef} type="button" className="outline document-add" onClick={() => add(emptyMedication())}>Adicionar medicamento</button>
+      </DocumentItemNavigation>
       {content.items.map((item, index) => (
-        <fieldset className="document-item" key={item.id}>
+        <fieldset className="document-item" key={item.id} hidden={!reviewAll && item.id !== activeId}>
           <legend>Medicamento {index + 1}{item.name.trim() && <span> · {item.name}</span>}</legend>
           <div className="document-item-tools"><button type="button" className="document-remove" onClick={() => remove(item, index)} aria-label={`Remover medicamento ${index + 1}${item.name.trim() ? `: ${item.name}` : ""}`}>Remover medicamento {index + 1}</button></div>
           <div className="document-grid">
@@ -99,7 +102,6 @@ export function PrescriptionEditor({ athleteId, documentId, version, initial, re
           </div>
         </fieldset>
       ))}
-      <button ref={addButtonRef} type="button" className="outline document-add" onClick={() => add(emptyMedication())}>Adicionar medicamento</button>
       <RemovalNotice announcement={announcement} name={removed?.item.name} undo={undo} />
       <label>Observações gerais<DocumentTextarea rows={3} maxLength={2000} value={content.notes} onChange={(event) => setContent((current) => ({ ...current, notes: event.target.value }))} /></label>
       <PendingList blocking={pending.blocking} groups={pending.groups} />
@@ -172,7 +174,7 @@ export function ExamEditor({ athleteId, documentId, version, initial, returnTo, 
   const [content, setContent] = useState(initial);
   const dirty = JSON.stringify(content) !== JSON.stringify(initial);
   const pending = examPending(content);
-  const { root: itemsRootRef, addButton: addButtonRef, add, remove, undo, announcement, removed } = useDocumentItems(content.items, (items) => setContent((current) => ({ ...current, items })), "Exame");
+  const { root: itemsRootRef, addButton: addButtonRef, add, remove, undo, announcement, removed, activeId, select, reviewAll, setReviewAll } = useDocumentItems(content.items, (items) => setContent((current) => ({ ...current, items })), "Exame");
 
   function update(patch: Partial<ExamContent>) {
     setContent((current) => ({ ...current, ...patch }));
@@ -204,8 +206,11 @@ export function ExamEditor({ athleteId, documentId, version, initial, returnTo, 
         </label>
       </div>
       <h2>Exames solicitados</h2>
+      <DocumentItemNavigation items={content.items} activeId={activeId} select={select} reviewAll={reviewAll} setReviewAll={setReviewAll} noun="Exame">
+        <button ref={addButtonRef} type="button" className="outline document-add" onClick={() => add(emptyExamItem())}>Adicionar exame</button>
+      </DocumentItemNavigation>
       {content.items.map((item, index) => (
-        <fieldset className="document-item" key={item.id}>
+        <fieldset className="document-item" key={item.id} hidden={!reviewAll && item.id !== activeId}>
           <legend>Exame {index + 1}{item.name.trim() && <span> · {item.name}</span>}</legend>
           <div className="document-item-tools"><button type="button" className="document-remove" onClick={() => remove(item, index)} aria-label={`Remover exame ${index + 1}${item.name.trim() ? `: ${item.name}` : ""}`}>Remover exame {index + 1}</button></div>
           <div className="document-grid">
@@ -231,7 +236,6 @@ export function ExamEditor({ athleteId, documentId, version, initial, returnTo, 
           </div>
         </fieldset>
       ))}
-      <button ref={addButtonRef} type="button" className="outline document-add" onClick={() => add(emptyExamItem())}>Adicionar exame</button>
       <RemovalNotice announcement={announcement} name={removed?.item.name} undo={undo} />
       <section className="document-section"><h2>Contexto clínico e orientações</h2><div className="document-grid">
         <label className="is-wide">Indicação clínica<DocumentTextarea rows={3} maxLength={2000} value={content.indication} onChange={(event) => update({ indication: event.target.value })} /></label>
