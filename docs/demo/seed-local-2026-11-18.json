@@ -1,0 +1,310 @@
+{
+  "records": 340,
+  "accounts": [
+    {
+      "email": "cardiologia.demo@example.com",
+      "profession": "Cardiologista",
+      "display_name": "Dr. Caio Mendonça",
+      "can_read_audit": false,
+      "medical_author": true,
+      "accessible_athletes": 174
+    },
+    {
+      "email": "fisioterapia.demo@example.com",
+      "profession": "Fisioterapeuta",
+      "display_name": "Dra. Renata Guimarães",
+      "can_read_audit": false,
+      "medical_author": false,
+      "accessible_athletes": 174
+    },
+    {
+      "email": "medico.demo@example.com",
+      "profession": "Medicina esportiva",
+      "display_name": "Profissional DEMO · medico.demo",
+      "can_read_audit": true,
+      "medical_author": true,
+      "accessible_athletes": 176
+    },
+    {
+      "email": "ortopedia.demo@example.com",
+      "profession": "Ortopedista",
+      "display_name": "Dra. Helena Prado",
+      "can_read_audit": false,
+      "medical_author": true,
+      "accessible_athletes": 175
+    },
+    {
+      "email": "psicologia.demo@example.com",
+      "profession": "Psicóloga",
+      "display_name": "Dra. Lúcia Andrade",
+      "can_read_audit": false,
+      "medical_author": false,
+      "accessible_athletes": 174
+    }
+  ],
+  "athletes": 178,
+  "profiles": 7,
+  "documents": 744,
+  "categories": [
+    {
+      "athletes": 14,
+      "category": "Adulto",
+      "division": "Feminino"
+    },
+    {
+      "athletes": 14,
+      "category": "Adulto",
+      "division": "Masculino"
+    },
+    {
+      "athletes": 15,
+      "category": "Sub-15",
+      "division": "Feminino"
+    },
+    {
+      "athletes": 15,
+      "category": "Sub-15",
+      "division": "Masculino"
+    },
+    {
+      "athletes": 14,
+      "category": "Sub-17",
+      "division": "Feminino"
+    },
+    {
+      "athletes": 14,
+      "category": "Sub-17",
+      "division": "Masculino"
+    },
+    {
+      "athletes": 15,
+      "category": "Sub-19",
+      "division": "Feminino"
+    },
+    {
+      "athletes": 15,
+      "category": "Sub-19",
+      "division": "Masculino"
+    },
+    {
+      "athletes": 14,
+      "category": "Sub-21",
+      "division": "Feminino"
+    },
+    {
+      "athletes": 14,
+      "category": "Sub-21",
+      "division": "Masculino"
+    },
+    {
+      "athletes": 15,
+      "category": "Sub-23",
+      "division": "Feminino"
+    },
+    {
+      "athletes": 15,
+      "category": "Sub-23",
+      "division": "Masculino"
+    }
+  ],
+  "attachments": 0,
+  "captured_at": "2026-11-18 16:08:41",
+  "sport_links": 199,
+  "conversations": 20,
+  "demo_athletes": 176,
+  "record_states": [
+    {
+      "total": 97,
+      "status": "draft",
+      "visibility": "author_only"
+    },
+    {
+      "total": 1,
+      "status": "draft",
+      "visibility": "care_team"
+    },
+    {
+      "total": 4,
+      "status": "finalized",
+      "visibility": "author_only"
+    },
+    {
+      "total": 238,
+      "status": "finalized",
+      "visibility": "care_team"
+    }
+  ],
+  "document_types": [
+    {
+      "total": 216,
+      "status": "draft",
+      "document_type": "exam_request"
+    },
+    {
+      "total": 57,
+      "status": "ready_for_review",
+      "document_type": "exam_request"
+    },
+    {
+      "total": 208,
+      "status": "draft",
+      "document_type": "prescription"
+    },
+    {
+      "total": 57,
+      "status": "ready_for_review",
+      "document_type": "prescription"
+    },
+    {
+      "total": 161,
+      "status": "draft",
+      "document_type": "surgical_order"
+    },
+    {
+      "total": 45,
+      "status": "ready_for_review",
+      "document_type": "surgical_order"
+    }
+  ],
+  "manual_entries": [
+    {
+      "status": "active",
+      "full_name": "Atleta QA Minimo e61b7e0b"
+    },
+    {
+      "status": "active",
+      "full_name": "Nome do Atleta"
+    }
+  ],
+  "active_athletes": 172,
+  "manual_athletes": 2,
+  "roster_athletes": 174,
+  "inactive_athletes": 6,
+  "current_sport_links": 175,
+  "migration_tracking": {
+    "action_taken": "Inspeção somente; nenhum reparo de ledger ou aplicação de migração.",
+    "repository_files": 28,
+    "registered_versions": 27,
+    "missing_ledger_version": "20261115000900",
+    "access_grant_function_present": true,
+    "access_revoke_function_present": true,
+    "column_can_manage_access_present": true
+  },
+  "context": "Inventário administrativo local. Contagens não substituem permissões de leitura por profissional. Sem senhas, corpos clínicos ou reexecução de seed.",
+  "demo_cases": [
+    {
+      "id": "2e47efd2-022a-402c-8338-12988c8f9473",
+      "lote": "qa004:cbb-qa-1",
+      "nome": "Alice Almeida Lopes",
+      "origem": "demo",
+      "status": "active",
+      "tem_foto": true,
+      "evolucoes": 3,
+      "prescricoes": 3,
+      "especialidades": 3,
+      "resumo_esportivo": "Sub-15 / Feminino / 3x3 / Sesi Araraquara",
+      "vinculos_vigentes": 1,
+      "anexos_disponiveis": 0,
+      "evolucoes_rascunho": 2,
+      "exames_solicitados": 0,
+      "pedidos_cirurgicos": 0,
+      "evolucoes_restritas": 2,
+      "vinculos_encerrados": 1
+    },
+    {
+      "id": "ccb00000-0000-4000-8000-000000000001",
+      "lote": null,
+      "nome": "Atleta DEMO Aurora",
+      "origem": "demo",
+      "status": "active",
+      "tem_foto": false,
+      "evolucoes": 2,
+      "prescricoes": 0,
+      "especialidades": 2,
+      "resumo_esportivo": null,
+      "vinculos_vigentes": 0,
+      "anexos_disponiveis": 0,
+      "evolucoes_rascunho": 0,
+      "exames_solicitados": 0,
+      "pedidos_cirurgicos": 0,
+      "evolucoes_restritas": 0,
+      "vinculos_encerrados": 0
+    },
+    {
+      "id": "ccb00000-0000-4000-8000-000000000002",
+      "lote": null,
+      "nome": "Atleta DEMO Horizonte",
+      "origem": "demo",
+      "status": "active",
+      "tem_foto": false,
+      "evolucoes": 0,
+      "prescricoes": 0,
+      "especialidades": 0,
+      "resumo_esportivo": null,
+      "vinculos_vigentes": 0,
+      "anexos_disponiveis": 0,
+      "evolucoes_rascunho": 0,
+      "exames_solicitados": 0,
+      "pedidos_cirurgicos": 0,
+      "evolucoes_restritas": 0,
+      "vinculos_encerrados": 0
+    },
+    {
+      "id": "74804189-c5fe-43c2-8849-bcbe86774098",
+      "lote": "qa004:cbb-qa-1",
+      "nome": "Bruna Junqueira Xavier",
+      "origem": "demo",
+      "status": "active",
+      "tem_foto": false,
+      "evolucoes": 4,
+      "prescricoes": 5,
+      "especialidades": 2,
+      "resumo_esportivo": "Sub-17 / Feminino / 5x5 / ADRM Maringá",
+      "vinculos_vigentes": 1,
+      "anexos_disponiveis": 0,
+      "evolucoes_rascunho": 1,
+      "exames_solicitados": 4,
+      "pedidos_cirurgicos": 5,
+      "evolucoes_restritas": 1,
+      "vinculos_encerrados": 0
+    },
+    {
+      "id": "7a153dd8-6b5d-41b5-8d81-0dd00c410813",
+      "lote": "qa004:cbb-qa-1",
+      "nome": "Marina Costa",
+      "origem": "demo",
+      "status": "active",
+      "tem_foto": false,
+      "evolucoes": 4,
+      "prescricoes": 0,
+      "especialidades": 4,
+      "resumo_esportivo": "Sub-19 / Feminino / 3x3 / Sesi Araraquara",
+      "vinculos_vigentes": 1,
+      "anexos_disponiveis": 0,
+      "evolucoes_rascunho": 0,
+      "exames_solicitados": 0,
+      "pedidos_cirurgicos": 0,
+      "evolucoes_restritas": 0,
+      "vinculos_encerrados": 1
+    },
+    {
+      "id": "0dab413f-3dfe-4f4b-8766-a57fea959233",
+      "lote": "qa004:cbb-qa-1",
+      "nome": "Paloma Uchoa Oliveira",
+      "origem": "demo",
+      "status": "active",
+      "tem_foto": true,
+      "evolucoes": 5,
+      "prescricoes": 4,
+      "especialidades": 2,
+      "resumo_esportivo": "Sub-21 / Feminino / 5x5 / Basquete Blumenau",
+      "vinculos_vigentes": 1,
+      "anexos_disponiveis": 0,
+      "evolucoes_rascunho": 1,
+      "exames_solicitados": 3,
+      "pedidos_cirurgicos": 5,
+      "evolucoes_restritas": 1,
+      "vinculos_encerrados": 1
+    }
+  ]
+}

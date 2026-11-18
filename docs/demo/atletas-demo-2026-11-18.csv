@@ -1,0 +1,177 @@
+﻿id,lote,nome,origem,status,tem_foto,evolucoes,prescricoes,especialidades,resumo_esportivo,vinculos_vigentes,anexos_disponiveis,evolucoes_rascunho,exames_solicitados,pedidos_cirurgicos,evolucoes_restritas,vinculos_encerrados
+35ce5e57-a307-4afb-8815-122f191c9212,qa004:cbb-qa-1,Adriano Vasconcelos Pereira,demo,active,False,7,3,3,Sub-21 / Masculino / 5x5 / Vasco da Gama,1,0,2,0,5,2,0
+1a49e13f-6296-48a1-8e79-aca78f490a75,qa004:cbb-qa-1,Ágatha Cardoso Zanetti,demo,active,True,4,2,2,Sub-23 / Feminino / 3x3 / Flamengo,1,0,1,0,2,1,0
+d2991a40-0ea5-4053-80bd-854d086648b9,qa004:cbb-qa-1,Alan Wagner Queiroz,demo,active,True,3,0,2,Sub-21 / Masculino / 5x5 / Brasília Basquete,1,0,1,0,2,1,0
+3abe6c56-4a0f-44b5-84cc-db445078955a,qa004:cbb-qa-1,Alberto Wagner Ibrahim,demo,active,False,0,0,0,Adulto / Masculino / 5x5 / Minas,1,0,0,0,0,0,0
+f7ecd0cf-bafe-4c11-8a9e-48e844bcd3c9,qa004:cbb-qa-1,Alexandre Esteves Souza,demo,active,True,0,3,0,Sub-17 / Masculino / 3x3 / Flamengo,1,0,0,0,0,0,1
+2e47efd2-022a-402c-8338-12988c8f9473,qa004:cbb-qa-1,Alice Almeida Lopes,demo,active,True,3,3,3,Sub-15 / Feminino / 3x3 / Sesi Araraquara,1,0,2,0,0,2,1
+d678c18c-8e29-4543-8bfa-144f355797d5,qa004:cbb-qa-1,Aline Duarte Almeida,demo,active,False,4,4,2,Sub-23 / Feminino / 5x5 / Minas,1,0,1,0,0,1,0
+566646ec-33b4-4ea6-8654-91489a4cd097,qa004:cbb-qa-1,Amanda Esteves Souza,demo,active,False,3,0,2,Sub-17 / Feminino / 3x3 / Sesi Araraquara,1,0,1,2,3,1,1
+21fa1925-8aac-4a0f-89f8-5b313bf825bd,qa004:cbb-qa-1,Ana Clara Farias Teixeira,demo,active,False,4,0,2,Sub-17 / Feminino / 5x5 / Corinthians,1,0,1,0,0,1,0
+3704b0cf-f37e-4cca-8ca3-f7d4532b58a0,qa004:cbb-qa-1,Ana Luiza Gomes Uchoa,demo,active,True,3,3,2,Sub-17 / Feminino / 5x5 / Unimed Campinas,1,0,1,0,0,1,0
+0b5806e7-b37b-48ab-840e-19ec2c8df497,qa004:cbb-qa-1,André Almeida Lopes,demo,active,False,3,3,2,Sub-15 / Masculino / 3x3 / Flamengo,1,0,1,5,4,1,1
+591e700a-21d5-460e-8ff8-00d1eac88836,qa004:cbb-qa-1,Antônia Henriques Vasconcelos,demo,active,False,3,0,2,Sub-17 / Feminino / 5x5 / Vera Cruz Campinas,1,0,1,3,0,1,0
+74c52f4e-2127-40e8-8011-0ea91cde0bd1,qa004:cbb-qa-1,Antônio Farias Teixeira,demo,active,False,3,0,2,Sub-17 / Masculino / 5x5 / Franca,1,0,1,0,0,1,0
+77ac125e-9f07-4c84-8791-9d1e5afa5285,qa004:cbb-qa-1,Arthur Gomes Uchoa,demo,active,False,0,0,0,Sub-17 / Masculino / 5x5 / Minas,1,0,0,0,0,0,0
+ccb00000-0000-4000-8000-000000000001,,Atleta DEMO Aurora,demo,active,False,2,0,2,,0,0,0,0,0,0,0
+ccb00000-0000-4000-8000-000000000002,,Atleta DEMO Horizonte,demo,active,False,0,0,0,,0,0,0,0,0,0,0
+82810e60-3a18-4f11-8426-25fb1c6419f1,qa004:cbb-qa-1,Bárbara Esteves Barbosa,demo,inactive,False,5,0,2,Sub-23 / Feminino / 5x5 / Pinheiros,1,0,1,0,3,1,0
+3e8cd430-85d3-4e57-890a-7faa4f9ada6c,qa004:cbb-qa-1,Beatriz Barbosa Machado,demo,active,False,2,5,2,Sub-15 / Feminino / 5x5 / Corinthians,1,0,1,5,0,1,0
+85a515ef-fa71-4139-82fc-907a39f1cbfa,qa004:cbb-qa-1,Benedito Xavier Junqueira,demo,active,False,0,0,0,Adulto / Masculino / 5x5 / Pinheiros,1,0,0,4,2,0,0
+e7aaf74e-d827-4619-8d9b-43f1c7c5e3a2,qa004:cbb-qa-1,Benício Xavier Ribeiro,demo,active,False,0,0,0,Sub-21 / Masculino / 5x5 / Caxias do Sul,1,0,0,0,0,0,0
+01ac9eae-e7fe-4c66-8471-9a2276cdca0c,qa004:cbb-qa-1,Bernardo Henriques Vasconcelos,demo,active,False,0,0,0,Sub-17 / Masculino / 5x5 / Pinheiros,1,0,0,0,0,0,0
+546c2f6e-6a5c-47d0-854d-b131e44f7059,qa004:cbb-qa-1,Bianca Ibrahim Wagner,demo,active,False,0,2,0,Sub-17 / Feminino / 5x5 / São José Basketball,1,0,0,0,0,0,0
+017d4d18-fef8-4776-8149-d95f7a7d40ca,qa004:cbb-qa-1,Breno Ibrahim Wagner,demo,active,True,2,5,2,Sub-17 / Masculino / 5x5 / Bauru Basket,1,0,1,0,0,1,0
+74804189-c5fe-43c2-8849-bcbe86774098,qa004:cbb-qa-1,Bruna Junqueira Xavier,demo,active,False,4,5,2,Sub-17 / Feminino / 5x5 / ADRM Maringá,1,0,1,4,5,1,0
+9a7fa412-75d5-4dda-811c-f4ce562996bd,qa004:cbb-qa-1,Bruno Barbosa Machado,demo,active,True,0,3,0,Sub-15 / Masculino / 5x5 / Franca,1,0,0,2,0,0,0
+a8f3a033-887e-47a5-8cf4-2571bde82079,qa004:cbb-qa-1,Caio Cardoso Nogueira,demo,active,False,0,0,0,Sub-15 / Masculino / 5x5 / Minas,1,0,0,0,0,0,0
+2a336f4f-3461-4cce-81ed-6688571f3d5a,qa004:cbb-qa-1,Camila Cardoso Nogueira,demo,active,False,0,3,0,Sub-15 / Feminino / 5x5 / Unimed Campinas,1,0,0,2,0,0,0
+b54b3f31-cd0a-4175-86b1-9f18e950c0fd,qa004:cbb-qa-1,Carla Klein Yamamoto,demo,active,True,2,5,2,Sub-17 / Feminino / 3x3 / Santo André,1,0,1,2,0,1,0
+20b1a75f-0d54-478a-8814-a328dfccf803,qa004:cbb-qa-1,Carlos Yamamoto Souza,demo,active,False,5,0,2,Sub-21 / Masculino / 3x3 / Mogi das Cruzes,1,0,1,0,4,1,0
+3f18eef3-5c13-4061-8aa1-44332cb96285,qa004:cbb-qa-1,Carolina Lopes Zanetti,demo,active,False,3,0,2,Sub-17 / Feminino / 5x5 / Ourinhos,1,0,1,0,0,1,0
+349c6802-448f-423d-8509-21188f1e162a,qa004:cbb-qa-1,Catarina Uchoa Gomes,demo,active,False,0,0,0,Adulto / Feminino / 3x3 / Sesi Araraquara,1,0,0,5,0,0,1
+4becfa3b-a86b-46f3-86d6-f5fcff1c0e6d,qa004:cbb-qa-1,Cauã Junqueira Xavier,demo,active,False,5,0,2,Sub-17 / Masculino / 5x5 / Corinthians,1,0,1,0,0,1,0
+870e752d-9680-423c-80b8-b1e8d4a5ac03,qa004:cbb-qa-1,Cecília Machado Almeida,demo,active,False,0,2,0,Sub-17 / Feminino / 5x5 / Basquete Blumenau,1,0,0,2,0,0,1
+a140e641-b2dc-4900-8089-d8c36fcf9c93,qa004:cbb-qa-1,César Zanetti Teixeira,demo,active,False,0,2,0,Sub-21 / Masculino / 5x5 / Pato Basquete,1,0,0,0,0,0,0
+cf738270-827a-44de-8248-1d16cbd137b3,qa004:cbb-qa-1,Clara Nogueira Barbosa,demo,active,False,0,2,0,Sub-17 / Feminino / 5x5 / Sampaio Basquete,1,0,0,5,0,0,0
+c342f6ce-0f0a-4d97-8191-45ee695f0162,qa004:cbb-qa-1,Cláudio Yamamoto Klein,demo,active,True,5,2,2,Adulto / Masculino / 5x5 / Bauru Basket,1,0,1,2,4,1,0
+864a2c64-b2e7-44e7-8c76-ca017fba1d2a,qa004:cbb-qa-1,Cristina Oliveira Cardoso,demo,active,True,4,0,2,Sub-17 / Feminino / 5x5 / Cerrado Basquete,1,0,1,2,0,1,0
+07c0e74a-dc03-4f0a-81dd-80c823f8aa1d,qa004:cbb-qa-1,Daniel Klein Yamamoto,demo,active,False,0,0,0,Sub-17 / Masculino / 3x3 / Paulistano,1,0,0,0,0,0,0
+eaa535d5-00a9-4fe2-83c2-9f510c300914,qa004:cbb-qa-1,Daniela Duarte Oliveira,demo,active,False,0,4,0,Sub-15 / Feminino / 5x5 / Vera Cruz Campinas,1,0,0,4,5,0,0
+c9a8c493-c42b-4779-8303-76431d827467,qa004:cbb-qa-1,Danilo Queiroz Nogueira,demo,active,False,0,3,0,Sub-23 / Masculino / 3x3 / Flamengo,1,0,0,0,0,0,1
+849184be-b6cb-4a7c-8b3d-57bd49fc481d,qa004:cbb-qa-1,Davi Lopes Zanetti,demo,active,False,4,2,2,Sub-17 / Masculino / 5x5 / São Paulo,1,0,1,0,0,1,0
+736dbab6-a38d-414e-8d8f-6c70e6615073,qa004:cbb-qa-1,Débora Pereira Duarte,demo,active,False,0,0,0,Sub-17 / Feminino / 5x5 / Sport Recife,1,0,0,0,0,0,0
+81eba515-7fae-4f91-8413-79996eb3ad51,qa004:cbb-qa-1,Diana Vasconcelos Henriques,demo,active,False,0,0,0,Adulto / Feminino / 5x5 / Corinthians,1,0,0,0,0,0,0
+232e499f-79d6-4c5d-8080-4f511cd2e338,qa004:cbb-qa-1,Diego Duarte Oliveira,demo,active,False,3,0,2,Sub-15 / Masculino / 5x5 / Pinheiros,1,0,1,2,0,1,0
+655ac056-f843-4d8f-8bd5-75107a427e03,qa004:cbb-qa-1,Douglas Zanetti Lopes,demo,active,False,3,3,2,Adulto / Masculino / 5x5 / Corinthians,1,0,1,4,0,1,0
+a7286ee2-ce2a-4f45-8eda-1173acf0ff7d,qa004:cbb-qa-1,Eduarda Wagner Ibrahim,demo,active,True,0,2,0,Adulto / Feminino / 5x5 / Unimed Campinas,1,0,0,0,0,0,0
+bbd4c71d-03b8-4a60-8b47-4c9aa1d31498,qa004:cbb-qa-1,Eduardo Esteves Pereira,demo,active,False,4,0,2,Sub-15 / Masculino / 5x5 / Bauru Basket,1,0,1,4,4,1,0
+ad7054b0-83c2-4606-8455-0c1d453d574e,qa004:cbb-qa-1,Elena Esteves Pereira,demo,active,True,0,5,0,Sub-15 / Feminino / 5x5 / São José Basketball,1,0,0,0,0,0,0
+0c2847d7-1795-4bad-8962-656a4fd34f11,qa004:cbb-qa-1,Elias Almeida Machado,demo,active,False,0,0,0,Adulto / Masculino / 3x3 / Paulistano,1,0,0,0,0,0,0
+30ac4ee8-69c0-4e96-899c-7bb9773fc13e,qa004:cbb-qa-1,Elisa Queiroz Esteves,demo,active,False,5,0,2,Sub-17 / Feminino / 3x3 / Flamengo,1,0,1,3,4,1,0
+4dd2970e-df41-476e-80fd-6dd9e37d7e37,qa004:cbb-qa-1,Emanuel Ribeiro Oliveira,demo,active,True,0,0,0,Sub-23 / Masculino / 5x5 / Franca,1,0,0,0,0,0,0
+bc54de31-722c-42b8-85d4-8d33170514b4,qa004:cbb-qa-1,Emanuelly Ribeiro Farias,demo,active,False,0,0,0,Sub-17 / Feminino / 5x5 / Minas,1,0,0,0,0,0,0
+3cf12601-0886-4f00-82b3-c72a1c76d864,qa004:cbb-qa-1,Emília Henriques Teixeira,demo,active,False,0,0,0,Adulto / Feminino / 5x5 / Minas,1,0,0,0,0,0,0
+9e769677-ffbc-4d63-822b-20e1ea66e6ff,qa004:cbb-qa-1,Enzo Machado Almeida,demo,active,True,4,4,2,Sub-17 / Masculino / 5x5 / Unifacisa,1,0,1,0,0,1,1
+e8d4b2df-448b-40c3-88ff-f38d5ce10e1f,qa004:cbb-qa-1,Erick Nogueira Barbosa,demo,active,False,0,2,0,Sub-17 / Masculino / 5x5 / Vasco da Gama,1,0,0,5,2,0,0
+744b7b9b-8047-4fe8-815e-34978368464a,qa004:cbb-qa-1,Fabiana Xavier Junqueira,demo,active,False,3,0,2,Adulto / Feminino / 5x5 / Vera Cruz Campinas,1,0,1,2,0,1,0
+9b97ffae-aa1d-4285-822f-889f33fa4aca,qa004:cbb-qa-1,Fábio Souza Pereira,demo,active,False,2,2,2,Sub-23 / Masculino / 5x5 / Minas,1,0,1,3,3,1,0
+a4cb265b-28d7-4a35-8092-9c24c0c641d8,qa004:cbb-qa-1,Felipe Farias Queiroz,demo,active,True,4,2,2,Sub-15 / Masculino / 5x5 / Corinthians,1,0,1,0,4,1,0
+bb959e1b-3fce-400a-8595-7996bacd760f,qa004:cbb-qa-1,Fernanda Farias Queiroz,demo,active,False,3,0,2,Sub-15 / Feminino / 5x5 / ADRM Maringá,1,0,1,4,0,1,0
+39395d3c-63ef-4b15-888a-ed2f92b3d6f7,qa004:cbb-qa-1,Fernando Oliveira Cardoso,demo,active,False,0,0,0,Sub-17 / Masculino / 5x5 / Brasília Basquete,1,0,0,4,3,0,0
+974f6df7-5bd1-482c-83a1-1c31a38aa56b,qa004:cbb-qa-1,Filipe Barbosa Nogueira,demo,active,False,0,0,0,Adulto / Masculino / 5x5 / São Paulo,1,0,0,0,0,0,0
+ea22273a-7ca3-4d1c-8eea-88c80d40cbf8,qa004:cbb-qa-1,Flávia Junqueira Almeida,demo,active,False,1,0,1,Sub-19 / Feminino / 5x5 / Corinthians,1,0,0,0,0,1,0
+fa0381a4-0857-4800-8ef9-3c3bf7b4016e,qa004:cbb-qa-1,Francisco Pereira Duarte,demo,active,False,0,0,0,Sub-17 / Masculino / 5x5 / Caxias do Sul,1,0,0,0,0,0,0
+2a4b2900-95fb-4464-88db-ebe06061fbd0,qa004:cbb-qa-1,Gabriel Gomes Ribeiro,demo,active,False,5,4,2,Sub-15 / Masculino / 3x3 / Paulistano,1,0,1,3,4,1,0
+21328d68-6387-4d7d-8558-bd53c57a0981,qa004:cbb-qa-1,Gabriela Gomes Ribeiro,demo,active,False,4,4,2,Sub-15 / Feminino / 3x3 / Santo André,1,0,1,2,0,1,0
+2dbc8932-73dc-4cc5-85e1-4c71b50b4674,qa004:cbb-qa-1,Geraldo Cardoso Oliveira,demo,active,True,3,0,2,Adulto / Masculino / 5x5 / Unifacisa,1,0,1,0,4,1,1
+24bc3598-9eac-4dac-8f54-13704f1588bb,qa004:cbb-qa-1,Giovana Klein Barbosa,demo,active,True,2,3,2,Sub-19 / Feminino / 5x5 / Unimed Campinas,1,0,1,0,4,1,0
+9b9326b2-4199-4210-8e39-6e8681996f1e,qa004:cbb-qa-1,Giovanna Yamamoto Klein,demo,active,False,3,3,2,Adulto / Feminino / 5x5 / São José Basketball,1,0,1,3,0,1,0
+6980b357-e9ba-4770-8647-ea224d6f56c7,qa004:cbb-qa-1,Guilherme Queiroz Esteves,demo,active,True,0,2,0,Sub-17 / Masculino / 3x3 / Mogi das Cruzes,1,0,0,2,0,0,0
+ed91272f-2ccc-4ac7-82eb-771dbfa91507,qa004:cbb-qa-1,Gustavo Ribeiro Farias,demo,active,False,4,0,2,Sub-17 / Masculino / 5x5 / Pato Basquete,1,0,1,3,0,1,0
+1e05730e-245f-4cb3-83c2-275affac7670,qa004:cbb-qa-1,Heitor Ibrahim Zanetti,demo,active,False,0,6,0,Sub-19 / Masculino / 3x3 / Flamengo,1,0,0,5,1,0,1
+bce2d7e3-3406-404a-8601-9fee04d60977,qa004:cbb-qa-1,Helena Henriques Souza,demo,active,False,0,0,0,Sub-15 / Feminino / 5x5 / Ourinhos,1,0,0,0,2,0,0
+4c13a226-d141-4986-8360-386851ca9cff,qa004:cbb-qa-1,Hélio Duarte Pereira,demo,active,False,2,2,2,Adulto / Masculino / 5x5 / Vasco da Gama,1,0,1,5,0,1,0
+1ab779ec-a9c2-4179-8e35-9dbbef3c46fa,qa004:cbb-qa-1,Heloísa Lopes Cardoso,demo,active,False,0,0,0,Sub-19 / Feminino / 5x5 / Vera Cruz Campinas,1,0,0,0,0,0,0
+7dd49168-de17-45e4-8513-830f2dfd2875,qa004:cbb-qa-1,Henrique Henriques Souza,demo,active,False,0,0,0,Sub-15 / Masculino / 5x5 / São Paulo,1,0,0,0,0,0,0
+77643aeb-a280-4513-8c7f-4ae3bba8d41e,qa004:cbb-qa-1,Hugo Teixeira Queiroz,demo,active,False,2,0,2,Sub-23 / Masculino / 5x5 / Pinheiros,1,0,1,0,0,1,0
+4d1fe017-bb3c-416d-8cf9-f5e97e1611cc,qa004:cbb-qa-1,Iago Esteves Queiroz,demo,active,False,0,3,0,Adulto / Masculino / 5x5 / Brasília Basquete,1,0,0,2,4,0,0
+3b4fad62-1d5c-4b9d-8b94-fe2f6bc30435,qa004:cbb-qa-1,Igor Ibrahim Teixeira,demo,active,False,0,0,0,Sub-15 / Masculino / 5x5 / Unifacisa,1,0,0,0,0,0,1
+39087cfd-3ba5-4539-8ec6-e7bc0c98eb3d,qa004:cbb-qa-1,Ingrid Machado Duarte,demo,active,False,3,3,2,Sub-19 / Feminino / 5x5 / São José Basketball,1,0,1,0,3,1,0
+27703a67-fd21-4979-8029-3e91da4d401f,qa004:cbb-qa-1,Isaac Junqueira Almeida,demo,active,False,4,0,2,Sub-19 / Masculino / 5x5 / Franca,1,0,1,0,0,1,0
+2d588398-bec1-479d-81b4-22f0f114c5eb,qa004:cbb-qa-1,Isabela Ibrahim Teixeira,demo,active,True,5,2,2,Sub-15 / Feminino / 5x5 / Basquete Blumenau,1,0,1,3,0,1,1
+dbdbe98a-8a69-4a35-8791-7a2e008fbb1f,qa004:cbb-qa-1,Isadora Zanetti Lopes,demo,active,False,2,5,2,Adulto / Feminino / 5x5 / ADRM Maringá,1,0,1,0,3,1,0
+c49bc6a5-ee2f-43e9-8e25-637e3518acf8,qa004:cbb-qa-1,Ivan Uchoa Ribeiro,demo,active,False,4,0,2,Sub-23 / Masculino / 5x5 / Bauru Basket,1,0,1,5,2,1,0
+34aae763-72c5-41d3-8616-a5db0ea04a7b,qa004:cbb-qa-1,Jéssica Nogueira Esteves,demo,active,False,3,0,2,Sub-19 / Feminino / 5x5 / ADRM Maringá,1,0,1,5,0,1,0
+ed198165-0736-4238-8887-a7a6daa5d5cf,qa004:cbb-qa-1,Joana Oliveira Farias,demo,active,True,2,2,2,Sub-19 / Feminino / 3x3 / Santo André,1,0,1,2,0,1,0
+2b64f063-3931-48b3-8cb8-8ed94b7571b7,qa004:cbb-qa-1,João Junqueira Uchoa,demo,active,True,2,3,2,Sub-15 / Masculino / 5x5 / Vasco da Gama,1,0,1,3,0,1,0
+ea29f1b4-4f07-4901-8153-836abda7f754,qa004:cbb-qa-1,Joaquim Klein Barbosa,demo,active,False,0,3,0,Sub-19 / Masculino / 5x5 / Minas,1,0,0,0,2,0,0
+afc68eb3-6a90-4353-890a-92f295cace2b,qa004:cbb-qa-1,Jonas Farias Ribeiro,demo,active,False,2,0,2,Adulto / Masculino / 5x5 / Caxias do Sul,1,0,1,5,2,1,0
+8b31468b-a417-457a-8c41-a669d2a7fa25,qa004:cbb-qa-1,José Lopes Cardoso,demo,active,True,4,5,2,Sub-19 / Masculino / 5x5 / Pinheiros,1,0,1,3,0,1,0
+16fde0d4-f459-40c4-8037-e2065c97f330,qa004:cbb-qa-1,Júlia Pereira Gomes,demo,active,False,5,4,2,Sub-19 / Feminino / 5x5 / Ourinhos,1,0,1,0,2,1,0
+464a47b3-d9f3-4ac2-8813-d22030dc584d,qa004:cbb-qa-1,Juliana Junqueira Uchoa,demo,active,False,5,0,2,Sub-15 / Feminino / 5x5 / Sampaio Basquete,1,0,1,5,4,1,0
+bb7f11f8-5a47-4942-862b-ab944aa4ee65,qa004:cbb-qa-1,Júlio Vasconcelos Souza,demo,active,True,4,4,2,Sub-23 / Masculino / 5x5 / Corinthians,1,0,1,0,0,1,0
+d009f876-9d3a-4398-8f68-34abd8100269,qa004:cbb-qa-1,Kaique Klein Vasconcelos,demo,active,False,0,0,0,Sub-15 / Masculino / 5x5 / Brasília Basquete,1,0,0,0,0,0,0
+16ab02b7-0089-4053-82a4-61c359e2138f,qa004:cbb-qa-1,Kevin Gomes Souza,demo,active,True,5,4,2,Adulto / Masculino / 3x3 / Mogi das Cruzes,1,0,1,0,2,1,0
+0fe63f3e-d000-4679-86a4-d271cbc11e37,qa004:cbb-qa-1,Laís Queiroz Henriques,demo,active,False,2,5,2,Sub-19 / Feminino / 5x5 / Basquete Blumenau,1,0,1,3,4,1,1
+642b3c01-d1a2-4d1d-8175-c922689d5639,qa004:cbb-qa-1,Larissa Klein Vasconcelos,demo,active,False,0,0,0,Sub-15 / Feminino / 5x5 / Cerrado Basquete,1,0,0,0,0,0,0
+996b0a1a-df58-48c6-8845-5e6395421ab5,qa004:cbb-qa-1,Laura Ribeiro Ibrahim,demo,active,False,0,4,0,Sub-19 / Feminino / 5x5 / Sampaio Basquete,1,0,0,5,4,0,0
+cc508e53-ccff-4cf3-8102-4cd5dac55ddf,qa004:cbb-qa-1,Lavínia Almeida Machado,demo,active,True,3,4,2,Adulto / Feminino / 3x3 / Santo André,1,0,1,2,0,1,0
+7dfd92e4-194b-4673-8f80-ef099e345849,qa004:cbb-qa-1,Leandro Wagner Teixeira,demo,active,False,2,0,2,Sub-23 / Masculino / 3x3 / Paulistano,1,0,1,3,5,1,0
+8f96ae33-b594-4c31-8abf-0b6ae5e0d96c,qa004:cbb-qa-1,Leonardo Machado Duarte,demo,active,False,0,0,0,Sub-19 / Masculino / 5x5 / Bauru Basket,1,0,0,0,0,0,0
+3fbffd25-01ba-4dd2-8c4d-6a1cf72e15e2,qa004:cbb-qa-1,Letícia Souza Junqueira,demo,active,True,4,4,2,Sub-19 / Feminino / 5x5 / Cerrado Basquete,1,0,1,2,5,1,0
+48b1266a-2a3e-453c-8f84-2cf8e73929fd,qa004:cbb-qa-1,Lívia Teixeira Klein,demo,active,False,0,0,0,Sub-19 / Feminino / 5x5 / Sport Recife,1,0,0,0,0,0,0
+c02a0383-1f95-4027-8aa9-f3eb2bac8a2b,qa004:cbb-qa-1,Lorena Uchoa Lopes,demo,active,False,0,0,0,Sub-19 / Feminino / 3x3 / Flamengo,1,0,0,4,0,0,0
+f5c84447-3f11-4614-8f27-af110bd8d88d,qa004:cbb-qa-1,Lorenzo Nogueira Esteves,demo,active,False,5,0,2,Sub-19 / Masculino / 5x5 / Corinthians,1,0,1,0,3,1,0
+a2059bcc-8aea-4a87-809f-70bd89669aac,qa004:cbb-qa-1,Luan Henriques Teixeira,demo,active,False,0,0,0,Adulto / Masculino / 5x5 / Pato Basquete,1,0,0,0,0,0,0
+97f1508e-1c40-45f7-8ba2-ac0cbf4a82a9,qa004:cbb-qa-1,Luana Vasconcelos Machado,demo,active,False,0,0,0,Sub-19 / Feminino / 5x5 / Minas,1,0,0,0,0,0,0
+48ce77ea-b071-4012-8ebd-085cce4a05a9,qa004:cbb-qa-1,Lucas Lopes Wagner,demo,active,False,2,0,2,Sub-15 / Masculino / 5x5 / Caxias do Sul,1,0,1,2,2,1,0
+57a242dd-1b30-4338-8aea-a1ed5f21f47b,qa004:cbb-qa-1,Luciana Wagner Nogueira,demo,inactive,True,0,0,0,Sub-19 / Feminino / 5x5 / Pinheiros,1,0,0,0,0,0,0
+9101890f-90b3-4c18-88a5-056f9b4f09ca,qa004:cbb-qa-1,Luiz Oliveira Farias,demo,active,False,0,0,0,Sub-19 / Masculino / 3x3 / Paulistano,1,0,0,0,0,0,0
+5c99221f-12cb-4bae-8c79-e4c0affb0127,qa004:cbb-qa-1,Luiza Machado Gomes,demo,active,True,3,4,2,Sub-21 / Feminino / 3x3 / Sesi Araraquara,1,0,1,0,0,1,1
+dac74f10-87e7-488a-895c-d32ffaa6f146,qa004:cbb-qa-1,Maitê Nogueira Henriques,demo,active,False,4,2,2,Sub-21 / Feminino / 5x5 / Corinthians,1,0,1,5,3,1,0
+e971303e-c41e-4468-8eff-25834e5f4f89,qa004:cbb-qa-1,Manuela Lopes Wagner,demo,active,False,0,0,0,Sub-15 / Feminino / 5x5 / Sport Recife,1,0,0,0,0,0,0
+10487678-deec-4e2b-81b7-081db13feb09,qa004:cbb-qa-1,Marcelo Pereira Gomes,demo,active,True,3,4,2,Sub-19 / Masculino / 5x5 / São Paulo,1,0,1,0,0,1,0
+119f9328-2229-4288-8609-8714ef31ab6e,qa004:cbb-qa-1,Márcio Xavier Uchoa,demo,active,False,0,3,0,Sub-23 / Masculino / 5x5 / São Paulo,1,0,0,5,3,0,0
+26170be2-89bb-4d53-8edb-0a10465e83c6,qa004:cbb-qa-1,Marcos Queiroz Henriques,demo,active,False,5,0,2,Sub-19 / Masculino / 5x5 / Unifacisa,1,0,1,0,2,1,1
+c337508c-74e3-4caa-854b-319da31612a1,qa004:cbb-qa-1,Maria Eduarda Oliveira Ibrahim,demo,active,False,4,0,2,Sub-21 / Feminino / 5x5 / Unimed Campinas,1,0,1,4,0,1,0
+34fe2082-2a71-4a01-8374-a58cddc7159d,qa004:cbb-qa-1,Mariana Pereira Junqueira,demo,active,False,3,4,2,Sub-21 / Feminino / 5x5 / Vera Cruz Campinas,1,0,1,5,0,1,0
+7a153dd8-6b5d-41b5-8d81-0dd00c410813,qa004:cbb-qa-1,Marina Costa,demo,active,False,4,0,4,Sub-19 / Feminino / 3x3 / Sesi Araraquara,1,0,0,0,0,0,1
+fe7a2756-90db-4f04-8708-175c93f3ae52,qa004:cbb-qa-1,Mateus Machado Xavier,demo,active,False,4,3,2,Sub-15 / Masculino / 3x3 / Mogi das Cruzes,1,0,1,0,0,1,0
+f381e01b-9fd7-488c-86df-cf9b081ca5b1,qa004:cbb-qa-1,Matheus Ribeiro Ibrahim,demo,active,False,0,5,0,Sub-19 / Masculino / 5x5 / Vasco da Gama,1,0,0,3,3,0,0
+094ba95b-2b58-4c9b-82cd-92b07b760b7b,qa004:cbb-qa-1,Maya Barbosa Nogueira,demo,active,False,5,0,2,Adulto / Feminino / 5x5 / Ourinhos,1,0,1,5,0,1,0
+0cad039d-5fda-46f1-81ad-29971221e8ea,qa004:cbb-qa-1,Melissa Queiroz Klein,demo,active,True,3,2,2,Sub-21 / Feminino / 5x5 / São José Basketball,1,0,1,0,0,1,0
+9d661ea3-fe01-432e-8d42-7e32d1de4aa7,qa004:cbb-qa-1,Miguel Souza Junqueira,demo,active,False,0,0,0,Sub-19 / Masculino / 5x5 / Brasília Basquete,1,0,0,0,0,0,0
+d84f0a75-aef5-44f4-8ed3-9cbec7902db1,qa004:cbb-qa-1,Milena Ribeiro Lopes,demo,active,False,0,0,0,Sub-21 / Feminino / 5x5 / ADRM Maringá,1,0,0,0,0,0,0
+0d18c658-6812-4705-8980-6c97389334da,qa004:cbb-qa-1,Mirela Souza Machado,demo,active,False,2,4,2,Sub-21 / Feminino / 3x3 / Santo André,1,0,1,0,0,1,0
+0c93d2dc-7f42-40e5-8c03-d9d83fbdbaf8,qa004:cbb-qa-1,Murilo Teixeira Klein,demo,active,True,0,4,0,Sub-19 / Masculino / 5x5 / Caxias do Sul,1,0,0,5,0,0,0
+7054eb0b-c41e-4d4c-875b-af0edb34d54f,qa004:cbb-qa-1,Natália Machado Xavier,demo,active,True,5,3,2,Sub-15 / Feminino / 3x3 / Flamengo,1,0,1,2,2,1,0
+1c5baf1a-01b7-423c-876c-50002d682c49,qa004:cbb-qa-1,Nathan Uchoa Lopes,demo,active,False,2,3,2,Sub-19 / Masculino / 3x3 / Mogi das Cruzes,1,0,1,2,0,1,0
+412b3989-ffdd-4336-8ebb-187b84c4ee41,qa004:cbb-qa-1,Nelson Yamamoto Vasconcelos,demo,active,False,3,3,2,Sub-23 / Masculino / 5x5 / Unifacisa,1,0,1,3,0,1,1
+573aade5-2f55-4476-8f17-866f019f0927,qa004:cbb-qa-1,Nicolas Nogueira Yamamoto,demo,active,True,0,0,0,Sub-15 / Masculino / 5x5 / Pato Basquete,1,0,0,3,0,0,0
+98005297-3172-4abf-89b5-44c52dace7f6,qa004:cbb-qa-1,Nicole Teixeira Nogueira,demo,active,False,3,0,2,Sub-21 / Feminino / 5x5 / Ourinhos,1,0,1,4,4,1,0
+502ccf3a-1dd9-4558-8cc8-68e4ac6d9682,qa004:cbb-qa-1,Noemi Cardoso Oliveira,demo,active,False,0,0,0,Adulto / Feminino / 5x5 / Basquete Blumenau,1,0,0,0,0,0,1
+f45b7172-588f-47c1-8a6c-84694e60a520,qa004:cbb-qa-1,Olívia Nogueira Yamamoto,demo,active,False,5,0,2,Sub-15 / Feminino / 5x5 / Minas,1,0,1,2,4,1,0
+bdbfd05a-d48b-4aaa-8b55-80a926ca726d,qa004:cbb-qa-1,Oscar Zanetti Wagner,demo,active,True,2,0,2,Sub-23 / Masculino / 5x5 / Vasco da Gama,1,0,1,0,3,1,0
+0f6811cd-98fe-4ae3-817f-f65fdf3533e5,qa004:cbb-qa-1,Otávio Oliveira Zanetti,demo,inactive,False,0,0,0,Sub-15 / Masculino / 5x5 / Botafogo,1,0,0,0,0,0,0
+0dab413f-3dfe-4f4b-8766-a57fea959233,qa004:cbb-qa-1,Paloma Uchoa Oliveira,demo,active,True,5,4,2,Sub-21 / Feminino / 5x5 / Basquete Blumenau,1,0,1,3,5,1,1
+5b0927fa-328c-4028-8023-8cdf6a8e013e,qa004:cbb-qa-1,Patrícia Oliveira Zanetti,demo,inactive,False,0,0,0,Sub-15 / Feminino / 5x5 / Pinheiros,1,0,0,0,0,0,0
+6c6b2627-1db6-4f13-8b0b-4060847570ea,qa004:cbb-qa-1,Paula Vasconcelos Pereira,demo,active,False,3,0,2,Sub-21 / Feminino / 5x5 / Sampaio Basquete,1,0,1,5,3,1,0
+451eeb74-c41b-47d2-8153-cb778d1092da,qa004:cbb-qa-1,Paulo Almeida Xavier,demo,active,False,4,4,2,Sub-23 / Masculino / 5x5 / Brasília Basquete,1,0,1,3,0,1,0
+7311d5c9-994b-4065-832f-cb6c671d6c98,qa004:cbb-qa-1,Pedro Vasconcelos Machado,demo,active,False,0,0,0,Sub-19 / Masculino / 5x5 / Pato Basquete,1,0,0,0,2,0,0
+efece6f2-7acb-4a4a-8463-374557432d44,qa004:cbb-qa-1,Pietra Wagner Queiroz,demo,active,False,0,0,0,Sub-21 / Feminino / 5x5 / Cerrado Basquete,1,0,0,0,0,0,0
+f2886e01-b97f-4bd8-8ca8-a04cff1a978e,qa004:cbb-qa-1,Priscila Duarte Pereira,demo,active,False,5,0,2,Adulto / Feminino / 5x5 / Sampaio Basquete,1,0,1,4,0,1,0
+bda94808-129e-42dc-899c-67d6e2a3e71c,qa004:cbb-qa-1,Rafael Wagner Nogueira,demo,inactive,False,5,0,2,Sub-19 / Masculino / 5x5 / Botafogo,1,0,1,0,5,1,0
+7fc78e03-1031-4a59-858c-7621015fc693,qa004:cbb-qa-1,Rafaela Xavier Ribeiro,demo,active,False,0,0,0,Sub-21 / Feminino / 5x5 / Sport Recife,1,0,0,0,0,0,0
+35a1f2d1-06d7-4599-8cf2-56a330c62525,qa004:cbb-qa-1,Raquel Yamamoto Souza,demo,active,True,2,3,2,Sub-21 / Feminino / 3x3 / Flamengo,1,0,1,0,5,1,0
+64252711-5c99-491e-81d6-79fce5dbab59,qa004:cbb-qa-1,Rebeca Zanetti Teixeira,demo,active,False,0,0,0,Sub-21 / Feminino / 5x5 / Minas,1,0,0,0,4,0,0
+b903e96f-4cc0-4d33-8479-ab94e81a4860,qa004:cbb-qa-1,Renata Queiroz Nogueira,demo,active,True,3,4,2,Sub-23 / Feminino / 3x3 / Sesi Araraquara,1,0,1,0,5,1,1
+e35d8f8e-8c4f-4d4e-8f86-fddbf6adb3c8,qa004:cbb-qa-1,Renato Barbosa Yamamoto,demo,active,False,0,5,0,Sub-23 / Masculino / 5x5 / Caxias do Sul,1,0,0,4,0,0,0
+d62b80a4-0aa4-4a4b-85ea-7923f51a3610,qa004:cbb-qa-1,Ricardo Machado Gomes,demo,active,False,2,0,2,Sub-21 / Masculino / 3x3 / Flamengo,1,0,1,0,0,1,1
+b449c897-7a7c-4a2b-8ec1-f0960512d0fa,qa004:cbb-qa-1,Roberta Ribeiro Oliveira,demo,active,False,0,0,0,Sub-23 / Feminino / 5x5 / Corinthians,1,0,0,0,0,0,0
+a7b8fbf2-adc2-44f7-88fc-e753cf882feb,qa004:cbb-qa-1,Rodrigo Nogueira Henriques,demo,active,False,4,0,2,Sub-21 / Masculino / 5x5 / Franca,1,0,1,4,0,1,0
+cb7b9085-9f66-4779-83ee-25350afcebc3,qa004:cbb-qa-1,Sabrina Souza Pereira,demo,active,False,0,5,0,Sub-23 / Feminino / 5x5 / Unimed Campinas,1,0,0,0,0,0,0
+359a50e5-ae82-4634-847c-69b0384539df,qa004:cbb-qa-1,Samara Esteves Queiroz,demo,active,True,0,0,0,Adulto / Feminino / 5x5 / Cerrado Basquete,1,0,0,0,0,0,0
+50ba4fe0-a85c-4603-8eb6-96f7669e48d1,qa004:cbb-qa-1,Samuel Oliveira Ibrahim,demo,active,True,0,0,0,Sub-21 / Masculino / 5x5 / Minas,1,0,0,0,0,0,0
+9af55563-f81d-4559-8ca5-8dbdcccbc33a,qa004:cbb-qa-1,Sara Teixeira Queiroz,demo,active,False,0,2,0,Sub-23 / Feminino / 5x5 / Vera Cruz Campinas,1,0,0,4,4,0,0
+3903f1bd-ab74-4fa5-88b6-8274d95bd275,qa004:cbb-qa-1,Sérgio Cardoso Zanetti,demo,active,False,3,2,2,Sub-23 / Masculino / 3x3 / Mogi das Cruzes,1,0,1,5,0,1,0
+29015c5c-2d2e-47d7-8490-34f59e55003f,qa004:cbb-qa-1,Sofia Uchoa Ribeiro,demo,active,True,0,0,0,Sub-23 / Feminino / 5x5 / São José Basketball,1,0,0,0,0,0,0
+6907feec-30e2-49ea-8c81-de6a2b1cc89d,qa004:cbb-qa-1,Tainá Farias Ribeiro,demo,active,False,0,0,0,Adulto / Feminino / 5x5 / Sport Recife,1,0,0,3,0,0,0
+8ea79c8f-c969-4e9e-8b00-9a468f36d730,qa004:cbb-qa-1,Taís Vasconcelos Souza,demo,active,False,0,0,0,Sub-23 / Feminino / 5x5 / ADRM Maringá,1,0,0,0,0,0,0
+7104fde2-87fa-494d-86bf-e7f83e9d3a85,qa004:cbb-qa-1,Talita Wagner Teixeira,demo,active,False,0,0,0,Sub-23 / Feminino / 3x3 / Santo André,1,0,0,0,0,0,0
+faa2f35f-dd26-44bf-8776-7fc231f02f2c,qa004:cbb-qa-1,Tatiane Xavier Uchoa,demo,active,False,4,2,2,Sub-23 / Feminino / 5x5 / Ourinhos,1,0,1,2,2,1,0
+ef48f0a5-a152-4fe3-892c-abe586823983,qa004:cbb-qa-1,Thiago Pereira Junqueira,demo,active,False,0,0,0,Sub-21 / Masculino / 5x5 / Pinheiros,1,0,0,0,0,0,0
+9063ec06-0cb2-4d15-873c-5de3bf580c17,qa004:cbb-qa-1,Tiago Duarte Almeida,demo,active,True,5,4,2,Sub-23 / Masculino / 5x5 / Pato Basquete,1,0,1,3,5,1,0
+9585276e-03f7-4f80-8875-a7314137e628,qa004:cbb-qa-1,Ulisses Esteves Barbosa,demo,inactive,False,2,0,2,Sub-23 / Masculino / 5x5 / Botafogo,1,0,1,5,4,1,0
+34bd6d9b-6305-4e35-87ae-60125ced3144,qa004:cbb-qa-1,Valentina Yamamoto Vasconcelos,demo,active,True,0,0,0,Sub-23 / Feminino / 5x5 / Basquete Blumenau,1,0,0,0,0,0,1
+5f738af4-b41c-4704-8e50-8f4e1acf948e,qa004:cbb-qa-1,Valéria Gomes Souza,demo,active,False,2,0,2,Adulto / Feminino / 3x3 / Flamengo,1,0,1,5,0,1,0
+cf1048e2-5bbd-4102-8e64-63bac185320e,qa004:cbb-qa-1,Vanessa Zanetti Wagner,demo,active,False,4,0,2,Sub-23 / Feminino / 5x5 / Sampaio Basquete,1,0,1,5,3,1,0
+da943ae9-2f6e-485e-87fc-6f42cc9e008c,qa004:cbb-qa-1,Vicente Queiroz Klein,demo,active,False,0,5,0,Sub-21 / Masculino / 5x5 / Bauru Basket,1,0,0,3,0,0,0
+568680e8-4401-460b-8aaa-35890d323eb1,qa004:cbb-qa-1,Vinícius Ribeiro Lopes,demo,active,False,0,0,0,Sub-21 / Masculino / 5x5 / Corinthians,1,0,0,0,0,0,0
+1934efe2-29bc-4afe-8ce9-1ef31f537d54,qa004:cbb-qa-1,Vitor Souza Machado,demo,active,True,3,0,2,Sub-21 / Masculino / 3x3 / Paulistano,1,0,1,0,0,1,0
+073bf021-9c23-44b4-8a90-0972740160ef,qa004:cbb-qa-1,Vitória Almeida Xavier,demo,active,False,2,0,2,Sub-23 / Feminino / 5x5 / Cerrado Basquete,1,0,1,4,3,1,0
+9297a66f-c352-4496-8361-7046a02216d6,qa004:cbb-qa-1,Wagner Uchoa Gomes,demo,active,True,0,3,0,Adulto / Masculino / 3x3 / Flamengo,1,0,0,0,4,0,1
+2cd55e9d-5a70-47f0-8767-2411a53cb5cb,qa004:cbb-qa-1,Wesley Teixeira Nogueira,demo,active,False,3,5,2,Sub-21 / Masculino / 5x5 / São Paulo,1,0,1,0,0,1,0
+03446ef2-ee44-419f-806c-1603d7e1ba7c,qa004:cbb-qa-1,Xavier Vasconcelos Henriques,demo,active,False,2,4,2,Adulto / Masculino / 5x5 / Franca,1,0,1,4,3,1,0
+20fc02ae-7d7e-44fb-8f9f-5c4e9ca50473,qa004:cbb-qa-1,Yago Uchoa Oliveira,demo,active,False,2,4,2,Sub-21 / Masculino / 5x5 / Unifacisa,1,0,1,2,2,1,1
+e2279c98-842e-4fb2-84df-f273e4a844b8,qa004:cbb-qa-1,Yasmin Barbosa Yamamoto,demo,active,False,5,0,2,Sub-23 / Feminino / 5x5 / Sport Recife,1,0,1,0,2,1,0

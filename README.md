@@ -117,10 +117,11 @@ com um perfil criado com a opção `auditor`.
 
 ## Handoff 004 e homologação local
 
-O gerador exige o Supabase local e recusa NODE_ENV=production. Crie uma conta
-individual com demo:user e senha fornecida pela entrada padrão. Use o e-mail
-da conta como terceiro argumento para conceder permissões explícitas apenas
-aos atletas da massa indicada.
+O gerador exige o Supabase local e recusa NODE_ENV=production. Ele recria o lote
+informado e provisiona os quatro especialistas fictícios descritos abaixo. A conta
+`medico.demo@example.com`, quando já existe, também recebe acesso ao elenco.
+O estado atual para apresentação está no [inventário da demo](docs/demo/INVENTARIO-SEED-2026-11-18.md).
+Não reexecute o gerador apenas para consultar a massa existente.
 
 ```bash
 node scripts/qa-athletes.mjs roster cbb-qa-1
@@ -139,10 +140,12 @@ Supabase correspondente. O endpoint verifica sessão e vínculo antes da gravaç
 Em instalações novas, `npm run demo:env` já escreve essa variável no arquivo local
 ignorado pelo Git. O comando não sobrescreve configurações existentes.
 
-Ao informar a conta, o gerador também prepara 12 atendimentos/evoluções fictícios,
-concede auditoria e cadastro, e habilita edição, escrita e finalização para os
-atletas daquela seed e para novos cadastros dessa conta. Não concede acesso
-universal a outros atletas. O reset não revoga as permissões globais da conta.
+O gerador prepara quatro atendimentos/evoluções multidisciplinares de Marina Costa.
+Concede leitura, escrita e finalização aos especialistas no elenco; edição e cadastro
+ficam habilitados para ortopedia. A conta médica existente recebe leitura, edição,
+escrita e finalização no lote. Não concede acesso universal a outros atletas,
+autoria de documentos médicos ou auditoria. O reset não revoga as permissões
+globais previamente configuradas da conta.
 Utilize contas individuais exclusivamente locais e nunca reutilize credenciais
 de produção. Nenhum gerador roda no build ou na inicialização da aplicação.
 
