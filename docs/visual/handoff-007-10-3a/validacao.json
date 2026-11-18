@@ -1,0 +1,47 @@
+{
+  "baseline": "c5c0154",
+  "branch": "docs/handoff-007-10-3a-athlete-directory-audit",
+  "productionFilesChanged": 0,
+  "databaseUsed": "instância descartável independente prontuario-cbb-ux-103a",
+  "originalDatabaseWrittenByAudit": false,
+  "isolatedBuild": {
+    "command": "npm run build -- --webpack",
+    "exitCode": 0
+  },
+  "isolatedSourceCheck": {
+    "files": 174,
+    "mismatches": 0
+  },
+  "scenarios": {
+    "authorizedCounts": [
+      0,
+      1,
+      10,
+      50,
+      3000
+    ],
+    "birthSaveReopenCases": 8,
+    "viewports": [
+      1440,
+      390,
+      320
+    ]
+  },
+  "axe": {
+    "scans": 6,
+    "violations": 0,
+    "incomplete": 0
+  },
+  "screenshots": {
+    "real": 43,
+    "conceptualPng": 1,
+    "conceptualSvg": 1
+  },
+  "isolatedServerStopped": true,
+  "isolatedStackStoppedWithoutBackup": true,
+  "visibleTestBrowserClosed": true,
+  "newVisibleWindowsOpenedAfterUserPreference": false,
+  "mergePerformed": false,
+  "published": false,
+  "fullSuiteRerun": false
+}

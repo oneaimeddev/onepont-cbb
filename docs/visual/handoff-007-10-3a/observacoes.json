@@ -1,0 +1,823 @@
+{
+  "baseline": "c5c0154",
+  "isolation": "prontuario-cbb-ux-103a; API55321; application3200",
+  "listing": [
+    {
+      "count": 0,
+      "total": 0,
+      "rows": 0,
+      "firstNames": [],
+      "pages": 0,
+      "layout1440": {
+        "width": 1440,
+        "scrollWidth": 1440,
+        "height": 900
+      },
+      "layout390": {
+        "width": 390,
+        "scrollWidth": 390,
+        "height": 844
+      },
+      "layout320": {
+        "width": 320,
+        "scrollWidth": 320,
+        "height": 858
+      }
+    },
+    {
+      "count": 1,
+      "total": 1,
+      "rows": 1,
+      "firstNames": [
+        "Ana Carolina Nascimento de Albuquerque e Vasconcelos Atleta de Demonstração"
+      ],
+      "pages": 1,
+      "layout1440": {
+        "width": 1440,
+        "scrollWidth": 1440,
+        "height": 900,
+        "firstRowHeight": 75.1875
+      },
+      "layout390": {
+        "width": 390,
+        "scrollWidth": 390,
+        "height": 844,
+        "firstRowHeight": 99.1875
+      },
+      "layout320": {
+        "width": 320,
+        "scrollWidth": 320,
+        "height": 844,
+        "firstRowHeight": 147.1875
+      }
+    },
+    {
+      "count": 10,
+      "total": 10,
+      "rows": 10,
+      "firstNames": [
+        "Ana Carolina Nascimento de Albuquerque e Vasconcelos Atleta de Demonstração",
+        "Bruna Multivínculos DEMO",
+        "Carlos Sem Clube DEMO",
+        "Davi Histórico DEMO",
+        "Érica Acentuação DEMO",
+        "Fábio Inativo DEMO",
+        "Gabriela Fotografia DEMO",
+        "Helena Cadastro Simples DEMO",
+        "Igor Três por Três DEMO",
+        "Aline Nome Social DEMO"
+      ],
+      "pages": 1,
+      "layout1440": {
+        "width": 1440,
+        "scrollWidth": 1440,
+        "height": 1248,
+        "firstRowHeight": 76.375
+      },
+      "layout390": {
+        "width": 390,
+        "scrollWidth": 390,
+        "height": 1476,
+        "firstRowHeight": 150.96875
+      },
+      "layout320": {
+        "width": 320,
+        "scrollWidth": 320,
+        "height": 1689,
+        "firstRowHeight": 198.96875
+      }
+    },
+    {
+      "count": 50,
+      "total": 50,
+      "rows": 25,
+      "firstNames": [
+        "Ana Carolina Nascimento de Albuquerque e Vasconcelos Atleta de Demonstração",
+        "Bruna Multivínculos DEMO",
+        "Carlos Sem Clube DEMO",
+        "Davi Histórico DEMO",
+        "Érica Acentuação DEMO",
+        "Escala 0011 DEMO",
+        "Escala 0012 DEMO",
+        "Escala 0013 DEMO",
+        "Escala 0014 DEMO",
+        "Escala 0015 DEMO",
+        "Escala 0016 DEMO",
+        "Escala 0017 DEMO",
+        "Escala 0018 DEMO",
+        "Escala 0019 DEMO",
+        "Escala 0020 DEMO",
+        "Escala 0021 DEMO",
+        "Escala 0022 DEMO",
+        "Escala 0023 DEMO",
+        "Escala 0024 DEMO",
+        "Escala 0025 DEMO",
+        "Escala 0026 DEMO",
+        "Escala 0027 DEMO",
+        "Escala 0028 DEMO",
+        "Escala 0029 DEMO",
+        "Escala 0030 DEMO"
+      ],
+      "pages": 2,
+      "layout1440": {
+        "width": 1440,
+        "scrollWidth": 1440,
+        "height": 2411,
+        "firstRowHeight": 76.375
+      },
+      "layout390": {
+        "width": 390,
+        "scrollWidth": 390,
+        "height": 2612,
+        "firstRowHeight": 150.96875
+      },
+      "layout320": {
+        "width": 320,
+        "scrollWidth": 320,
+        "height": 2825,
+        "firstRowHeight": 198.96875
+      }
+    },
+    {
+      "count": 3000,
+      "total": 3000,
+      "rows": 25,
+      "firstNames": [
+        "Ana Carolina Nascimento de Albuquerque e Vasconcelos Atleta de Demonstração",
+        "Bruna Multivínculos DEMO",
+        "Carlos Sem Clube DEMO",
+        "Davi Histórico DEMO",
+        "Érica Acentuação DEMO",
+        "Escala 0011 DEMO",
+        "Escala 0012 DEMO",
+        "Escala 0013 DEMO",
+        "Escala 0014 DEMO",
+        "Escala 0015 DEMO",
+        "Escala 0016 DEMO",
+        "Escala 0017 DEMO",
+        "Escala 0018 DEMO",
+        "Escala 0019 DEMO",
+        "Escala 0020 DEMO",
+        "Escala 0021 DEMO",
+        "Escala 0022 DEMO",
+        "Escala 0023 DEMO",
+        "Escala 0024 DEMO",
+        "Escala 0025 DEMO",
+        "Escala 0026 DEMO",
+        "Escala 0027 DEMO",
+        "Escala 0028 DEMO",
+        "Escala 0029 DEMO",
+        "Escala 0030 DEMO"
+      ],
+      "pages": 120,
+      "layout1440": {
+        "width": 1440,
+        "scrollWidth": 1440,
+        "height": 2411,
+        "firstRowHeight": 76.375
+      },
+      "layout390": {
+        "width": 390,
+        "scrollWidth": 390,
+        "height": 2612,
+        "firstRowHeight": 150.96875
+      },
+      "layout320": {
+        "width": 320,
+        "scrollWidth": 320,
+        "height": 2825,
+        "firstRowHeight": 198.96875
+      }
+    }
+  ],
+  "filters": [
+    {
+      "filters": {
+        "q": "bruna"
+      },
+      "elapsedMs": 127,
+      "total": 1,
+      "page": 1,
+      "rows": 1,
+      "names": [
+        "Bruna Multivínculos DEMO"
+      ],
+      "firstSports": [
+        {
+          "club": "Clube Aurora DEMO",
+          "season": 2026,
+          "category": "Sub-17 DEMO",
+          "division": "Feminino",
+          "modality": "5x5"
+        },
+        {
+          "club": "Clube Horizonte DEMO",
+          "season": 2026,
+          "category": "Adulto DEMO",
+          "division": "Feminino",
+          "modality": "3x3"
+        }
+      ]
+    },
+    {
+      "filters": {
+        "q": "érica"
+      },
+      "elapsedMs": 119,
+      "total": 1,
+      "page": 1,
+      "rows": 1,
+      "names": [
+        "Érica Acentuação DEMO"
+      ],
+      "firstSports": []
+    },
+    {
+      "filters": {
+        "q": "erica"
+      },
+      "elapsedMs": 118,
+      "total": 1,
+      "page": 1,
+      "rows": 1,
+      "names": [
+        "Érica Acentuação DEMO"
+      ],
+      "firstSports": []
+    },
+    {
+      "filters": {
+        "q": "albuquerque"
+      },
+      "elapsedMs": 131,
+      "total": 1,
+      "page": 1,
+      "rows": 1,
+      "names": [
+        "Ana Carolina Nascimento de Albuquerque e Vasconcelos Atleta de Demonstração"
+      ],
+      "firstSports": [
+        {
+          "club": "Clube Aurora DEMO",
+          "season": 2026,
+          "category": "Sub-17 DEMO",
+          "division": "Feminino",
+          "modality": "5x5"
+        }
+      ]
+    },
+    {
+      "filters": {
+        "q": "Aline"
+      },
+      "elapsedMs": 119,
+      "total": 1,
+      "page": 1,
+      "rows": 1,
+      "names": [
+        "Aline Nome Social DEMO"
+      ],
+      "firstSports": []
+    },
+    {
+      "filters": {
+        "q": "Escala 3000"
+      },
+      "elapsedMs": 127,
+      "total": 1,
+      "page": 1,
+      "rows": 1,
+      "names": [
+        "Escala 3000 DEMO"
+      ],
+      "firstSports": []
+    },
+    {
+      "filters": {
+        "category": "Adulto DEMO"
+      },
+      "elapsedMs": 17,
+      "total": 2,
+      "page": 1,
+      "rows": 2,
+      "names": [
+        "Bruna Multivínculos DEMO",
+        "Igor Três por Três DEMO"
+      ],
+      "firstSports": [
+        {
+          "club": "Clube Aurora DEMO",
+          "season": 2026,
+          "category": "Sub-17 DEMO",
+          "division": "Feminino",
+          "modality": "5x5"
+        },
+        {
+          "club": "Clube Horizonte DEMO",
+          "season": 2026,
+          "category": "Adulto DEMO",
+          "division": "Feminino",
+          "modality": "3x3"
+        }
+      ]
+    },
+    {
+      "filters": {
+        "club": "Clube Horizonte DEMO"
+      },
+      "elapsedMs": 17,
+      "total": 2,
+      "page": 1,
+      "rows": 2,
+      "names": [
+        "Bruna Multivínculos DEMO",
+        "Igor Três por Três DEMO"
+      ],
+      "firstSports": [
+        {
+          "club": "Clube Aurora DEMO",
+          "season": 2026,
+          "category": "Sub-17 DEMO",
+          "division": "Feminino",
+          "modality": "5x5"
+        },
+        {
+          "club": "Clube Horizonte DEMO",
+          "season": 2026,
+          "category": "Adulto DEMO",
+          "division": "Feminino",
+          "modality": "3x3"
+        }
+      ]
+    },
+    {
+      "filters": {
+        "category": "Sub-17 DEMO",
+        "modality": "3x3"
+      },
+      "elapsedMs": 15,
+      "total": 0,
+      "page": 1,
+      "rows": 0,
+      "names": []
+    },
+    {
+      "filters": {
+        "category": "Adulto DEMO",
+        "modality": "3x3",
+        "division": "Feminino",
+        "club": "Clube Horizonte DEMO"
+      },
+      "elapsedMs": 16,
+      "total": 2,
+      "page": 1,
+      "rows": 2,
+      "names": [
+        "Bruna Multivínculos DEMO",
+        "Igor Três por Três DEMO"
+      ],
+      "firstSports": [
+        {
+          "club": "Clube Aurora DEMO",
+          "season": 2026,
+          "category": "Sub-17 DEMO",
+          "division": "Feminino",
+          "modality": "5x5"
+        },
+        {
+          "club": "Clube Horizonte DEMO",
+          "season": 2026,
+          "category": "Adulto DEMO",
+          "division": "Feminino",
+          "modality": "3x3"
+        }
+      ]
+    },
+    {
+      "filters": {
+        "category": "Sub-15 DEMO"
+      },
+      "elapsedMs": 15,
+      "total": 0,
+      "page": 1,
+      "rows": 0,
+      "names": []
+    },
+    {
+      "filters": {
+        "club": "Clube Antigo DEMO"
+      },
+      "elapsedMs": 17,
+      "total": 0,
+      "page": 1,
+      "rows": 0,
+      "names": []
+    },
+    {
+      "filters": {
+        "status": "inactive"
+      },
+      "elapsedMs": 13,
+      "total": 1,
+      "page": 1,
+      "rows": 1,
+      "names": [
+        "Fábio Inativo DEMO"
+      ],
+      "firstSports": []
+    },
+    {
+      "filters": {
+        "page": "2"
+      },
+      "elapsedMs": 21,
+      "total": 3000,
+      "page": 2,
+      "rows": 25,
+      "names": [
+        "Escala 0031 DEMO",
+        "Escala 0032 DEMO",
+        "Escala 0033 DEMO",
+        "Escala 0034 DEMO"
+      ],
+      "firstSports": []
+    },
+    {
+      "filters": {
+        "page": "120"
+      },
+      "elapsedMs": 20,
+      "total": 3000,
+      "page": 120,
+      "rows": 25,
+      "names": [
+        "Escala 2981 DEMO",
+        "Escala 2982 DEMO",
+        "Escala 2983 DEMO",
+        "Escala 2984 DEMO"
+      ],
+      "firstSports": []
+    },
+    {
+      "filters": {
+        "page": "999"
+      },
+      "elapsedMs": 25,
+      "total": 3000,
+      "page": 999,
+      "rows": 0,
+      "names": []
+    }
+  ],
+  "dates": [
+    {
+      "case": "save_reopen",
+      "input": "1990-04-12",
+      "stored": "1990-04-12",
+      "reopened": "1990-04-12"
+    },
+    {
+      "case": "edit_reopen",
+      "input": "2012-02-29",
+      "stored": "2012-02-29",
+      "reopened": "2012-02-29"
+    },
+    {
+      "case": "save_reopen",
+      "input": "2006-04-12",
+      "stored": "2006-04-12",
+      "reopened": "2006-04-12"
+    },
+    {
+      "case": "save_reopen",
+      "input": "2012-04-12",
+      "stored": "2012-04-12",
+      "reopened": "2012-04-12"
+    },
+    {
+      "case": "save_reopen",
+      "input": "2018-04-12",
+      "stored": "2018-04-12",
+      "reopened": "2018-04-12"
+    },
+    {
+      "case": "save_reopen",
+      "input": "2026-11-17",
+      "stored": "2026-11-17",
+      "reopened": "2026-11-17"
+    },
+    {
+      "case": "save_reopen",
+      "input": "2024-02-29",
+      "stored": "2024-02-29",
+      "reopened": "2024-02-29"
+    },
+    {
+      "case": "save_reopen",
+      "input": "",
+      "stored": "",
+      "reopened": ""
+    },
+    {
+      "case": "native_validation",
+      "input": "2023-02-29",
+      "fillError": null,
+      "value": "",
+      "valid": true,
+      "badInput": false,
+      "rangeUnderflow": false,
+      "rangeOverflow": false,
+      "message": ""
+    },
+    {
+      "case": "rpc_validation",
+      "input": "2023-02-29",
+      "data": {
+        "ok": false,
+        "error": "invalid",
+        "field": "birth"
+      }
+    },
+    {
+      "case": "native_validation",
+      "input": "2026-11-19",
+      "fillError": null,
+      "value": "2026-11-19",
+      "valid": false,
+      "badInput": false,
+      "rangeUnderflow": false,
+      "rangeOverflow": true,
+      "message": "Value must be 11/18/2026 or earlier."
+    },
+    {
+      "case": "rpc_validation",
+      "input": "2026-11-19",
+      "data": {
+        "ok": false,
+        "error": "invalid",
+        "field": "birth"
+      }
+    },
+    {
+      "case": "native_validation",
+      "input": "1899-12-31",
+      "fillError": null,
+      "value": "1899-12-31",
+      "valid": false,
+      "badInput": false,
+      "rangeUnderflow": true,
+      "rangeOverflow": false,
+      "message": "Value must be 01/01/1900 or later."
+    },
+    {
+      "case": "rpc_validation",
+      "input": "1899-12-31",
+      "data": {
+        "ok": false,
+        "error": "invalid",
+        "field": "birth"
+      }
+    }
+  ],
+  "security": [
+    {
+      "case": "limited_directory",
+      "total": 1,
+      "keys": [
+        "id",
+        "team",
+        "sports",
+        "status",
+        "category",
+        "full_name",
+        "birth_date",
+        "social_name",
+        "photo_version",
+        "external_cbb_id"
+      ],
+      "restrictedMarkerPresent": false,
+      "options": [
+        {
+          "club": "Clube Aurora DEMO",
+          "category": "Sub-17 DEMO",
+          "division": "Feminino",
+          "modality": "5x5"
+        },
+        {
+          "club": "Clube Horizonte DEMO",
+          "category": "Adulto DEMO",
+          "division": "Feminino",
+          "modality": "3x3"
+        }
+      ]
+    },
+    {
+      "case": "restricted_registration",
+      "data": null
+    },
+    {
+      "case": "unlinked_profile",
+      "text": "Página indisponível\n\nEsta página não existe ou não está disponível para o seu perfil.\n\nAbra uma página disponível na navegação do workspace.\n\nVoltar ao chat"
+    },
+    {
+      "case": "unlinked_photo",
+      "status": 404
+    },
+    {
+      "case": "unlinked_photo",
+      "status": 404
+    }
+  ],
+  "browserErrors": [],
+  "photoUploadStatus": 200,
+  "filteredRows": "BD\nBruna Multivínculos DEMO\nCategoria:\nSub-17 DEMO\nNaipe:\nFeminino\nModalidade:\n5x5\nClube:\nClube Aurora DEMO\n5bb628ae-8eaf-4626-9d69-7af516faf51a\nID\nIgor Três por Três DEMO\nCategoria:\nAdulto DEMO\nNaipe:\nFeminino\nModalidade:\n3x3\nClube:\nClube Horizonte DEMO\n0432dfdf-7e8b-4d8d-8f3f-d9630ea55a9b",
+  "backHref": "/atletas?q=&category=Adulto+DEMO&division=Feminino&modality=3x3&club=Clube+Horizonte+DEMO&page=1",
+  "filtersAfterReturn": "/atletas?q=&category=Adulto+DEMO&division=Feminino&modality=3x3&club=Clube+Horizonte+DEMO&page=1",
+  "scaleSamples": [
+    {
+      "elapsedMs": 20,
+      "total": 3000,
+      "rows": 25
+    },
+    {
+      "elapsedMs": 25,
+      "total": 3000,
+      "rows": 25
+    },
+    {
+      "elapsedMs": 21,
+      "total": 3000,
+      "rows": 25
+    },
+    {
+      "elapsedMs": 20,
+      "total": 3000,
+      "rows": 25
+    },
+    {
+      "elapsedMs": 20,
+      "total": 3000,
+      "rows": 25
+    }
+  ],
+  "birthAttributes": {
+    "type": "date",
+    "min": "1900-01-01",
+    "max": "2026-11-18",
+    "lang": "pt-BR",
+    "navigatorLanguage": "pt-BR",
+    "required": false
+  },
+  "editBirthAttributes": {
+    "min": "",
+    "max": "",
+    "required": false
+  },
+  "extra": {
+    "browserVersion": "159.0.8154.6",
+    "keyboard": [
+      {
+        "case": "manual_segments",
+        "value": "1990-04-12"
+      },
+      {
+        "case": "year_arrow_up",
+        "value": "1991-04-12"
+      },
+      {
+        "case": "month_arrow_up",
+        "value": "1991-05-12"
+      },
+      {
+        "case": "day_arrow_down",
+        "value": "1991-05-11"
+      }
+    ],
+    "a11y": [
+      {
+        "label": "listagem",
+        "width": 1440,
+        "violations": [],
+        "incomplete": []
+      },
+      {
+        "label": "listagem",
+        "width": 390,
+        "violations": [],
+        "incomplete": []
+      },
+      {
+        "label": "listagem",
+        "width": 320,
+        "violations": [],
+        "incomplete": []
+      },
+      {
+        "label": "cadastro",
+        "width": 1440,
+        "violations": [],
+        "incomplete": []
+      },
+      {
+        "label": "cadastro",
+        "width": 390,
+        "violations": [],
+        "incomplete": []
+      },
+      {
+        "label": "cadastro",
+        "width": 320,
+        "violations": [],
+        "incomplete": []
+      }
+    ],
+    "beforeApplyURL": "/atletas",
+    "afterApplyURL": "/atletas?q=&category=Adulto+DEMO&division=&modality=3x3&club=&status=",
+    "appliedCount": "2 atletas",
+    "nextPageOnFiltered": 0,
+    "clearURL": "/atletas",
+    "{\"q\":\"Ana Carolina Nascimento de Albuquerque e Vasconcelos Atleta de Demonstração\"}": {
+      "total": 1
+    },
+    "{\"q\":\"RESTRITO-DEMO-103A\"}": {
+      "total": 0
+    },
+    "{\"q\":\"Bruna\",\"sort\":\"updated_desc\"}": {
+      "total": 1
+    },
+    "editFutureNative": {
+      "valid": true,
+      "min": "",
+      "max": "",
+      "value": "2026-11-19"
+    },
+    "editFutureResult": {
+      "notice": [
+        "Não foi possível salvar. Confira os dados e as permissões.",
+        "Data DEMO 1990-04-12"
+      ],
+      "stored": "2012-02-29"
+    },
+    "civilBoundary": {
+      "instant": "2026-11-19T00:30:00Z",
+      "utcMax": "2026-11-19",
+      "saoPauloDay": "2026-11-18"
+    },
+    "invalidKeyboard": {
+      "value": "",
+      "valid": false,
+      "badInput": true,
+      "message": "Please enter a valid value. The field is incomplete or has an invalid date.",
+      "pathAfterSubmit": "/atletas/novo"
+    },
+    "paginationUI": {
+      "path": "/atletas?q=&page=2",
+      "rows": 25,
+      "label": "Anterior\nPágina 2 de 120\nPróxima"
+    },
+    "filterGeometry": [
+      {
+        "width": 1440,
+        "firstRowY": 559.96875,
+        "filterHeight": 195,
+        "scrollWidth": 1440
+      },
+      {
+        "width": 390,
+        "firstRowY": 755.46875,
+        "filterHeight": 274.5,
+        "scrollWidth": 390
+      },
+      {
+        "width": 320,
+        "firstRowY": 1002.4375,
+        "filterHeight": 433.5,
+        "scrollWidth": 320
+      }
+    ],
+    "intelligenceHref": "/?atleta=5bb628ae-8eaf-4626-9d69-7af516faf51a",
+    "modal": [
+      {
+        "width": 1440,
+        "dialogWidth": 672,
+        "pageWidth": 1440,
+        "birthMin": "1900-01-01",
+        "birthMax": "2026-11-18"
+      },
+      {
+        "width": 390,
+        "dialogWidth": 352,
+        "pageWidth": 390,
+        "birthMin": "1900-01-01",
+        "birthMax": "2026-11-18"
+      },
+      {
+        "width": 320,
+        "dialogWidth": 282,
+        "pageWidth": 320,
+        "birthMin": "1900-01-01",
+        "birthMax": "2026-11-18"
+      }
+    ]
+  }
+}
