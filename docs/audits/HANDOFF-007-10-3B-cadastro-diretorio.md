@@ -90,3 +90,11 @@ Os direcionados foram repetidos depois da suíte completa para validar verifica�
 [Registro estruturado de validação](../visual/handoff-007-10-3b/validacao.json). Confirmados zero usuários de fixture `ux-directory-*` e zero opções esportivas próprias remanescentes. Os servidores temporários de teste foram encerrados; o servidor de desenvolvimento preexistente foi preservado. Os avisos de `NO_COLOR/FORCE_COLOR` e `MODULE_TYPELESS_PACKAGE_JSON` não impediram a execução e não motivaram mudanças fora de escopo.
 
 A implementação fica em commit local nesta branch, junto deste relatório e das evidências. Nenhum merge, push ou publicação foi realizado. A homologação visual permanece com o responsável pelo produto.
+
+## Ajuste posterior — filtros sempre visíveis
+
+Por solicitação do usuário, o disclosure foi substituído por um fieldset sempre visível. Os cinco filtros e “Aplicar filtros” ficam em uma linha no desktop; em telas pequenas, os campos quebram em duas colunas, sem overflow. A busca mantém sua largura anterior. Permanecem GET explícito, contagem de critérios, limpeza e semântica do backend. O comportamento de recolher/restaurar foco descrito na entrega inicial foi substituído por esta interação direta; o componente não precisa mais de estado cliente ou armazenamento de sessão.
+
+Validação desta alteração: **4 testes direcionados aprovados (42,2 s)**, lint, typecheck e build aprovados; 15 avaliações axe sem violações automáticas, com a mesma ressalva de contraste inconclusivo registrada anteriormente. A suíte completa de 73 testes acima pertence à entrega inicial; não foi repetida neste ajuste visual. Testes adaptados para verificar campos visíveis antes/depois da aplicação e navegação entre selects com Tab.
+
+Capturas atuais: [desktop](../visual/handoff-007-10-3b-inline-filters/vinculo-filtrado-1440.png), [390 px](../visual/handoff-007-10-3b-inline-filters/vinculo-filtrado-390.png), [320 px](../visual/handoff-007-10-3b-inline-filters/vinculo-filtrado-320.png). Evidências desta nova execução em `docs/visual/handoff-007-10-3b-inline-filters/`; as imagens anteriores permanecem como registro da entrega inicial. Validação somente em segundo plano, sem navegador visível. Sem merge ou publicação.

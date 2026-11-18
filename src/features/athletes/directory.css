@@ -1,11 +1,21 @@
-.athletes-directory .directory-filter-help { color: var(--muted); font-size: .875rem; margin: .25rem 0 .75rem; max-width: 42rem; }
-.athletes-directory .directory-apply { margin-top: .875rem; }
+.athletes-directory .directory-search { max-width: none; }
+.athletes-directory .directory-search .search-row { max-width: 46rem; }
+.athletes-directory .directory-filter-help { color: var(--muted); font-size: .875rem; margin: .5rem 0 0; max-width: 42rem; }
+.athletes-directory .directory-filters-inline { min-width: 0; border: 0; padding: 0; margin: .75rem 0 0; }
+.athletes-directory .directory-filters-inline legend { padding: 0; margin-bottom: .5rem; font-weight: 600; }
+.athletes-directory .directory-filter-row { display: flex; align-items: flex-end; gap: .75rem; }
+.athletes-directory .filter-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); flex: 1; min-width: 0; padding-bottom: 0; }
+.athletes-directory .filter-grid label { min-width: 0; width: auto; }
+.athletes-directory .filter-grid select { min-width: 0; width: 100%; }
+.athletes-directory .directory-apply { margin: 0; flex-shrink: 0; }
 .athletes-directory .directory-order { margin: -.5rem 0 .75rem; color: var(--muted); font-size: .8125rem; }
 .athletes-directory .directory-sports { display: grid; gap: .2rem; min-width: 0; }
 .athletes-directory .directory-sport-note { color: var(--muted); font-size: .8125rem; }
 .athletes-directory .directory-facts { gap: .25rem .75rem; }
-.athletes-directory .directory-filters summary::after { content: "⌄"; margin-left: .5rem; }
-.athletes-directory .directory-filters[open] summary::after { content: "⌃"; }
+@media (max-width: 1000px) {
+  .athletes-directory .directory-filter-row { flex-wrap: wrap; }
+  .athletes-directory .filter-grid { flex-basis: 100%; }
+}
 @media (max-width: 720px) {
   .athletes-directory .athlete-list > li { padding-inline: 0; gap: .75rem; }
   .athletes-directory .athlete-list .avatar { width: 40px; height: 40px; }
