@@ -10,11 +10,11 @@ Especificação completa: [specs/HANDOFF-007-10-6B-3.md](specs/HANDOFF-007-10-6B
 |---|---|---|
 | A — Segurança conversacional | Concluído e validado neste checkpoint | Quatro P0 corrigidos; resultados abaixo |
 | B — Infraestrutura de capacidades | Concluído e validado | Catálogo, estado persistente e autorização segura; execução clínica desabilitada |
-| C — Criação/alterações | Em andamento; domínio interno validado | Edição, revisão compartilhada e salvamento sem assinatura privados; linguagem natural/UI pendentes |
+| C — Criação/alterações | Em andamento; edição textual/revisão/persistência integradas | Três tipos com CAS e retomada; fechar criação e caminhos de edição do modelo antes de concluir C |
 | D — Assinatura/entrega | Não iniciado | Confirmação contextual, integração compartilhada e retentativas |
 | E — UX/homologação | Não iniciado | Preview, voz, histórico, mobile, paridade e regressão final |
 
-**O handoff completo ainda não está concluído nem homologado.** O checkpoint atual preserva A/B concluídos e registra a base interna de C. C ainda não foi entregue funcionalmente ao usuário. A nova jornada de assinatura/entrega pelo chat não está habilitada. O fluxo tradicional do B.2 foi preservado.
+**O handoff completo ainda não está concluído nem homologado.** A/B permanecem concluídos. A branch já integra edição textual delimitada, revisão e persistência de C; a criação e os caminhos legados interpretados pelo modelo ainda precisam de fechamento. C não está concluído ou homologado integralmente. A nova jornada de assinatura/entrega pelo chat não está habilitada. O fluxo tradicional do B.2 foi preservado.
 
 ## Corte A — implementação
 
@@ -136,7 +136,7 @@ npx playwright test --config playwright.document-edits.config.ts
 npx playwright test --config playwright.document-edits.config.ts --grep "saved document changed|new functions are not exposed"
 ```
 
-## Corte C — integração interna com o domínio compartilhado (`245de1f`)
+## Corte C — checkpoint interno anterior (`245de1f`, histórico)
 
 - Revisão privada chama `document_review_command:open` e vincula o workspace à versão exata da proposta, sem salvar documento clínico. O UUID da proposta é o mesmo identificador lógico do documento.
 - `source_proposal_version` e validação do conteúdo, ator, sessão, atleta e versão clínica impedem revincular uma revisão superada. A checagem de workspace passa a recusar a fonte antiga; a checagem de desafio já usada por B também recusa um recibo confirmado após alteração. A evidência histórica não é apagada nem promovida à nova versão. Nova revisão reinicia identidade/entrega e não recupera o recibo anterior como autorização vigente.
@@ -161,19 +161,68 @@ npx playwright test --config playwright.document-edits.config.ts --grep "saved d
 npx playwright test --config playwright.document-edits.config.ts
 ```
 
+## Corte C — integração textual e recuperação (`49d9c63`, estado atual)
+
+### Comportamento entregue na branch
+
+- Edição por comandos textuais delimitados nos três tipos: prescrição, solicitação de exames e pedido cirúrgico. O adaptador executa antes da chamada ao modelo e usa **a mensagem humana original autenticada**, não uma reformulação do assistente. Não há ferramenta nova de confirmação/assinatura ou SQL livre exposta ao modelo.
+- Documento em contexto é escolhido pelo cartão (`Usar nesta conversa`); mais de uma proposta compatível pede escolha. A seleção explícita preserva cartões antigos mesmo além do limite de 12 referências da requisição. Cartão escolhido descartado não redireciona para outro documento. Atleta, ator, sessão e acesso continuam validados no banco.
+- O servidor recupera a proposta real e verifica versão/hash exibidos antes de resolver posições para UUIDs. Versão antiga atualiza o cartão e pede repetição da solicitação, sem aplicar a alteração sobre uma ordem de itens diferente. Edição local ainda não revisada impede outra alteração textual concorrente.
+- Valores livres são trechos literais da mensagem original, preservando grafia científica e unidades. Campos não mencionados permanecem intactos. Posição/nome ambíguos, valor ausente, referência adicional a paciente/documento e mistura de remoção/inclusão com alteração posicional pedem esclarecimento. Dose com unidade já preenchida não recebe outra unidade concatenada; dose/unidade são solicitadas separadamente. Não há inferência de valor clínico nem conversão de unidades.
+- Inclusão nomeada gera UUID estável por mensagem e deixa os demais campos clínicos vazios; remoção usa o UUID resolvido. Enumerações de lateralidade/prioridade só aceitam traduções explícitas reconhecidas pelo contrato existente. Este é um interpretador delimitado, não uma alegação de compreensão de toda paráfrase possível.
+- Nova revisão usa o mesmo `document_review_command` e `DocumentPreview`. O cartão da mesma proposta passa à resposta mais recente, sem duplicar o documento. Callback atrasado de cartão movido não recria o cartão antigo nem sobrescreve versão nova.
+- O botão `Revisar documento` também persiste alterações locais da proposta com CAS antes de abrir a revisão compartilhada. `Confirmar e salvar` usa o serviço compartilhado sem assinatura, com idempotência, vínculo e versão retornados pelo banco. Não assina, finaliza ou envia.
+- Histórico grava **referências finas**, sem `content`, itens, hash ou corpo de proposta. Leitura reidrata o conteúdo atual autorizado. Propostas pendentes voltam ao reabrir; referências antigas não viram cópias editáveis concorrentes. Contexto histórico/registro bloqueado aparece somente para consulta, sem afirmar que permanece um rascunho não assinado.
+- Bridge de compatibilidade captura a versão clínica de salvamentos legados quando o conteúdo/autor/atleta coincidem, sem mudar o corpo clínico. Os novos adaptadores autenticados não concedem acesso aos helpers privados; origem do salvamento pelo cartão é `ai_chat`/`human_ui`.
+- As operações novas de edição/revisão por **voz estão bloqueadas** com orientação para revisar a transcrição e enviar por texto. Os fluxos antigos de voz foram preservados; isto não homologa voz ou assinatura conversacional.
+
+### Banco e exposição
+
+Migration aditiva `20261120000800_chat_document_adapters.sql`, aplicada e registrada atomicamente **somente localmente**, com recarga do schema PostgREST. SHA256 confirmado entre arquivo e registro: `0498be0dd42fbf87c49dfcacbe044a022aebf1c0399b5ed168f31519b865209e`. `20261120000700` permanece intacta e sua correspondência também foi conferida. **Não reaplicar nem editar migrations já registradas.**
+
+Adaptadores autenticados: `chat_document_proposal_read`, `chat_document_proposal_patch`, `chat_document_proposal_review` e `chat_document_card` (`review`/`save` apenas). Identidade do ator vem de `auth.uid()`. Novos caminhos de HTTP têm schemas estritos e a proteção de origem/sessão existente; SDK/ferramentas do modelo não recebem um dispatcher livre desses métodos.
+
+### Validação e evidências
+
+- **31/31** no módulo novo `chat-document-adapters.spec.mjs` no código final: serviços de cartão dos três documentos, revisão e idempotência, CAS por versão/hash, recuperação/hidratação autorizada, ausência de corpo no histórico, profissional alheio, recusa de assinatura/finalização/entrega, resolução literal/ambiguidade, seleção antiga/descartada, callbacks atrasados, dose/unidade e referências adicionais.
+- **6/6 HTTP/UI** no código final: alteração dos três documentos, UUID/campos preservados, versão antiga, editor local sujo, voz bloqueada, referência alheia, um único cartão, revisão compartilhada, salvamento real do rascunho, recarga e mobile sem overflow horizontal. Provedor não é chamado: a chave offline do servidor de teste só habilita o composer. O nome `voice` do projeto Playwright é infraestrutura de teste, não homologação de voz.
+- Regressão por impacto anterior: **125/126** (C privado, A/B, motor tradicional e três contratos legados de documentos/voz). Uma falha ocorreu ao obter o primeiro job no teste de lease de entrega (`job: null`); não se alterou o motor para satisfazer o teste. Reteste isolado **1/1**, seguido de **49/49** (26 cenários do novo módulo naquele momento + os 23 cenários completos do motor tradicional), aprovados. Foi acrescentado diagnóstico de estado/política/lease na fixture para eventual recorrência. **A causa da oscilação não foi reproduzida ou comprovada; permanece risco residual de teste**, não uma correção clínica alegada.
+- No desenvolvimento, três expectativas de teste foram ajustadas ao evento nativo `document.draft_created` (não `document.draft_saved` na primeira gravação). Quatro requisições HTTP da fixture continham `state` indevido dentro de `displayedProposals`; corrigida a fixture, preservando o schema estrito. Não se afrouxou autorização, domínio ou validação para obter sucesso.
+- `npm run lint`, `npm run build`, `npm run typecheck` e `git diff --check`: aprovados no código final. Suíte integral **não executada**: C/D/E continuam incompletos e o adendo reserva a execução integral à branch estável no fim. Testes de módulos sem relação não foram repetidos.
+- Duas capturas reais finais, inspecionadas, com profissionais/atletas fictícios e Chromium headless **sem janela visível**. A captura representa o viewport real e mostra o segundo item alterado; nenhuma captura histórica foi regenerada.
+
+[Captura desktop — prescrição com três itens](visual/handoff-007-10-6b-3/document-chat-desktop.png) · [Captura mobile — exames com três itens](visual/handoff-007-10-6b-3/document-chat-mobile.png)
+
+```sh
+npx playwright test --config playwright.document-edits.config.ts
+npx playwright test --config playwright.document-edits.config.ts workflow-backend --grep "leases retomam"
+npx playwright test --config playwright.document-edits.config.ts "chat-document-adapters|workflow-backend"
+npx playwright test --config playwright.document-edits.config.ts chat-document-adapters
+npx playwright test tests/voice-document-conversation.spec.mjs --project=voice --workers=1 --reporter=line
+```
+
+### Pendências que impedem encerrar C
+
+1. Auditar/integrar a criação pelos três `prepare*` do SDK à autoridade compartilhada. Comprovar que nomes, doses, quantidade, apresentação, indicação e outros valores vêm da fala humana autorizada, pedindo dados ausentes; não confiar só no prompt, em texto do assistente ou em histórico clínico. Preservar grafia e unidades.
+2. Substituir o fallback legado `prepareExamRequest`/`examFollowUp`/`mergeExamContent` de substituição completa por alterações estruturadas com CAS. **Mensagens fora da gramática delimitada ainda podem seguir o agente legado; esses caminhos não estão homologados como a nova edição segura completa.** Não encerrar C sem resolver essa diferença.
+3. Validar criação/idempotência/retomada e as ferramentas reais do SDK com provedor controlado. As provas HTTP atuais validam o adaptador delimitado e não a interpretação do modelo.
+4. Unificar o salvamento textual legado e o cartão no contrato exato de versão, mantendo a confirmação humana original. Não transformar `operation.confirm` em ferramenta do modelo.
+
+D/E não foram iniciados como cortes. Preview e recuperação implementados aqui apoiam revisão/persistência de C; não substituem a homologação ampla E. Refinamentos observados para E: reduzir redundância de metadados/pendências entre cartão e preview e explicitar seleção ativa entre cartões, preservando a direção visual.
+
 ## Commits e estado
 
 `a0502a4` — `fix: guard conversational lifecycle and revoked clinical history` (corte A funcional, migration, testes e especificação). Atualização de progresso A: `b8555a4`.
 
 `5e697f9` — `feat: persist conversational workspaces and human authorization challenges` (corte B funcional, migração, gateway, catálogo, contratos e testes). Atualização de progresso em commit documental subsequente.
 
-Sem merge, push ou deploy. `main` e `origin/main` preservadas em `51c1426`. As migrations `20261120000500`, `20261120000600` e `20261120000700` já estão aplicadas localmente: não reaplicar os arquivos manualmente sobre objetos existentes.
+Sem merge, push ou deploy. `main` e `origin/main` preservadas em `51c1426`. As migrations `20261120000500`, `20261120000600`, `20261120000700` e `20261120000800` já estão aplicadas localmente: não reaplicar os arquivos manualmente sobre objetos existentes.
 
 ## Retomada — próximo passo exato
 
 1. Ler este arquivo, `CHAT-OPERATIONS-CONTRACT.md` e a especificação; conferir branch, `git status` e `git log`. Não refazer A/B e não reaplicar migrations já registradas.
-2. **Continuar apenas C a partir de `245de1f`:** a base privada de edição, revisão e salvamento já está implementada, instalada localmente e validada por 100 testes. Não refazer ou reaplicar essas migrations. Ler as assinaturas dos helpers na migration `20261120000700`, o teste `conversational-document-edits.spec.mjs` e o contrato. Fazer nova migration aditiva quando precisar expor adaptadores, sem editar SQL já registrado. A limpeza de fixtures já contempla o ledger. Próximo trabalho é integrar a jornada HTTP/UI descrita nas pendências acima, preservando a proposta como autoridade editável e o motor de revisão compartilhado.
-3. Integrar criação dos três documentos e alterações naturais a operações estruturadas. Identificar itens por UUID, preservar campos não mencionados, desambiguar atleta/documento/item/valor, pedir dados ausentes. Mudança deve criar/revincular a revisão exata e invalidar confirmações anteriores; aplicar CAS e recuperar estado da persistência.
+2. **Continuar C a partir de `49d9c63`:** edição textual delimitada, cartão com CAS, revisão compartilhada e recuperação já funcionam e estão validados. Não refazer essas entregas. Ler os módulos `operations/document-intent.ts`, `operations/document-service.ts`, as migrations `20261120000700`/`20261120000800` e os dois novos testes. Banco local já tem 005–008; qualquer mudança SQL deve ser aditiva.
+3. **Próximo trabalho exato:** fechar as quatro pendências de criação/SDK/edição legada/salvamento textual listadas acima antes de declarar C concluído. Começar por `registerDocument` e `preparePrescription`/`prepareSurgicalOrder`/`prepareExamRequest` em `agent.ts`; preservar atleta/proposta e impedir cópia integral concorrente no fallback de exames. Validar origem literal dos valores e testar o SDK com provedor controlado, sem gastos de IA desnecessários.
 4. Testar e commitar C antes de D. Não ativar `operation.confirm` como ferramenta do modelo. A entrada de confirmação continuará sendo a mensagem original autenticada, não saída do modelo ou texto do documento.
 5. D: execução clínica idempotente vinculada ao recibo, com nova checagem de estado/epochs/acesso/versão/hash/identidade/destinatário/expiração na transação que invoca `document_review_command` e o motor B.2. Preservar a propagação de origem já feita na revisão/salvamento e conferir também os eventos de assinatura/finalização/entrega compartilhados. Nunca tratar o recibo como assinatura concluída.
 6. E: apresentar o documento e resumo no chat antes do ack de apresentação; integrar acompanhamento/recuperação, voz segura, acessibilidade, matriz de paridade, inventário pendente e evidências reais. Executar a suíte integral no fim da branch estável.

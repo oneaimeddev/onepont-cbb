@@ -70,3 +70,14 @@ Checkpoint `245de1f`: helpers privados `clinical.chat_document_proposal_read`, `
 Save privado usa o motor compartilhado, vincula a proposta e mantém idempotência. Não autoriza assinatura, finalização ou envio. Funções C não têm grants para papéis da aplicação; antes da exposição, o adaptador deve verificar a mensagem humana original e o CAS da proposta exibida. Não permitir que uma ferramenta de modelo invoque save ou forneça uma própria confirmação.
 
 A migration `20261120000700` está instalada apenas localmente. C ainda precisa dos adaptadores e da jornada de linguagem natural/preview/persistência dos cards. Não interpretar os 100 testes backend aprovados como homologação dessa jornada ou da voz. D/E permanecem pendentes.
+
+
+## Complemento C — adaptadores textuais e cartões (`49d9c63`)
+
+A migration aditiva `20261120000800` expõe adaptadores autenticados de leitura, patch, revisão e cartão (`review`/`save`). Os helpers `clinical.*` continuam privados. O contrato de assinatura B mantém `executionEnabled: false`; salvar um rascunho pelo cartão C não consome recibo de assinatura nem habilita assinatura/envio.
+
+`POST /api/inteligencia` recebe referências exibidas estritas (UUID, atleta, tipo, versão, hash, marca de edição local). O backend carrega a proposta própria da sessão/atleta atuais, verifica CAS e resolve UUIDs a partir do corpo persistido e da fala original. O caminho delimitado não chama o provedor e não aceita SQL, ator fornecido pelo cliente ou confirmação do modelo. Ambiguidades pedem esclarecimento. Voz nova de edição/revisão permanece bloqueada.
+
+O histórico persiste apenas referências de proposta/documento; `conversation_payload` reidrata sob a autorização atual. Fonte pendente, salva ou histórica não vira uma segunda autoridade de conteúdo. Cartão histórico/bloqueado não oferece mutação. O cartão valida versão/hash, faz revisão/salvamento pelo motor compartilhado e recupera a versão real retornada pelo banco.
+
+Esta exposição limitada não homologa toda a criação/edição do SDK: `prepare*`, grounding dos valores, fallback `examFollowUp` com merge integral e salvamento textual legado continuam como bloqueadores do fechamento C. Resolver antes de D; não presumir que as novas provas determinísticas validam o modelo.
