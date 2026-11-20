@@ -2,6 +2,8 @@
 
 20/11/2026. Implementação pontual solicitada após a auditoria 007.10.6A.
 
+Registro da entrega anterior. O perfil foi posteriormente ampliado no [Handoff 007.10.6B](HANDOFF-007-10-6B.md); consulte esse relatório para o estado atual.
+
 O menu aberto pelo nome/avatar no canto superior direito agora contém **Meu perfil**, com destino `/perfil`. O mesmo componente é usado na Home CBB Intelligence e nas telas internas. Auditoria aparece conforme a permissão existente; Sair permanece disponível no menu.
 
 A página é de **consulta do profissional autenticado**: nome de exibição, profissão informada, e-mail de acesso, identificação médica cadastrada e permissões operacionais de auditoria, gestão de acessos e autoria médica. Nenhum identificador fornecido por query string seleciona outro perfil. A rota exige autenticação e usa as consultas/RPCs já existentes.

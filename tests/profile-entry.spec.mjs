@@ -59,7 +59,7 @@ test("Meu perfil abre pelo menu da Home e das telas internas, com teclado e mobi
   await expect(page.getByText("Indisponível nesta versão.", { exact: true })).toBeVisible();
   // A declared profession does not enable medical authorship.
   await expect(page.locator(".professional-facts > div").filter({ hasText: "Autoria de documentos médicos" })).toContainText("Não habilitada");
-  await expect(page.locator("main input")).toHaveCount(0);
+  await expect(page.locator('main input[type="text"]')).toHaveCount(0);
   const scans = [];
   for (const width of [1440, 390, 320]) {
     await page.setViewportSize({ width, height: width === 1440 ? 900 : 844 });

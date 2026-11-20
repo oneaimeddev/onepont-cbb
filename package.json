@@ -12,7 +12,8 @@
     "demo:user": "node scripts/create-demo-user.mjs",
     "supabase:start": "supabase start -x studio,imgproxy,edge-runtime,logflare,vector,realtime,postgres-meta,supavisor",
     "prebuild": "node scripts/copy-pdf-worker.mjs",
-    "predev": "node scripts/copy-pdf-worker.mjs"
+    "predev": "node scripts/copy-pdf-worker.mjs",
+    "signing:demo": "node scripts/signing-demo.mjs"
   },
   "private": true,
   "dependencies": {

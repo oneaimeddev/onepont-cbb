@@ -210,6 +210,10 @@ test("a consulta percorre o histórico autorizado e não revela o restante", asy
   // Fix all document creation dates; the period must not depend on the runner's clock.
   sql(`update clinical.documents set created_at = timestamptz '2026-11-01 12:00:00+00', updated_at = timestamptz '2026-11-02 12:00:00+00' where id in ('${exam}', '${prescription}', '${surgery}');`);
 
+  // Identify each new event without assuming transaction timestamp ordering.
+  const historyAuditIds = () => JSON.parse(sql(`select coalesce(json_agg(request_id), '[]') from clinical.audit_events where actor_user_id='${physician.id}' and operation='history.read'`));
+  const newHistoryAudit = (prior) => JSON.parse(sql(`select coalesce(json_agg(json_build_object('origin',origin_channel,'method',execution_method)), '[]') from clinical.audit_events where actor_user_id='${physician.id}' and operation='history.read' and request_id <> all(array[${prior.map(id => `'${id}'`).join(',')}]::uuid[])`));
+  const beforeTextAudit = historyAuditIds();
   const recent = await physician.client.rpc("chat_history_page", { target: athlete, filters: { from: "2026-05-17", to: "2026-11-17", page: "1", page_size: "20" }, mode: "text" });
   const recentIds = recent.data.records.map((item) => item.id);
   expect(recentIds).toContain(physioRecord);
@@ -223,14 +227,16 @@ test("a consulta percorre o histórico autorizado e não revela o restante", asy
   expect(JSON.stringify(recent.data)).not.toContain(privateBody);
   expect(recent.data.records.find((item) => item.id === exam).clinical_at).toBe("2026-07-15");
   expect(recent.data.records.find((item) => item.id === draftRecord).status).toBe("draft");
-  expect(sql(`select origin_channel || ' ' || execution_method from clinical.audit_events where actor_user_id = '${physician.id}' and operation = 'history.read' order by occurred_at desc limit 1`)).toBe("ai_chat human_message");
+  expect(newHistoryAudit(beforeTextAudit)).toEqual([{origin:"ai_chat",method:"human_message"}]);
   expect(sql(`select coalesce(string_agg(coalesce(operation, '') || coalesce(outcome, ''), ' '), '') from clinical.audit_events where actor_user_id = '${physician.id}' and operation = 'history.read'`)).not.toContain(medicalTitle);
 
+  const beforeVoiceAudit = historyAuditIds();
   const voice = await physician.client.rpc("chat_history_page", { target: athlete, filters: { page: "1", page_size: "1" }, mode: "voice" });
   expect(voice.data.total).toBeGreaterThan(50);
-  expect(sql(`select execution_method from clinical.audit_events where actor_user_id = '${physician.id}' and operation = 'history.read' order by occurred_at desc limit 1`)).toBe("human_voice");
+  expect(newHistoryAudit(beforeVoiceAudit)).toEqual([{origin:"ai_chat",method:"human_voice"}]);
+  const beforeAgentAudit = historyAuditIds();
   await physician.client.rpc("agent_history_page", { target: athlete, filters: { page: "1", page_size: "1" } });
-  expect(sql(`select origin_channel || ' ' || execution_method from clinical.audit_events where actor_user_id = '${physician.id}' and operation = 'history.read' order by occurred_at desc limit 1`)).toBe("ai_chat agent_tool");
+  expect(newHistoryAudit(beforeAgentAudit)).toEqual([{origin:"ai_chat",method:"agent_tool"}]);
 
   const seen = new Set();
   let total = 0;

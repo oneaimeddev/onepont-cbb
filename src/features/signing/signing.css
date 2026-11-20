@@ -1,0 +1,130 @@
+.signing-section {
+  max-width: 1080px;
+}
+.signing-section h2,
+.signing-section h3 {
+  color: var(--cbb-navy, #102849);
+}
+.signing-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  margin: 24px 0;
+}
+.signing-form label {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+.signing-form input,
+.signing-form select {
+  width: 100%;
+  min-height: 44px;
+}
+.signing-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  grid-column: 1/-1;
+  margin: 16px 0;
+}
+.signing-list {
+  padding: 0;
+  list-style: none;
+}
+.signing-list > li {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: center;
+  border-bottom: 1px solid var(--line, #dce3ec);
+  padding: 20px 0;
+}
+.signing-list p {
+  margin: 8px 0;
+  font-size: 0.9rem;
+}
+.signing-demo-notice {
+  border: 1px solid #9b7c18;
+  border-left: 4px solid #9b7c18;
+  padding: 16px 20px;
+  background: #fff9e7;
+  color: #57420a;
+  margin: 24px 0;
+}
+.signing-demo-notice p {
+  margin: 8px 0 0;
+}
+.signing-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  list-style: decimal;
+  padding-left: 24px;
+  margin: 24px 0;
+  color: var(--muted, #536579);
+}
+.signing-steps [aria-current="step"] {
+  font-weight: 600;
+  color: var(--cbb-navy, #102849);
+}
+.signing-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+.signing-facts dt {
+  font-size: 0.875rem;
+  color: var(--muted, #536579);
+  margin-bottom: 6px;
+}
+.signing-facts dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.signing-choice {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  min-height: 44px;
+  margin: 24px 0;
+  max-width: 76ch;
+}
+.signing-choice input {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  margin: 2px 0;
+}
+.signing-section details {
+  margin: 20px 0;
+}
+.signing-section summary {
+  cursor: pointer;
+  min-height: 44px;
+  padding: 12px 0;
+  font-weight: 600;
+}
+.professional-photo {
+  border-radius: 50%;
+  object-fit: cover;
+}
+@media (max-width: 640px) {
+  .signing-form,
+  .signing-facts {
+    grid-template-columns: 1fr;
+  }
+  .signing-list > li {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .signing-demo-notice {
+    padding: 16px;
+  }
+  .signing-actions > a,
+  .signing-actions > button {
+    max-width: 100%;
+    white-space: normal;
+  }
+}

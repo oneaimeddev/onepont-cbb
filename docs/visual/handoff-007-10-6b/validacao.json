@@ -1,0 +1,44 @@
+{
+  "date": "2026-11-20",
+  "branch": "feat/handoff-007-10-6b-signing-journey",
+  "base": "4b3ea5f",
+  "main": "162b9a9",
+  "tests": {
+    "complete": {
+      "passed": 92,
+      "failed": 0
+    },
+    "final_acceptance": {
+      "passed": 20,
+      "failed": 0
+    }
+  },
+  "lint": "passed",
+  "typecheck": "passed",
+  "build": "passed",
+  "screenshots": "headless Chromium",
+  "widths": [
+    1440,
+    390,
+    320
+  ],
+  "axe_checked_violations": 0,
+  "simulation": {
+    "local_enabled": true,
+    "operational_api_block_verified": true,
+    "database_gate_block_verified": true,
+    "other_identity_block_verified": true,
+    "verified_certificate": false,
+    "cryptographically_signed": false,
+    "artifacts_generated": 0,
+    "external_browser_requests": 0,
+    "whatsapp_integration": false
+  },
+  "migrations": [
+    "20261120000100",
+    "20261120000200"
+  ],
+  "old_visual_files_restored": 184,
+  "merge": false,
+  "deploy": false
+}

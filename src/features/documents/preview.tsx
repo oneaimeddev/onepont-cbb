@@ -1,4 +1,4 @@
-import { eventDate } from "../athletes/data";
+const eventDate = new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short", timeZone: "America/Sao_Paulo" });
 import {
   documentKinds, examTypeLabels, isExamRequest, isPrescription, lateralityLabels, prescriptionPending, priorityLabels, statusLabels, surgicalPending, examPending,
   type DocumentContent, type DocumentKind, type DocumentStatus,

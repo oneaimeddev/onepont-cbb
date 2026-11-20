@@ -47,6 +47,7 @@ export function DocumentScreen({
         <p>Médico responsável: {authorName}</p>
         <p>{credential ? `Identificação profissional: ${credential}` : "Identificação profissional não registrada neste rascunho."}</p>
       </header>
+      {saved && <p><Link className="ghost" href={`${base}/documentos/${documentId}/assinatura`} prefetch={false}>Revisar assinatura digital</Link></p>}
       {notice && <p role={notice.tone}>{notice.text}</p>}
       {preview && saved ? (
         <DocumentPreview document={{ document_type: kind, status, author_name: authorName, credential_label: credential, created_at: createdAt, updated_at: updatedAt, content }} athleteName={athleteName} />

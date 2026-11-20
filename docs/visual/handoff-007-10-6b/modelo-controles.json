@@ -1,0 +1,87 @@
+{
+  "new_migrations": [
+    "20261120000100",
+    "20261120000200"
+  ],
+  "authenticated_can_configure_demo": false,
+  "anonymous_can_request_signature": false,
+  "authenticated_can_request_signature": true,
+  "canonical_timezone": [
+    "search_path=\"\"",
+    "TimeZone=UTC"
+  ],
+  "tables": [
+    {
+      "name": "professional_details",
+      "rls": true,
+      "direct_select": false,
+      "direct_update": false
+    },
+    {
+      "name": "professional_registrations",
+      "rls": true,
+      "direct_select": false,
+      "direct_update": false
+    },
+    {
+      "name": "signature_artifacts",
+      "rls": true,
+      "direct_select": false,
+      "direct_update": false
+    },
+    {
+      "name": "signature_attempts",
+      "rls": true,
+      "direct_select": false,
+      "direct_update": false
+    },
+    {
+      "name": "signature_connections",
+      "rls": true,
+      "direct_select": false,
+      "direct_update": false
+    },
+    {
+      "name": "signature_preferences",
+      "rls": true,
+      "direct_select": false,
+      "direct_update": false
+    },
+    {
+      "name": "signature_providers",
+      "rls": true,
+      "direct_select": false,
+      "direct_update": false
+    },
+    {
+      "name": "signature_results",
+      "rls": true,
+      "direct_select": false,
+      "direct_update": false
+    },
+    {
+      "name": "signature_snapshots",
+      "rls": true,
+      "direct_select": false,
+      "direct_update": false
+    },
+    {
+      "name": "signature_transitions",
+      "rls": true,
+      "direct_select": false,
+      "direct_update": false
+    },
+    {
+      "name": "signing_environment",
+      "rls": true,
+      "direct_select": false,
+      "direct_update": false
+    },
+    {
+      "name": "signing_identities",
+      "rls": true,
+      "direct_select": false,
+      "direct_update": false
+    }
+  ]
+}
