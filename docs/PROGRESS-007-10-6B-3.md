@@ -64,6 +64,7 @@ Resultados:
 - Lote direcionado de integração: 42/43 aprovados; a falha era a expectativa antiga de retomada de sessão encerrada.
 - Revalidação final de API/Intelligence, após ajuste do contrato e feedback de erro: 2/2 aprovados.
 - Restrição assistencial e isolamento dos helpers privados: 1/1 aprovado.
+- Auditoria das recusas de retomada (`closed`/`archived`): 2/2 aprovados na revalidação final.
 - **44 cenários direcionados têm validação positiva entre lote e retestes.** Não se afirma uma execução única de 44/44; os comandos e falhas estão discriminados acima.
 - `npm run lint`, `npm run typecheck`, `npm run build`: aprovados no código final de produção deste corte. `git diff --check` conferido no fechamento.
 - Suíte integral: **não executada**, pois B–E estão pendentes. Será feita no fim da branch estável, conforme a política de recursos.
@@ -80,7 +81,7 @@ npx playwright test --config playwright.security.config.ts --grep "restrição a
 
 ## Commits e estado
 
-COMMIT_A_PENDENTE
+`a0502a4` — `fix: guard conversational lifecycle and revoked clinical history` (corte A funcional, migration, testes e especificação). Atualização de progresso registrada em commit documental subsequente.
 
 Sem merge, push ou deploy. `main` e `origin/main` preservadas em `51c1426`. A nova migration já está aplicada localmente: não reaplicar o arquivo manualmente sobre objetos existentes.
 
