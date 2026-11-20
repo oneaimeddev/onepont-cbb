@@ -114,7 +114,7 @@ npx playwright test tests/chat-operations.spec.mjs tests/chat-operations-api.spe
 
 `a0502a4` — `fix: guard conversational lifecycle and revoked clinical history` (corte A funcional, migration, testes e especificação). Atualização de progresso A: `b8555a4`.
 
-COMMIT_B_PENDENTE
+`5e697f9` — `feat: persist conversational workspaces and human authorization challenges` (corte B funcional, migração, gateway, catálogo, contratos e testes). Atualização de progresso em commit documental subsequente.
 
 Sem merge, push ou deploy. `main` e `origin/main` preservadas em `51c1426`. As migrations `20261120000500` e `20261120000600` já estão aplicadas localmente: não reaplicar os arquivos manualmente sobre objetos existentes.
 
