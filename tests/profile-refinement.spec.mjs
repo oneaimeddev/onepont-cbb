@@ -1,6 +1,6 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures.mjs";
 import {
   createProfileFixture,
   cleanupProfileFixture,
@@ -284,7 +284,7 @@ test("documentos filtrados por tipo/ordem preservam editores, estados e contexto
   await page.goto(`/atletas/${f.rich}?aba=documentos`);
   await expect(page.locator(".profile-document-list > li")).toHaveCount(5);
   await expect(
-    page.getByText("Nenhum documento desta lista é emitido ou assinado.", {
+    page.getByText("Documentos privados deste médico. Consulte o estado de cada versão.", {
       exact: false,
     }),
   ).toBeVisible();

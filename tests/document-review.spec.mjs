@@ -1,4 +1,5 @@
-import { test, expect } from "@playwright/test";
+import { cleanupWorkflow } from "./helpers/workflow-fixtures.mjs";
+import { test, expect } from "./fixtures.mjs";
 import { createClient } from "@supabase/supabase-js";
 import { randomUUID } from "node:crypto";
 import { execFileSync } from "node:child_process";
@@ -16,7 +17,7 @@ const adult = randomUUID(),
   minorAbsent = randomUUID();
 const athletes = [adult, minor, absent, minorAbsent];
 const shots = "docs/visual/handoff-007-10-6b-1";
-let owner, other, limited, readonly, priorGate;
+let owner, other, limited, readonly, priorGate, priorDeliveryPolicy;
 function sql(s) {
   return execFileSync(
     "docker",
@@ -232,6 +233,8 @@ async function consent(page, label = "Identidade DEMO A") {
 }
 test.beforeAll(async () => {
   priorGate = sql("select demo_enabled from clinical.signing_environment");
+  priorDeliveryPolicy = sql("select fixture_policy_enabled from clinical.document_delivery_environment");
+  await admin.rpc("configure_document_delivery_demo", { enabled: false });
   await admin.rpc("configure_signing_demo", { enabled: true });
   owner = await account("Profissional Revisão DEMO", true);
   other = await account("Outro Profissional Revisão DEMO", true);
@@ -247,12 +250,14 @@ test.beforeAll(async () => {
 test.afterAll(async () => {
   if (users.length) {
     const ids = users.map((x) => `'${x}'`).join(",");
+    cleanupWorkflow(sql, users);
     sql(
       `delete from clinical.signature_demo_delivery_intents where professional_id in(${ids});delete from clinical.document_reviews where professional_id in(${ids});delete from clinical.signature_results where attempt_id in(select id from clinical.signature_attempts where professional_id in(${ids}));delete from clinical.signature_transitions where professional_id in(${ids});delete from clinical.signature_attempts where professional_id in(${ids});delete from clinical.signature_snapshots where professional_id in(${ids});delete from clinical.signature_preferences where professional_id in(${ids});delete from clinical.signing_identities where professional_id in(${ids});delete from clinical.signature_connections where professional_id in(${ids});delete from clinical.athletes where id in(${athletes.map((x) => `'${x}'`).join(",")});delete from clinical.medical_authors where professional_id in(${ids});`,
     );
     for (const id of users) await admin.auth.admin.deleteUser(id);
   }
   await admin.rpc("configure_signing_demo", { enabled: priorGate === "t" });
+  await admin.rpc("configure_document_delivery_demo", { enabled: priorDeliveryPolicy === "t" });
 });
 for (const kind of kinds)
   test(`revisão ${kind} não persiste documento nem inicia assinatura; salvar é idempotente`, async () => {
@@ -586,10 +591,10 @@ test("simulação com intenção, resposta perdida e repetição são idempotent
     .getByRole("button", { name: "Simular assinatura", exact: true })
     .click();
   await expect(
-    page.getByRole("heading", { name: "Simulação concluída", exact: true }),
+    page.getByRole("heading", { name: "Documento finalizado", exact: true }),
   ).toBeVisible({ timeout: 10000 });
   await expect(
-    page.getByText("Envio não realizado — integração indisponível", {
+    page.getByRole("heading", { name: "Entrega bloqueada",
       exact: true,
     }),
   ).toBeVisible();
@@ -618,7 +623,7 @@ test("simulação com intenção, resposta perdida e repetição são idempotent
     await screenshot(page, "resultado-envio-indisponivel", w);
   await page.reload();
   await expect(
-    page.getByText("Envio não realizado — integração indisponível", {
+    page.getByRole("heading", { name: "Entrega bloqueada",
       exact: true,
     }),
   ).toBeVisible();
@@ -640,7 +645,7 @@ for (const [target, label] of [
     await page.getByLabel("Enviar ao atleta por WhatsApp").check();
     await expect(page.locator(".document-recipient")).toContainText(label);
     await expect(page.locator(".document-recipient")).toContainText(
-      "não autorizado",
+      "Nenhuma autorização elegível",
     );
     if (target === minor) {
       await expect(page.locator(".document-recipient")).toContainText(

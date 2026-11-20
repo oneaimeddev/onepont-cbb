@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures.mjs";
 import { createClient } from "@supabase/supabase-js";
 import { randomUUID } from "node:crypto";
 import { execFileSync } from "node:child_process";

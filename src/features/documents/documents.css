@@ -117,3 +117,14 @@
 .document-editor-fields:not([hidden]) {display:contents;}
 .document-edit-scope.is-reviewing {display:block;max-width:70rem;}
 .document-review-layout > .document-sheet {max-width:none;}
+
+.document-delivery-status {border-top:1px solid var(--line);padding-top:20px;margin:20px 0;}
+.document-delivery-status h3 {font-size:1rem;line-height:1.5;}
+.document-delivery-confirmation {display:grid;gap:12px;margin:20px 0;}
+.document-delivery-confirmation>label:not(.signing-choice) {display:grid;gap:8px;}
+.document-delivery-confirmation textarea {width:100%;min-height:6rem;}
+.document-workflow-history {margin-top:32px;padding-top:24px;border-top:1px solid var(--line);}
+.document-workflow-history ol {list-style:none;padding:0;display:grid;gap:14px;}
+.document-workflow-history li {display:grid;grid-template-columns:180px 1fr;gap:20px;}
+.document-workflow-history time {color:var(--muted);font-size:.875rem;}
+@media(max-width:600px){.document-workflow-history li{grid-template-columns:1fr;gap:4px}}

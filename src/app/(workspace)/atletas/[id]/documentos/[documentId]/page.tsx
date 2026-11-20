@@ -1,3 +1,5 @@
+import {DocumentWorkflowView} from "../../../../../../features/documents/workflow-view";
+import {getDocumentWorkflow} from "../../../../../../features/documents/workflow-server";
 import { notFound } from "next/navigation";
 import { getAthlete } from "../../../../../../features/athletes/data";
 import { documentNotice, DocumentScreen } from "../../../../../../features/documents/screen";
@@ -14,6 +16,7 @@ export default async function DocumentPage({ params, searchParams }: {
     openDocument(id, documentId),
   ]);
   if (!document) notFound();
+  if(document.workflow?.locked || document.workflow?.lifecycle==="finalized")return <DocumentWorkflowView document={document} initial={await getDocumentWorkflow(document.id)}/>;
   return (
     <DocumentScreen
       athleteId={id}
@@ -27,6 +30,7 @@ export default async function DocumentPage({ params, searchParams }: {
       content={document.content}
       createdAt={document.created_at}
       updatedAt={document.updated_at}
+      derivedFrom={document.workflow?.derivedFrom}
       saved
       preview={query.vista === "previa"}
       notice={documentNotice(query.erro, query.salvo)}

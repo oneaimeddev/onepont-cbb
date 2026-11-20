@@ -47,14 +47,20 @@ export async function POST(request: Request) {
       const inventory = signingDemoEnabled()
         ? await signingCommand("list")
         : null;
+      const eligibility=await client.rpc("document_delivery_eligibility",{review_id:data.review.id});
       return Response.json(
         {
           ...data,
+          delivery_eligibility:eligibility.error?null:eligibility.data,
           inventory: inventory?.error ? null : inventory,
           demo_enabled: !!inventory && !inventory.error,
         },
         { headers },
       );
+    }
+    if(action === "sign"){
+      const workflow=await client.rpc("document_workflow_get",{target:data.review.document_id});
+      return Response.json({...data,workflow:workflow.error?null:workflow.data?.workflow},{headers});
     }
     return Response.json(data, { headers });
   } catch {

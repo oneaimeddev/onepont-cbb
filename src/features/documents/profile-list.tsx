@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { deliveryLabel, signatureLabel } from "./workflow-types";
 import { EmptyState } from "../../components/empty-state";
 import type { DocumentSummary } from "./data";
 import { documentKinds, statusLabels } from "./content";
@@ -97,11 +98,34 @@ export function ProfileDocumentList({
               </Link>
               <p>
                 <span className="pill pill-draft">
-                  {statusLabels[document.status]}
+                  {document.workflow?.lifecycle === "finalized"
+                    ? "Finalizado"
+                    : document.workflow?.locked
+                      ? "Versão em processamento"
+                      : statusLabels[document.status]}
                 </span>{" "}
                 · Versão {document.version}
+                {document.workflow?.signature && (
+                  <>
+                    {" "}
+                    · <span>{signatureLabel(document.workflow.signature)}</span>
+                  </>
+                )}
+                {!!document.workflow?.deliveries.length && (
+                  <>
+                    {" "}
+                    ·{" "}
+                    <span>
+                      {deliveryLabel(
+                        document.workflow.deliveries[0].state,
+                        document.workflow.deliveries[0].provenance,
+                      )}
+                    </span>
+                  </>
+                )}
               </p>
               <p>
+                {document.author_name && <>{document.author_name} · </>}
                 Atualizado em{" "}
                 <time dateTime={document.updated_at}>
                   {date.format(new Date(document.updated_at))}

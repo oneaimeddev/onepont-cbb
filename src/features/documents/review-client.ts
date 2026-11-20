@@ -20,7 +20,9 @@ export async function reviewCommand(
       new Error(
         (
           {
-            incomplete:
+            finalized:"Esta versão foi finalizada e não aceita edição. Abra o documento para consultar ou criar um derivado.",
+      in_progress:"A assinatura desta versão está em andamento. Consulte o documento antes de editar.",
+      incomplete:
               "Preencha os campos essenciais indicados antes de revisar.",
             invalid:
               "Confira os campos e seus limites. Seu preenchimento foi preservado.",
@@ -32,8 +34,6 @@ export async function reviewCommand(
               "Não foi possível concluir. Confira seu acesso e a conexão demonstrativa. Seu preenchimento foi preservado.",
             conflict:
               "A solicitação já foi usada com outra escolha. Consulte a tentativa anterior ou revise novamente.",
-            in_progress:
-              "Já existe uma tentativa em andamento para esta versão. Consulte o resultado anterior.",
             confirmation_required:
               "Selecione uma identidade e confirme a autorização desta revisão.",
           } as Record<string, string>

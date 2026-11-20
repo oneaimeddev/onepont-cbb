@@ -27,21 +27,21 @@ function Pending({ groups }: { groups: { title: string; fields: string[] }[] }) 
   );
 }
 
-export function DocumentPreview({ document, athleteName, review = false }: { document: PreviewDocument; athleteName: string; review?: boolean }) {
+export function DocumentPreview({ document, athleteName, review = false, finalized, processing = false }: { document: PreviewDocument; athleteName: string; review?: boolean; finalized?: {provenance:"simulated"|"verified";verified:boolean}; processing?:boolean }) {
   const kind = documentKinds[document.document_type];
   return (
-    <article className="document-sheet" aria-label="Pré-visualização do rascunho">
-      {review ? <><div className="document-institution"><Image src="/brand/cbb.png" width={40} height={50} alt="CBB"/><div><strong>Prontuário CBB</strong><p>Documento clínico em revisão</p></div></div><p className="document-save-state">Representação documental do conteúdo revisado. O PDF de produção ainda não está disponível.</p></> : <p className="document-save-state">Pré-visualização da última versão salva.</p>}
-      <p className="document-banner">RASCUNHO — NÃO ASSINADO / NÃO EMITIDO</p>
+    <article className="document-sheet" aria-label={finalized ? "Documento finalizado" : "Pré-visualização do rascunho"}>
+      {review ? <><div className="document-institution"><Image src="/brand/cbb.png" width={40} height={50} alt="CBB"/><div><strong>Prontuário CBB</strong><p>{finalized ? "Documento clínico finalizado" : processing ? "Versão em processamento" : "Documento clínico em revisão"}</p></div></div><p className="document-save-state">Representação documental do conteúdo revisado. O PDF de produção ainda não está disponível.</p></> : <p className="document-save-state">Pré-visualização da última versão salva.</p>}
+      <p className="document-banner">{finalized ? finalized.provenance === "simulated" ? "FINALIZADO · ASSINATURA SIMULADA" : finalized.verified ? "FINALIZADO · ASSINATURA VALIDADA" : "FINALIZADO · VALIDAÇÃO INDISPONÍVEL" : processing ? "VERSÃO EM PROCESSAMENTO — AINDA NÃO FINALIZADA" : "RASCUNHO — NÃO ASSINADO / NÃO EMITIDO"}</p>
       <header>
         <p className="document-type">{kind.title}</p>
         {review ? <h2 className="athlete-name">{athleteName}</h2> : <h1 className="athlete-name">{athleteName}</h1>}
-        {document.status === "ready_for_review" && <p>Apresentado para revisão interna. Continua sem emissão.</p>}
+        {!finalized && document.status === "ready_for_review" && <p>Apresentado para revisão interna. Continua sem emissão.</p>}
       </header>
       <dl className="document-facts">
         <div><dt>Médico responsável</dt><dd>{document.author_name}</dd></div>
         <div><dt>Identificação profissional</dt><dd>{document.credential_label ?? "Não registrada neste rascunho"}</dd></div>
-        <div><dt>Estado</dt><dd>{statusLabels[document.status]}</dd></div>
+        <div><dt>Estado</dt><dd>{finalized ? "Finalizado" : processing ? "Em processamento" : statusLabels[document.status]}</dd></div>
         <div><dt>{review ? "Data do documento" : "Atualizado"}</dt><dd><time dateTime={review ? document.created_at : document.updated_at}>{review ? new Intl.DateTimeFormat("pt-BR",{dateStyle:"short",timeZone:"America/Sao_Paulo"}).format(new Date(document.created_at)) : eventDate.format(new Date(document.updated_at))}</time></dd></div>
       </dl>
       {isPrescription(document.content) ? (
@@ -106,8 +106,8 @@ export function DocumentPreview({ document, athleteName, review = false }: { doc
           <Pending groups={surgicalPending(document.content).groups} />
         </div>
       )}
-      {review && <section className="document-future-signature" aria-label="Assinatura digital futura"><h2>Assinatura digital</h2><p>Este documento ainda não foi assinado. A demonstração não produz assinatura digital válida.</p>{document.credential_label && <p>A identificação profissional cadastrada não comprova verificação de conselho.</p>}</section>}
-      {review ? <p>Documento em revisão. Este documento não foi emitido nem assinado.</p> : <p>Criado em <time dateTime={document.created_at}>{eventDate.format(new Date(document.created_at))}</time>. Este documento não foi emitido nem assinado.</p>}
+      {review && <section className="document-future-signature" aria-label="Assinatura digital futura"><h2>Assinatura digital</h2><p>{finalized ? finalized.provenance === "simulated" ? "Assinatura simulada concluída. Não há assinatura digital válida." : finalized.verified ? "Assinatura validada, com evidências no histórico." : "Validação criptográfica indisponível." : "Este documento ainda não foi assinado. A demonstração não produz assinatura digital válida."}</p>{document.credential_label && <p>A identificação profissional cadastrada não comprova verificação de conselho.</p>}</section>}
+      {review ? <p>{finalized ? "Versão finalizada, preservada e somente para leitura." : "Documento em revisão. Este documento não foi emitido nem assinado."}</p> : <p>Criado em <time dateTime={document.created_at}>{eventDate.format(new Date(document.created_at))}</time>. Este documento não foi emitido nem assinado.</p>}
     </article>
   );
 }

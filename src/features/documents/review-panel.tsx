@@ -1,9 +1,14 @@
 "use client";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { DocumentPreview } from "./preview";
 import { reviewCommand } from "./review-client";
-import type { DocumentReviewRecord, DemoDelivery } from "./review-types";
+import type {
+  DocumentReviewRecord,
+  DemoDelivery,
+  DeliveryEligibility,
+} from "./review-types";
 import { command } from "../signing/client";
 import {
   demoNotice,
@@ -21,6 +26,7 @@ export function DocumentReviewPanel({
   onPersisted,
   initialAttempt = null,
   initialDelivery,
+  deliveryEligibility,
   initialIdentity = "",
   onIdentityChange,
   onRetry,
@@ -32,10 +38,13 @@ export function DocumentReviewPanel({
   onPersisted: () => void;
   initialAttempt?: SigningAttempt | null;
   initialDelivery?: DemoDelivery;
+  deliveryEligibility?: DeliveryEligibility | null;
   initialIdentity?: string;
   onIdentityChange?: (id: string) => void;
   onRetry?: () => Promise<DocumentReviewRecord>;
 }) {
+  const router = useRouter();
+  const [deliveryScenario, setDeliveryScenario] = useState("success");
   const [review, setReview] = useState(initial),
     [identity, setIdentity] = useState(
       inventory?.identities.some((i) => i.id === initialIdentity)
@@ -73,7 +82,14 @@ export function DocumentReviewPanel({
         const result = await command("signing", "status", {
           attempt_id: attempt.id,
         });
-        if (!stopped) setAttempt(result.attempt);
+        if (!stopped) {
+          setAttempt(result.attempt);
+          if (result.workflow?.lifecycle === "finalized") {
+            clearInterval(timer);
+            router.replace(editor);
+            router.refresh();
+          }
+        }
       } catch (e) {
         clearInterval(timer);
         if (!stopped) {
@@ -87,7 +103,7 @@ export function DocumentReviewPanel({
       stopped = true;
       clearInterval(timer);
     };
-  }, [active, attempt]);
+  }, [active, attempt, editor, router]);
   async function commit(sign: boolean) {
     if (inFlight.current) return;
     if (sign && (!identity || !confirmed)) return;
@@ -104,12 +120,18 @@ export function DocumentReviewPanel({
         scenario,
         confirmed,
         delivery_requested: send,
+        delivery_scenario: deliveryScenario,
       });
       onPersisted();
       setReview(result.review);
       if (sign) {
         setAttempt(result.attempt);
         setDelivery(result.delivery);
+        if (result.workflow?.lifecycle === "finalized") {
+          router.replace(editor);
+          router.refresh();
+          return;
+        }
         const url = new URL(window.location.href);
         url.pathname = editor + "/assinatura";
         url.search = "";
@@ -139,6 +161,10 @@ export function DocumentReviewPanel({
         attempt_id: attempt.id,
       });
       setAttempt(result.attempt);
+      if (result.workflow?.lifecycle === "finalized") {
+        router.replace(editor);
+        router.refresh();
+      }
       setError("");
     } catch (e) {
       setError((e as Error).message);
@@ -335,6 +361,31 @@ export function DocumentReviewPanel({
                 <details>
                   <summary>Cenários de demonstração</summary>
                   <label>
+                    Cenário da entrega
+                    <select
+                      value={deliveryScenario}
+                      disabled={busy}
+                      onChange={(e) => {
+                        setDeliveryScenario(e.target.value);
+                        setConfirmed(false);
+                        key.current = null;
+                      }}
+                    >
+                      <option value="success">
+                        Entrega simulada concluída
+                      </option>
+                      <option value="temporary_failure">
+                        Falha temporária
+                      </option>
+                      <option value="permanent_failure">
+                        Falha definitiva
+                      </option>
+                      <option value="timeout">Timeout e reconciliação</option>
+                      <option value="delayed">Resposta atrasada</option>
+                      <option value="duplicate">Resposta duplicada</option>
+                    </select>
+                  </label>
+                  <label>
                     Cenário de demonstração
                     <select
                       disabled={busy}
@@ -372,8 +423,8 @@ export function DocumentReviewPanel({
                   Enviar ao atleta por WhatsApp após assinar (demonstração)
                 </label>
                 <p className="professional-help">
-                  Somente uma intenção demonstrativa. Nenhum WhatsApp será
-                  enviado.
+                  Entrega simulada após a finalização, se o destinatário for
+                  elegível. Nenhum WhatsApp real será enviado.
                 </p>
                 {send && (
                   <div className="document-recipient">
@@ -400,8 +451,9 @@ export function DocumentReviewPanel({
                     </dl>
                     <p>{review.recipient.reason}</p>
                     <p>
-                      Recebimento clínico não autorizado. Seleção e validação de
-                      contato estarão disponíveis em uma integração futura.
+                      {deliveryEligibility?.eligible
+                        ? "Destinatário autorizado somente para simulação pela política fictícia fixture-demo-v1. Nenhuma autorização de produção foi concedida."
+                        : "Nenhuma autorização elegível de entrega está disponível. O documento pode ser finalizado sem envio."}
                     </p>
                   </div>
                 )}

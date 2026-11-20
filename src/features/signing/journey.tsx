@@ -7,6 +7,7 @@ import { reviewCommand } from "../documents/review-client";
 import type {
   DocumentReviewRecord,
   DemoDelivery,
+  DeliveryEligibility,
 } from "../documents/review-types";
 import {
   signingStateLabels,
@@ -25,6 +26,7 @@ export function SigningJourney({
   initialReview,
   initialDelivery,
   demoEnabled,
+  deliveryEligibility,
 }: {
   document: ClinicalDocument;
   athleteName: string;
@@ -34,6 +36,7 @@ export function SigningJourney({
   initialReview: DocumentReviewRecord | null;
   initialDelivery?: DemoDelivery;
   demoEnabled: boolean;
+  deliveryEligibility?:DeliveryEligibility|null;
   history: {
     id: string;
     state: SigningAttempt["state"];
@@ -73,6 +76,7 @@ export function SigningJourney({
     <>
       <DocumentReviewPanel
         initial={initial}
+        deliveryEligibility={deliveryEligibility}
         inventory={inventory}
         demoEnabled={demoEnabled}
         initialAttempt={initialAttempt}

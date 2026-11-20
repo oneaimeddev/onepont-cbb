@@ -1,5 +1,6 @@
+import { cleanupWorkflow } from "./helpers/workflow-fixtures.mjs";
 import sharp from "sharp";
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures.mjs";
 import { createClient } from "@supabase/supabase-js";
 import { randomUUID, createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
@@ -180,6 +181,7 @@ test.beforeEach(async () => {
 test.afterAll(async () => {
   if (users.length) {
     const ids = users.map((x) => `'${x}'`).join(",");
+    cleanupWorkflow(sql, users);
     sql(
       `delete from clinical.signature_demo_delivery_intents where professional_id in(${ids});delete from clinical.document_reviews where professional_id in(${ids});delete from clinical.signature_results where attempt_id in(select id from clinical.signature_attempts where professional_id in(${ids}));delete from clinical.signature_transitions where professional_id in(${ids});delete from clinical.signature_attempts where professional_id in(${ids});delete from clinical.signature_snapshots where professional_id in(${ids});delete from clinical.signature_preferences where professional_id in(${ids});delete from clinical.signing_identities where professional_id in(${ids});delete from clinical.signature_connections where professional_id in(${ids});delete from clinical.professional_registrations where professional_id in(${ids});delete from clinical.professional_details where professional_id in(${ids});delete from clinical.athletes where id='${athlete}';delete from clinical.medical_authors where professional_id in(${ids});`,
     );
@@ -435,7 +437,10 @@ test("conteúdo editado invalida autorização preparada e resultado atrasado", 
     payload: { ...d.content, notes: "Conteúdo alterado DEMO" },
     intent: "save",
   });
-  expect(save.data.version).toBe(2);
+  expect(save.data.error).toBe("in_progress");
+  await rpc(owner,"cancel",{attempt_id:a.attempt.id});
+  const edited=await owner.client.rpc("document_save",{target:athlete,document_id:d.id,expected_version:d.version,kind:d.kind,payload:{...d.content,notes:"Conteúdo alterado DEMO"},intent:"save"});
+  expect(edited.data.version).toBe(2);
   expect((await rpc(owner, "status", { attempt_id: a.attempt.id })).error).toBe(
     "stale",
   );
@@ -444,7 +449,7 @@ test("conteúdo editado invalida autorização preparada e resultado atrasado", 
     sql(
       `select state from clinical.signature_attempts where id='${a.attempt.id}';`,
     ),
-  ).toBe("stale");
+  ).toBe("cancelled");
   expect(
     sql(
       `select count(*) from clinical.document_revisions where document_id='${d.id}';`,
@@ -611,22 +616,16 @@ test("jornada real de interface, recuperação e capturas desktop/mobile", async
     .getByRole("button", { name: "Simular assinatura" })
     .click();
   await expect(
-    page.getByRole("heading", { name: "Simulação concluída", exact: true }),
+    page.getByRole("heading", { name: "Documento finalizado", exact: true }),
   ).toBeVisible({ timeout: 10000 });
   const url = page.url();
   await page.reload();
   await expect(
-    page.getByRole("heading", { name: "Simulação concluída", exact: true }),
+    page.getByRole("heading", { name: "Documento finalizado", exact: true }),
   ).toBeVisible();
   expect(page.url()).toBe(url);
   await page.goto(`/atletas/${athlete}/documentos/${d.id}/assinatura`);
-  await page
-    .getByRole("link", { name: /Simulação concluída · Versão/ })
-    .first()
-    .click();
-  await expect(
-    page.getByRole("heading", { name: "Simulação concluída", exact: true }),
-  ).toBeVisible();
+  await expect(page.getByRole("heading",{name:"Documento finalizado",exact:true})).toBeVisible();
   for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: 900 });
     await page.evaluate(() => {

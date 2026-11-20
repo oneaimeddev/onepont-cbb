@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures.mjs";
 import { createClient } from "@supabase/supabase-js";
 import { localSupabase } from "../scripts/local-supabase.mjs";
 const require = createRequire(import.meta.url);

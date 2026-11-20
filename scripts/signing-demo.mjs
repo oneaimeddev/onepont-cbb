@@ -14,6 +14,8 @@ if (error)
   throw new Error(
     "Aplique as migrations de assinatura antes de configurar a demonstração.",
   );
+const configured=await client.rpc("configure_document_delivery_demo",{enabled:mode==="enable"});
+if(configured.error)throw new Error("Aplique a migration do ciclo documental antes de habilitar a entrega fictícia.");
 let env = readFileSync(".env.local", "utf8")
   .replace(/^CBB_SIGNING_MODE=.*\n?/gm, "")
   .replace(/^CBB_DEPLOYMENT_ENV=.*\n?/gm, "");

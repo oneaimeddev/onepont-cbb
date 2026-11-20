@@ -183,7 +183,7 @@ export default async function AthletePage({ params, searchParams }: {
               <h2 id="documentos-clinicos">Documentos médicos</h2>
               <CreateDocumentMenu base={base} />
             </div>
-            <p>Rascunhos privados deste médico. Nenhum documento desta lista é emitido ou assinado.</p>
+            <p>Documentos privados deste médico. Consulte o estado de cada versão.</p>
             <ProfileDocumentList documents={documents} base={base} />
           </section>
         )}

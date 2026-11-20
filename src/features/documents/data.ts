@@ -1,4 +1,5 @@
 import "server-only";
+import type {WorkflowSummary} from "./workflow-types";
 import { requireProfile } from "../../lib/profile";
 import { supabaseServer } from "../../lib/supabase";
 import { uuidPattern } from "../athletes/data";
@@ -7,6 +8,8 @@ import type { DocumentContent, DocumentKind, DocumentStatus } from "./content";
 export type MedicalCapability = { enabled: boolean; credential_label: string | null };
 
 export type DocumentSummary = {
+  workflow?: WorkflowSummary;
+  author_name?: string;
   id: string;
   document_type: DocumentKind;
   status: DocumentStatus;

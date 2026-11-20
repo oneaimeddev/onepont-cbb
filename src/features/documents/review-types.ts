@@ -39,3 +39,5 @@ export type DemoDelivery = {
   state: "not_requested" | "demo_intent_no_send";
   eligible_for_real: false;
 };
+
+export type DeliveryEligibility={eligible:boolean;execution_mode?:"demo";provenance?:"simulated";reason?:string;policy?:string};

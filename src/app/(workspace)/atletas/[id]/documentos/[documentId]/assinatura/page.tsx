@@ -1,3 +1,5 @@
+import {DocumentWorkflowView} from "../../../../../../../features/documents/workflow-view";
+import {getDocumentWorkflow} from "../../../../../../../features/documents/workflow-server";
 import Link from "next/link";
 import { randomUUID } from "node:crypto";
 import { supabaseServer } from "../../../../../../../lib/supabase";
@@ -19,6 +21,7 @@ export default async function SigningPage({
   const { id, documentId } = await params;
   const document = await openDocument(id, documentId);
   if (!document) notFound();
+  if(document.workflow?.locked || document.workflow?.lifecycle==="finalized")return <DocumentWorkflowView document={document} initial={await getDocumentWorkflow(document.id)}/>;
   const context = await getAthlete(id, "profile");
   const query = await searchParams;
   const inventory = signingDemoEnabled() ? await signingCommand("list") : null;
@@ -50,6 +53,7 @@ export default async function SigningPage({
           },
         })
       : { data: null, error: null };
+  const eligibility=opened?.review?await client.rpc('document_delivery_eligibility',{review_id:opened.review.id}):null;
   const { data: delivery } = prepared?.attempt
     ? await client.rpc("document_demo_delivery", {
         attempt: prepared.attempt.id,
@@ -94,6 +98,7 @@ export default async function SigningPage({
           initialAttempt={prepared?.attempt ?? null}
           initialReview={opened?.review ?? null}
           initialDelivery={delivery?.error ? undefined : delivery}
+          deliveryEligibility={eligibility?.data}
           history={history?.attempts ?? []}
         />
       )}

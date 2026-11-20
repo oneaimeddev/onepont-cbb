@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { mkdirSync } from "node:fs";
 import { createRequire } from "node:module";
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures.mjs";
 import { createClient } from "@supabase/supabase-js";
 import { localSupabase } from "../scripts/local-supabase.mjs";
 

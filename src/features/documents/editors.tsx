@@ -53,7 +53,7 @@ function DraftForm({ athleteId, documentId, version, kind, content, returnTo, sa
       const result=await reviewCommand(review?'open':'draft',{athlete_id:athleteId,document_id:documentId,version:workingVersion.current,kind,content,idempotency_key:reviewKey.current});
       if(review){
         if(JSON.stringify(currentContent.current)!==raw){throw new Error('Os campos mudaram enquanto a revisão era aberta. Clique em Revisar e assinar novamente para conferir o conteúdo atual.');}
-        scope.show(<DocumentReviewPanel initial={result.review} inventory={result.inventory} demoEnabled={result.demo_enabled} initialIdentity={chosen} onIdentityChange={setChosen} onBack={()=>{reviewKey.current=null;scope.back();}} onPersisted={scope.release}/>);
+        scope.show(<DocumentReviewPanel initial={result.review} deliveryEligibility={result.delivery_eligibility} inventory={result.inventory} demoEnabled={result.demo_enabled} initialIdentity={chosen} onIdentityChange={setChosen} onBack={()=>{reviewKey.current=null;scope.back();}} onPersisted={scope.release}/>);
       }else{
         workingVersion.current=result.version;
         if(JSON.stringify(currentContent.current)!==raw){reviewKey.current=null;setNotice('A versão enviada foi salva. Há alterações posteriores neste formulário; revise ou salve novamente.');}

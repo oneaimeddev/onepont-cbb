@@ -2,6 +2,7 @@ import {
   sameSigningOrigin,
   signingJson,
 } from "../../../features/signing/request";
+import {supabaseServer} from "../../../lib/supabase";
 import { getAccess } from "../../../lib/profile";
 import { dispatchSigning } from "../../../features/signing/server";
 export async function POST(request: Request) {
@@ -36,6 +37,7 @@ export async function POST(request: Request) {
     )
       return Response.json({ error: "invalid" }, { status: 400, headers });
     const data = await dispatchSigning(body.action, body.payload);
+    if(!data.error&&data.snapshot?.document_id){const client=await supabaseServer();const current=await client.rpc("document_workflow_get",{target:data.snapshot.document_id});if(!current.error&&!current.data?.error)data.workflow=current.data.workflow;}
     return Response.json(data, { status: data.error ? 409 : 200, headers });
   } catch {
     return Response.json({ error: "unavailable" }, { status: 503, headers });

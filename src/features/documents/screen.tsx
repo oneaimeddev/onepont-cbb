@@ -15,8 +15,9 @@ export function documentNotice(erro?: string, salvo?: string) {
 }
 
 export function DocumentScreen({
-  athleteId, athleteName, documentId, kind, version, status, authorName, credential, content, createdAt, updatedAt, saved, preview, notice,
+  athleteId, athleteName, documentId, kind, version, status, authorName, credential, content, createdAt, updatedAt, saved, preview, notice, derivedFrom,
 }: {
+  derivedFrom?: {documentId:string;version:number}|null;
   athleteId: string;
   athleteName: string;
   documentId: string;
@@ -47,6 +48,7 @@ export function DocumentScreen({
         <p>Médico responsável: {authorName}</p>
         <p>{credential ? `Identificação profissional: ${credential}` : "Identificação profissional não registrada neste rascunho."}</p>
       </header>
+      {derivedFrom && <p>Documento derivado de <Link href={`${base}/documentos/${derivedFrom.documentId}`} prefetch={false}>versão {derivedFrom.version} da origem</Link>. A origem permanece preservada, sem cancelamento ou substituição automática.</p>}
       {notice && <p role={notice.tone}>{notice.text}</p>}
       {preview && saved ? (
         <DocumentPreview document={{ document_type: kind, status, author_name: authorName, credential_label: credential, created_at: createdAt, updated_at: updatedAt, content }} athleteName={athleteName} />
