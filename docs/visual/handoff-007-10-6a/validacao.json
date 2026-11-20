@@ -1,0 +1,46 @@
+{
+  "handoff": "007.10.6A",
+  "date": "2026-11-20",
+  "baseline": "162b9a9",
+  "branch": "docs/handoff-007-10-6a-professional-signing-audit",
+  "nature": "discovery_sem_implementacao",
+  "current_professional_profile_screen": false,
+  "profile_api_methods": [
+    "GET"
+  ],
+  "current_document_states": [
+    "draft",
+    "ready_for_review"
+  ],
+  "real_signature_connectors": 0,
+  "database_access": "metadata_only_in_read_only_transactions",
+  "database_modified": false,
+  "credentials_captured": false,
+  "provider_endpoints_or_payloads_selected": false,
+  "production_paths_changed": [],
+  "visual_mockups": 2,
+  "rendered_views": 6,
+  "viewports": [
+    1440,
+    390,
+    320
+  ],
+  "headless": true,
+  "horizontal_overflow": false,
+  "axe_violations": 0,
+  "axe_incomplete": [
+    "color-contrast"
+  ],
+  "test_adapter_implemented": false,
+  "signature_engine_implemented": false,
+  "full_application_suite_rerun": false,
+  "merge": false,
+  "published": false,
+  "limitations": [
+    "Não existe tela atual de perfil profissional a capturar.",
+    "Captura de cabeçalho referenciada é histórica da mesma baseline visual.",
+    "Mockups são ilustrações e não rotas da aplicação.",
+    "Sem assinatura criptográfica, verificação de conselho ou conectores reais implementados.",
+    "Checagem automática de mockups não certifica acessibilidade ou validade jurídica."
+  ]
+}

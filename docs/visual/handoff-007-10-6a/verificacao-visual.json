@@ -1,0 +1,48 @@
+[
+  {
+    "name": "perfil-profissional-conceito",
+    "width": 1440,
+    "overflow": false,
+    "violations": [],
+    "incomplete": [
+      "color-contrast"
+    ]
+  },
+  {
+    "name": "perfil-profissional-conceito",
+    "width": 390,
+    "overflow": false,
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "name": "perfil-profissional-conceito",
+    "width": 320,
+    "overflow": false,
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "name": "selecao-certificado-conceito",
+    "width": 1440,
+    "overflow": false,
+    "violations": [],
+    "incomplete": [
+      "color-contrast"
+    ]
+  },
+  {
+    "name": "selecao-certificado-conceito",
+    "width": 390,
+    "overflow": false,
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "name": "selecao-certificado-conceito",
+    "width": 320,
+    "overflow": false,
+    "violations": [],
+    "incomplete": []
+  }
+]

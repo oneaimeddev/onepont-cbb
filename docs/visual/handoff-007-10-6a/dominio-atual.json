@@ -1,0 +1,577 @@
+{
+  "rls": [
+    {
+      "enabled": true,
+      "table_name": "clinical.document_revisions"
+    },
+    {
+      "enabled": true,
+      "table_name": "clinical.documents"
+    },
+    {
+      "enabled": true,
+      "table_name": "clinical.medical_authors"
+    },
+    {
+      "enabled": true,
+      "table_name": "profiles"
+    }
+  ],
+  "columns": [
+    {
+      "data_type": "uuid",
+      "table_name": "athlete_access",
+      "column_name": "athlete_id",
+      "is_nullable": "NO",
+      "table_schema": "clinical",
+      "ordinal_position": 1
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "athlete_access",
+      "column_name": "professional_id",
+      "is_nullable": "NO",
+      "table_schema": "clinical",
+      "ordinal_position": 2
+    },
+    {
+      "data_type": "boolean",
+      "table_name": "athlete_access",
+      "column_name": "can_read_records",
+      "is_nullable": "NO",
+      "table_schema": "clinical",
+      "ordinal_position": 3
+    },
+    {
+      "data_type": "boolean",
+      "table_name": "athlete_access",
+      "column_name": "can_edit",
+      "is_nullable": "NO",
+      "table_schema": "clinical",
+      "ordinal_position": 4
+    },
+    {
+      "data_type": "boolean",
+      "table_name": "athlete_access",
+      "column_name": "can_write",
+      "is_nullable": "NO",
+      "table_schema": "clinical",
+      "ordinal_position": 5
+    },
+    {
+      "data_type": "boolean",
+      "table_name": "athlete_access",
+      "column_name": "can_finalize",
+      "is_nullable": "NO",
+      "table_schema": "clinical",
+      "ordinal_position": 6
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "athlete_access",
+      "column_name": "granted_by",
+      "is_nullable": "YES",
+      "table_schema": "clinical",
+      "ordinal_position": 7
+    },
+    {
+      "data_type": "timestamp with time zone",
+      "table_name": "athlete_access",
+      "column_name": "granted_at",
+      "is_nullable": "YES",
+      "table_schema": "clinical",
+      "ordinal_position": 8
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "athlete_creators",
+      "column_name": "professional_id",
+      "is_nullable": "NO",
+      "table_schema": "clinical",
+      "ordinal_position": 1
+    },
+    {
+      "data_type": "boolean",
+      "table_name": "athlete_creators",
+      "column_name": "can_write_created",
+      "is_nullable": "NO",
+      "table_schema": "clinical",
+      "ordinal_position": 2
+    },
+    {
+      "data_type": "boolean",
+      "table_name": "athlete_creators",
+      "column_name": "can_finalize_created",
+      "is_nullable": "NO",
+      "table_schema": "clinical",
+      "ordinal_position": 3
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "audit_events",
+      "column_name": "request_id",
+      "is_nullable": "NO",
+      "table_schema": "clinical",
+      "ordinal_position": 1
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "audit_events",
+      "column_name": "actor_user_id",
+      "is_nullable": "NO",
+      "table_schema": "clinical",
+      "ordinal_position": 2
+    },
+    {
+      "data_type": "text",
+      "table_name": "audit_events",
+      "column_name": "resource_type",
+      "is_nullable": "NO",
+      "table_schema": "clinical",
+      "ordinal_position": 3
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "audit_events",
+      "column_name": "resource_id",
+      "is_nullable": "YES",
+      "table_schema": "clinical",
+      "ordinal_position": 4
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "audit_events",
+      "column_name": "athlete_id",
+      "is_nullable": "YES",
+      "table_schema": "clinical",
+      "ordinal_position": 5
+    },
+    {
+      "data_type": "text",
+      "table_name": "audit_events",
+      "column_name": "operation",
+      "is_nullable": "NO",
+      "table_schema": "clinical",
+      "ordinal_position": 6
+    },
+    {
+      "data_type": "timestamp with time zone",
+      "table_name": "audit_events",
+      "column_name": "occurred_at",
+      "is_nullable": "NO",
+      "table_schema": "clinical",
+      "ordinal_position": 7
+    },
+    {
+      "data_type": "text",
+      "table_name": "audit_events",
+      "column_name": "origin_channel",
+      "is_nullable": "NO",
+      "table_schema": "clinical",
+      "ordinal_position": 8
+    },
+    {
+      "data_type": "text",
+      "table_name": "audit_events",
+      "column_name": "execution_method",
+      "is_nullable": "NO",
+      "table_schema": "clinical",
+      "ordinal_position": 9
+    },
+    {
+      "data_type": "text",
+      "table_name": "audit_events",
+      "column_name": "outcome",
+      "is_nullable": "NO",
+      "table_schema": "clinical",
+      "ordinal_position": 10
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "audit_events",
+      "column_name": "approved_by_user_id",
+      "is_nullable": "YES",
+      "table_schema": "clinical",
+      "ordinal_position": 11
+    },
+    {
+      "data_type": "jsonb",
+      "table_name": "audit_events",
+      "column_name": "safe_metadata",
+      "is_nullable": "NO",
+      "table_schema": "clinical",
+      "ordinal_position": 13
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "document_revisions",
+      "column_name": "document_id",
+      "is_nullable": "NO",
+      "table_schema": "clinical",
+      "ordinal_position": 1
+    },
+    {
+      "data_type": "integer",
+      "table_name": "document_revisions",
+      "column_name": "version",
+      "is_nullable": "NO",
+      "table_schema": "clinical",
+      "ordinal_position": 2
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "document_revisions",
+      "column_name": "actor_id",
+      "is_nullable": "NO",
+      "table_schema": "clinical",
+      "ordinal_position": 3
+    },
+    {
+      "data_type": "text",
+      "table_name": "document_revisions",
+      "column_name": "status",
+      "is_nullable": "NO",
+      "table_schema": "clinical",
+      "ordinal_position": 4
+    },
+    {
+      "data_type": "jsonb",
+      "table_name": "document_revisions",
+      "column_name": "content",
+      "is_nullable": "NO",
+      "table_schema": "clinical",
+      "ordinal_position": 5
+    },
+    {
+      "data_type": "timestamp with time zone",
+      "table_name": "document_revisions",
+      "column_name": "changed_at",
+      "is_nullable": "NO",
+      "table_schema": "clinical",
+      "ordinal_position": 6
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "documents",
+      "column_name": "id",
+      "is_nullable": "NO",
+      "table_schema": "clinical",
+      "ordinal_position": 1
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "documents",
+      "column_name": "athlete_id",
+      "is_nullable": "NO",
+      "table_schema": "clinical",
+      "ordinal_position": 2
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "documents",
+      "column_name": "author_id",
+      "is_nullable": "NO",
+      "table_schema": "clinical",
+      "ordinal_position": 3
+    },
+    {
+      "data_type": "text",
+      "table_name": "documents",
+      "column_name": "author_name",
+      "is_nullable": "NO",
+      "table_schema": "clinical",
+      "ordinal_position": 4
+    },
+    {
+      "data_type": "text",
+      "table_name": "documents",
+      "column_name": "credential_label",
+      "is_nullable": "YES",
+      "table_schema": "clinical",
+      "ordinal_position": 5
+    },
+    {
+      "data_type": "text",
+      "table_name": "documents",
+      "column_name": "document_type",
+      "is_nullable": "NO",
+      "table_schema": "clinical",
+      "ordinal_position": 6
+    },
+    {
+      "data_type": "text",
+      "table_name": "documents",
+      "column_name": "status",
+      "is_nullable": "NO",
+      "table_schema": "clinical",
+      "ordinal_position": 7
+    },
+    {
+      "data_type": "jsonb",
+      "table_name": "documents",
+      "column_name": "content",
+      "is_nullable": "NO",
+      "table_schema": "clinical",
+      "ordinal_position": 8
+    },
+    {
+      "data_type": "integer",
+      "table_name": "documents",
+      "column_name": "version",
+      "is_nullable": "NO",
+      "table_schema": "clinical",
+      "ordinal_position": 9
+    },
+    {
+      "data_type": "timestamp with time zone",
+      "table_name": "documents",
+      "column_name": "created_at",
+      "is_nullable": "NO",
+      "table_schema": "clinical",
+      "ordinal_position": 10
+    },
+    {
+      "data_type": "timestamp with time zone",
+      "table_name": "documents",
+      "column_name": "updated_at",
+      "is_nullable": "NO",
+      "table_schema": "clinical",
+      "ordinal_position": 11
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "medical_authors",
+      "column_name": "professional_id",
+      "is_nullable": "NO",
+      "table_schema": "clinical",
+      "ordinal_position": 1
+    },
+    {
+      "data_type": "text",
+      "table_name": "medical_authors",
+      "column_name": "credential_label",
+      "is_nullable": "YES",
+      "table_schema": "clinical",
+      "ordinal_position": 2
+    },
+    {
+      "data_type": "boolean",
+      "table_name": "medical_authors",
+      "column_name": "enabled",
+      "is_nullable": "NO",
+      "table_schema": "clinical",
+      "ordinal_position": 3
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "medical_authors",
+      "column_name": "granted_by",
+      "is_nullable": "YES",
+      "table_schema": "clinical",
+      "ordinal_position": 4
+    },
+    {
+      "data_type": "timestamp with time zone",
+      "table_name": "medical_authors",
+      "column_name": "granted_at",
+      "is_nullable": "NO",
+      "table_schema": "clinical",
+      "ordinal_position": 5
+    },
+    {
+      "data_type": "uuid",
+      "table_name": "profiles",
+      "column_name": "id",
+      "is_nullable": "NO",
+      "table_schema": "public",
+      "ordinal_position": 1
+    },
+    {
+      "data_type": "text",
+      "table_name": "profiles",
+      "column_name": "display_name",
+      "is_nullable": "NO",
+      "table_schema": "public",
+      "ordinal_position": 2
+    },
+    {
+      "data_type": "text",
+      "table_name": "profiles",
+      "column_name": "profession",
+      "is_nullable": "NO",
+      "table_schema": "public",
+      "ordinal_position": 3
+    },
+    {
+      "data_type": "boolean",
+      "table_name": "profiles",
+      "column_name": "can_read_audit",
+      "is_nullable": "NO",
+      "table_schema": "public",
+      "ordinal_position": 4
+    },
+    {
+      "data_type": "boolean",
+      "table_name": "profiles",
+      "column_name": "can_manage_access",
+      "is_nullable": "NO",
+      "table_schema": "public",
+      "ordinal_position": 5
+    }
+  ],
+  "constraints": [
+    {
+      "name": "athlete_access_athlete_id_fkey",
+      "definition": "FOREIGN KEY (athlete_id) REFERENCES clinical.athletes(id) ON DELETE CASCADE",
+      "table_name": "clinical.athlete_access"
+    },
+    {
+      "name": "athlete_access_granted_by_fkey",
+      "definition": "FOREIGN KEY (granted_by) REFERENCES profiles(id)",
+      "table_name": "clinical.athlete_access"
+    },
+    {
+      "name": "athlete_access_pkey",
+      "definition": "PRIMARY KEY (athlete_id, professional_id)",
+      "table_name": "clinical.athlete_access"
+    },
+    {
+      "name": "athlete_access_professional_id_fkey",
+      "definition": "FOREIGN KEY (professional_id) REFERENCES profiles(id) ON DELETE CASCADE",
+      "table_name": "clinical.athlete_access"
+    },
+    {
+      "name": "document_revisions_document_id_fkey",
+      "definition": "FOREIGN KEY (document_id) REFERENCES clinical.documents(id) ON DELETE CASCADE",
+      "table_name": "clinical.document_revisions"
+    },
+    {
+      "name": "document_revisions_pkey",
+      "definition": "PRIMARY KEY (document_id, version)",
+      "table_name": "clinical.document_revisions"
+    },
+    {
+      "name": "document_revisions_version_check",
+      "definition": "CHECK ((version >= 1))",
+      "table_name": "clinical.document_revisions"
+    },
+    {
+      "name": "documents_athlete_id_fkey",
+      "definition": "FOREIGN KEY (athlete_id) REFERENCES clinical.athletes(id) ON DELETE CASCADE",
+      "table_name": "clinical.documents"
+    },
+    {
+      "name": "documents_author_id_fkey",
+      "definition": "FOREIGN KEY (author_id) REFERENCES profiles(id)",
+      "table_name": "clinical.documents"
+    },
+    {
+      "name": "documents_document_type_check",
+      "definition": "CHECK ((document_type = ANY (ARRAY['prescription'::text, 'surgical_order'::text, 'exam_request'::text])))",
+      "table_name": "clinical.documents"
+    },
+    {
+      "name": "documents_pkey",
+      "definition": "PRIMARY KEY (id)",
+      "table_name": "clinical.documents"
+    },
+    {
+      "name": "documents_status_check",
+      "definition": "CHECK ((status = ANY (ARRAY['draft'::text, 'ready_for_review'::text])))",
+      "table_name": "clinical.documents"
+    },
+    {
+      "name": "documents_version_check",
+      "definition": "CHECK ((version >= 1))",
+      "table_name": "clinical.documents"
+    },
+    {
+      "name": "medical_authors_credential_label_check",
+      "definition": "CHECK (((credential_label IS NULL) OR ((length(TRIM(BOTH FROM credential_label)) >= 1) AND (length(TRIM(BOTH FROM credential_label)) <= 80))))",
+      "table_name": "clinical.medical_authors"
+    },
+    {
+      "name": "medical_authors_pkey",
+      "definition": "PRIMARY KEY (professional_id)",
+      "table_name": "clinical.medical_authors"
+    },
+    {
+      "name": "medical_authors_professional_id_fkey",
+      "definition": "FOREIGN KEY (professional_id) REFERENCES profiles(id) ON DELETE CASCADE",
+      "table_name": "clinical.medical_authors"
+    },
+    {
+      "name": "profiles_display_name_check",
+      "definition": "CHECK (((length(TRIM(BOTH FROM display_name)) >= 1) AND (length(TRIM(BOTH FROM display_name)) <= 120)))",
+      "table_name": "profiles"
+    },
+    {
+      "name": "profiles_id_fkey",
+      "definition": "FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE",
+      "table_name": "profiles"
+    },
+    {
+      "name": "profiles_pkey",
+      "definition": "PRIMARY KEY (id)",
+      "table_name": "profiles"
+    },
+    {
+      "name": "profiles_profession_check",
+      "definition": "CHECK (((length(TRIM(BOTH FROM profession)) >= 1) AND (length(TRIM(BOTH FROM profession)) <= 120)))",
+      "table_name": "profiles"
+    }
+  ],
+  "profile_grants": [
+    {
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    }
+  ],
+  "profile_policies": [
+    {
+      "cmd": "SELECT",
+      "qual": "(( SELECT auth.uid() AS uid) = id)",
+      "policyname": "Authenticated users read their own profile",
+      "with_check": null
+    }
+  ],
+  "medical_functions": [
+    "athlete_access_grant(uuid,uuid)",
+    "athlete_access_manage(uuid)",
+    "athlete_access_revoke(uuid,uuid)",
+    "document_open(uuid,uuid)",
+    "document_save(uuid,uuid,integer,text,jsonb,text)",
+    "medical_author_grant(uuid,text)",
+    "medical_author_revoke(uuid)",
+    "medical_profile()",
+    "professional_search(text)"
+  ],
+  "application_tables": [
+    "clinical.athlete_access",
+    "clinical.athlete_contacts",
+    "clinical.athlete_creators",
+    "clinical.athlete_import_rows",
+    "clinical.athlete_imports",
+    "clinical.athletes",
+    "clinical.attachment_uploads",
+    "clinical.attachments",
+    "clinical.audit_events",
+    "clinical.categories",
+    "clinical.conversation_messages",
+    "clinical.conversation_sessions",
+    "clinical.document_proposals",
+    "clinical.document_revisions",
+    "clinical.documents",
+    "clinical.draft_proposals",
+    "clinical.encounters",
+    "clinical.evolution_approvals",
+    "clinical.medical_authors",
+    "clinical.organizations",
+    "clinical.record_revisions",
+    "clinical.records",
+    "clinical.sport_links",
+    "clinical.sport_options",
+    "public.profiles"
+  ],
+  "profile_and_medical_author_triggers": []
+}
