@@ -10,11 +10,11 @@ Especificação completa: [specs/HANDOFF-007-10-6B-3.md](specs/HANDOFF-007-10-6B
 |---|---|---|
 | A — Segurança conversacional | Concluído e validado neste checkpoint | Quatro P0 corrigidos; resultados abaixo |
 | B — Infraestrutura de capacidades | Concluído e validado | Catálogo, estado persistente e autorização segura; execução clínica desabilitada |
-| C — Criação/alterações | Em andamento; edição textual/revisão/persistência integradas | Três tipos com CAS e retomada; fechar criação e caminhos de edição do modelo antes de concluir C |
+| C — Criação/alterações | Concluído no escopo textual delimitado e validado | Criação com fonte explícita nos três tipos, edição CAS, revisão, salvamento humano e retomada |
 | D — Assinatura/entrega | Não iniciado | Confirmação contextual, integração compartilhada e retentativas |
 | E — UX/homologação | Não iniciado | Preview, voz, histórico, mobile, paridade e regressão final |
 
-**O handoff completo ainda não está concluído nem homologado.** A/B permanecem concluídos. A branch já integra edição textual delimitada, revisão e persistência de C; a criação e os caminhos legados interpretados pelo modelo ainda precisam de fechamento. C não está concluído ou homologado integralmente. A nova jornada de assinatura/entrega pelo chat não está habilitada. O fluxo tradicional do B.2 foi preservado.
+**O handoff completo ainda não está concluído nem homologado.** A/B permanecem concluídos. C foi concluído para os comandos textuais delimitados descritos no fechamento abaixo; a homologação ampla de linguagem/voz/UX permanece em E. A nova jornada de assinatura/entrega pelo chat não está habilitada. O fluxo tradicional do B.2 foi preservado.
 
 ## Corte A — implementação
 
@@ -201,7 +201,7 @@ npx playwright test --config playwright.document-edits.config.ts chat-document-a
 npx playwright test tests/voice-document-conversation.spec.mjs --project=voice --workers=1 --reporter=line
 ```
 
-### Pendências que impedem encerrar C
+### Pendências do checkpoint `49d9c63` — resolvidas no fechamento C abaixo
 
 1. Auditar/integrar a criação pelos três `prepare*` do SDK à autoridade compartilhada. Comprovar que nomes, doses, quantidade, apresentação, indicação e outros valores vêm da fala humana autorizada, pedindo dados ausentes; não confiar só no prompt, em texto do assistente ou em histórico clínico. Preservar grafia e unidades.
 2. Substituir o fallback legado `prepareExamRequest`/`examFollowUp`/`mergeExamContent` de substituição completa por alterações estruturadas com CAS. **Mensagens fora da gramática delimitada ainda podem seguir o agente legado; esses caminhos não estão homologados como a nova edição segura completa.** Não encerrar C sem resolver essa diferença.
@@ -218,13 +218,42 @@ D/E não foram iniciados como cortes. Preview e recuperação implementados aqui
 
 Sem merge, push ou deploy. `main` e `origin/main` preservadas em `51c1426`. As migrations `20261120000500`, `20261120000600`, `20261120000700` e `20261120000800` já estão aplicadas localmente: não reaplicar os arquivos manualmente sobre objetos existentes.
 
+## Fechamento C — criação com fonte e salvamento humano
+
+Commit funcional: `c344366` — `feat: ground document creation and bind chat saves to human consent`. Branch de trabalho preservada; `main` e `origin/main` continuam em `51c1426`.
+
+Os três `prepare*` do SDK só criam propostas novas. Cada campo é conferido contra a mensagem humana original atual: não se usa histórico clínico ou texto do assistente como fonte. Nomes, grafia e unidades são preservados; não há conversão de dose/unidade nem inferência de quantidade. Campos ausentes continuam vazios. Itens múltiplos exigem papéis explícitos e separação por ponto e vírgula/nova linha (`Medicamento: NOME; Dose: VALOR; Unidade: VALOR` ou `Exame: NOME; Tipo: Laboratorial`). Uma referência clínica ambígua, negada, contraditória ou sem fonte pede esclarecimento; isso não é homologação de linguagem natural irrestrita.
+
+A criação usa UUID estável por ator/sessão/mensagem humana/tipo. Repetição recupera a proposta real, sem substituir conteúdo editado, ressuscitar descartada ou gravar documento clínico. Atleta e autoria são revalidados no banco. O fallback de merge integral de exames foi removido do SDK; complementos passam pelas operações CAS do cartão.
+
+A narrativa médica do modelo fica retida até a validação das ferramentas. O estado retornado pelo servidor determina o resultado documental; o provedor controlado tentou anunciar falsamente “salvo e assinado” e essa afirmação não foi transmitida. Essa proteção acrescenta latência à narrativa dos médicos; não homologa a qualidade de um modelo real.
+
+O salvamento pelo chat usa a mensagem original autenticada, tipo, UUID, versão/hash exibidos e chave idempotente. Aceita confirmação explícita, como “Pode confirmar e salvar a prescrição.”; recusa perguntas, condicionais, negação, confirmação genérica “Sim”, texto atribuído ao assistente, entrada longa e pedidos combinados de assinatura/envio. O caminho atual da UI não dispara mais a confirmação médica legada em paralelo. O motor compartilhado permanece responsável pela persistência; auditoria conserva `human_message`/`human_voice`, inclusive no evento clínico nativo. Voz aqui preserva somente o salvamento de rascunho já existente, com contrato reforçado. Edição/revisão por voz e assinatura por voz não foram habilitadas. APIs legadas permanecem para compatibilidade; não são usadas pelos novos `prepare*` ou pelo salvamento médico atual da UI.
+
+### Migrações locais novas
+
+- `20261120000900_chat_document_creation.sql`: aplicada e registrada; SHA-256 `ea7527b51ea01dc9b74edc2c8a0c9bdd922d74e33808fe77422d5153c80f2e1e`.
+- `20261120001000_chat_document_message_save.sql`: aplicada e registrada; SHA-256 `9f464b9c3ec0defb672ffab8e4c151ab313e17fd7267f2ce55aeb340c35c43bf`.
+
+Não reaplicar manualmente as migrations 005–010. Nenhum reset, merge, push ou deploy foi feito.
+
+### Validação deste fechamento
+
+- **187/187** regressões direcionadas: A, B, domínio C, adaptadores, criação, salvamento, legado documental/evolução e 23 cenários do motor B.2. A falha histórica de lease descrita no checkpoint anterior não reapareceu; não foi alterado o motor para mascará-la.
+- **38/38** testes de criação após reforçar a recusa de negação; 35 já estavam no lote de 187, mais 3 novos cenários de negação.
+- **18/18** testes de salvamento revalidados com asserção adicional da origem no evento clínico nativo. Os mesmos 18 já integram o lote de regressão.
+- **8/8** testes com SDK real e provedor HTTP local controlado: três documentos, fonte literal, retry, dados inventados, paciente divergente, histórico do assistente, merge legado, parâmetros forjados, narrativa falsa e criação→edição→salvamento sem nova chamada ao modelo. Sem custo de provedor de IA externo.
+- **6/6** cenários HTTP/UI headless: três tipos, conflitos/ambiguidades, referência alheia, desktop com edição e confirmação textual real, reabertura exata e mobile sem overflow horizontal. Capturas reais atualizadas em `docs/visual/handoff-007-10-6b-3/document-chat-desktop.png` e `document-chat-mobile.png`; nenhuma janela de navegador visível.
+- Lint, typecheck, build e `git diff --check`: aprovados. Uma asserção nova inicialmente consultava `status` em vez do contrato existente `state`; corrigida no teste, sem alterar implementação clínica para satisfazê-la.
+- Suíte integral do repositório não executada neste corte: reservada para E, quando a branch estiver pronta para homologação, conforme adendo. Os lotes acima são por impacto; não somar execuções repetidas como testes únicos.
+
+Riscos residuais: formato de criação conservador pode pedir esclarecimento com frequência; integração com modelo real e voz ampla precisa de E; redundância visual de pendências e indicação da seleção ativa observadas no checkpoint anterior permanecem refinamentos de E. Assinatura/finalização/entrega integral pelo chat ainda não estão expostas.
+
 ## Retomada — próximo passo exato
 
-1. Ler este arquivo, `CHAT-OPERATIONS-CONTRACT.md` e a especificação; conferir branch, `git status` e `git log`. Não refazer A/B e não reaplicar migrations já registradas.
-2. **Continuar C a partir de `49d9c63`:** edição textual delimitada, cartão com CAS, revisão compartilhada e recuperação já funcionam e estão validados. Não refazer essas entregas. Ler os módulos `operations/document-intent.ts`, `operations/document-service.ts`, as migrations `20261120000700`/`20261120000800` e os dois novos testes. Banco local já tem 005–008; qualquer mudança SQL deve ser aditiva.
-3. **Próximo trabalho exato:** fechar as quatro pendências de criação/SDK/edição legada/salvamento textual listadas acima antes de declarar C concluído. Começar por `registerDocument` e `preparePrescription`/`prepareSurgicalOrder`/`prepareExamRequest` em `agent.ts`; preservar atleta/proposta e impedir cópia integral concorrente no fallback de exames. Validar origem literal dos valores e testar o SDK com provedor controlado, sem gastos de IA desnecessários.
-4. Testar e commitar C antes de D. Não ativar `operation.confirm` como ferramenta do modelo. A entrada de confirmação continuará sendo a mensagem original autenticada, não saída do modelo ou texto do documento.
-5. D: execução clínica idempotente vinculada ao recibo, com nova checagem de estado/epochs/acesso/versão/hash/identidade/destinatário/expiração na transação que invoca `document_review_command` e o motor B.2. Preservar a propagação de origem já feita na revisão/salvamento e conferir também os eventos de assinatura/finalização/entrega compartilhados. Nunca tratar o recibo como assinatura concluída.
-6. E: apresentar o documento e resumo no chat antes do ack de apresentação; integrar acompanhamento/recuperação, voz segura, acessibilidade, matriz de paridade, inventário pendente e evidências reais. Executar a suíte integral no fim da branch estável.
+1. Conferir branch, status, commits e este fechamento. A/B/C estão concluídos nos limites documentados; não refazer nem reaplicar migrations locais registradas.
+2. Iniciar **corte D** pela seleção explícita de identidade e execução idempotente vinculada ao recibo B. Revalidar estado/epochs/acesso/versão/hash/identidade/destinatário/expiração na transação que invoca `document_review_command` e o motor B.2. Não expor uma operação clínica antes de concluir e testar esse vínculo.
+3. Integrar confirmação humana original e apresentação exata do resumo/documento; `operation.confirm` não vira ferramenta do modelo. Recibo não equivale a assinatura concluída. Preservar auditoria de origem em assinatura, finalização e entrega.
+4. Concluir D e seu commit antes de E. Depois homologar texto/voz, estados/histórico/recuperação, acessibilidade/mobile e paridade com o fluxo tradicional. Executar suíte integral uma vez ao final estável.
 
-Ponto de parada seguro neste checkpoint C: criação/alteração natural completa, assinatura/finalização/entrega integral pelo chat e confirmação de assinatura por voz **continuam pendentes e não habilitadas**. O orçamento limitado permanece como restrição; não abrir uma nova frente complexa sem poder deixá-la em estado consistente.
+Ponto de parada seguro: C validado, D/E pendentes; assinatura/finalização/entrega nova pelo chat e confirmação de assinatura por voz permanecem desabilitadas. Não iniciar nova frente complexa sem orçamento para deixá-la consistente.

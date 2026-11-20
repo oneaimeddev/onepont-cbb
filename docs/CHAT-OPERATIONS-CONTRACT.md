@@ -81,3 +81,12 @@ A migration aditiva `20261120000800` expõe adaptadores autenticados de leitura,
 O histórico persiste apenas referências de proposta/documento; `conversation_payload` reidrata sob a autorização atual. Fonte pendente, salva ou histórica não vira uma segunda autoridade de conteúdo. Cartão histórico/bloqueado não oferece mutação. O cartão valida versão/hash, faz revisão/salvamento pelo motor compartilhado e recupera a versão real retornada pelo banco.
 
 Esta exposição limitada não homologa toda a criação/edição do SDK: `prepare*`, grounding dos valores, fallback `examFollowUp` com merge integral e salvamento textual legado continuam como bloqueadores do fechamento C. Resolver antes de D; não presumir que as novas provas determinísticas validam o modelo.
+
+
+## Fechamento C — criação e confirmação de salvamento
+
+Este fechamento substitui os bloqueadores do checkpoint anterior. As migrations 009/010 são aditivas e estão registradas localmente. `chat_document_proposal_create` exige ator, sessão/contexto ativo e autoria atuais; chave estável por ator/sessão/mensagem/tipo impede substituição integral ou recriação de proposta descartada. Os `prepare*` passam pelo grounding da mensagem humana original atual; campos sem fonte literal no papel correto são recusados ou permanecem vazios. Histórico e saída do modelo não são fonte clínica. `prepareExamRequest` não usa mais merge integral de proposta existente.
+
+`chat_document_save_message` recebe UUID/versão/hash exibidos, chave de mensagem e confirmação humana original; o banco verifica acesso e gramática explícita de salvamento de rascunho. Não trunca a confirmação nem aceita assinatura/envio combinados. Repetição idempotente conserva o documento; mesma chave com mensagem/modo diferente conflita. UI atual usa esse caminho sem confirmação médica legada paralela. Auditoria nativa e confirmação conservam `human_message` ou `human_voice`; os auxiliares clínicos permanecem privados. Voz está limitada ao salvamento de rascunho já existente; edição/revisão por voz continuam bloqueadas.
+
+Narrativa médica do modelo é retida até validar as ferramentas e projetar o estado documental verdadeiro. Oito testes com SDK real/provedor controlado validam o contrato, sem homologar qualidade de modelo externo. Formato conservador de criação, limites, testes e evidências estão no arquivo de progresso. C não habilita `operation.confirm` no modelo, assinatura, finalização nem entrega; D/E permanecem pendentes.
