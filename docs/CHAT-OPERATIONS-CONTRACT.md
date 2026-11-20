@@ -61,3 +61,12 @@ O gateway está disponível como contrato técnico para a próxima integração,
 - E: apresentar `DocumentPreview` e resumo completo no chat antes de registrar apresentação; integrar estado recuperado, acessibilidade e voz; produzir evidências reais.
 
 Não fazer merge, push ou deploy sem homologação. A migração deste corte é aditiva e aplicada apenas localmente; não resetar nem reaplicar migrations anteriores.
+
+
+## Complemento C — domínio interno de revisão/rascunhos
+
+Checkpoint `245de1f`: helpers privados `clinical.chat_document_proposal_read`, `chat_document_proposal_patch`, `chat_document_proposal_review` e `chat_document_proposal_save`. Fonte editável: `document_proposals`; revisão: `document_review_command`; documento lógico: UUID da proposta. Workspace captura `source_proposal_version` e exige corpo/tipo/versão clínica compatíveis. Edição torna revisão/desafio/recibo anteriores inelegíveis; a prova histórica permanece. Nova revisão exige nova identidade/intenção de entrega e nova confirmação futura.
+
+Save privado usa o motor compartilhado, vincula a proposta e mantém idempotência. Não autoriza assinatura, finalização ou envio. Funções C não têm grants para papéis da aplicação; antes da exposição, o adaptador deve verificar a mensagem humana original e o CAS da proposta exibida. Não permitir que uma ferramenta de modelo invoque save ou forneça uma própria confirmação.
+
+A migration `20261120000700` está instalada apenas localmente. C ainda precisa dos adaptadores e da jornada de linguagem natural/preview/persistência dos cards. Não interpretar os 100 testes backend aprovados como homologação dessa jornada ou da voz. D/E permanecem pendentes.
