@@ -83,7 +83,7 @@ test("rascunhos médicos, revisão e bloqueios", async ({ page }) => {
   await page.getByRole("button", { name: "+ Novo documento", exact: true }).click();
   await page.getByRole("link", { name: "Nova prescrição", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Atleta QA Documento" })).toBeVisible();
-  await expect(page.getByText("Dra. QA Medicina")).toBeVisible();
+  await expect(page.locator(".document-mast").getByText("Médico responsável: Dra. QA Medicina", {exact:true})).toBeVisible();
   await page.getByRole("button", { name: "Conferir todos", exact: true }).click();
   await page.getByRole("button", { name: "Adicionar medicamento" }).click();
   const names = page.getByLabel("Nome do medicamento");

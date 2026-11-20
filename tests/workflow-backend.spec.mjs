@@ -32,7 +32,14 @@ async function finished(
     delivery_scenario: scenario,
   });
   expect(signed.error).toBeUndefined();
-  await f.status(signed.attempt.id);
+  const status = await f.status(signed.attempt.id);
+  expect(status.error, JSON.stringify(status)).toBeUndefined();
+  expect(status.attempt.state).toBe("simulated_success");
+  expect(
+    sql(
+      `select exists(select 1 from clinical.document_finalizations where document_id='${review.document_id}')`,
+    ),
+  ).toBe("t");
   return { review, signed, ...(await f.detail(review.document_id)) };
 }
 async function pump(id, count = 1) {
@@ -225,9 +232,16 @@ for (const scenario of ["success", "duplicate", "delayed", "timeout"])
 test("falha recuperável, retry idempotente e reenvio não geram assinatura", async () => {
   const x = await finished("prescription", true, "temporary_failure"),
     id = x.review.document_id;
-  await pump(id);
+  await expect
+    .poll(
+      async () => {
+        await pump(id);
+        return (await f.detail(id)).workflow.deliveries[0].state;
+      },
+      { timeout: 5000, intervals: [100, 200, 400] },
+    )
+    .toBe("failed");
   let d = (await f.detail(id)).workflow.deliveries[0];
-  expect(d.state).toBe("failed");
   expect(d.failureKind).toBe("retryable");
   const key = randomUUID(),
     payload = {

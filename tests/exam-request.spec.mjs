@@ -90,7 +90,7 @@ test("médico prepara, revisa e recupera uma solicitação de exames", async ({ 
   await page.getByRole("button", { name: "+ Novo documento", exact: true }).click();
   await page.getByRole("link", { name: "Nova solicitação de exames", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Atleta QA Exame" })).toBeVisible();
-  await expect(page.getByText("Dra. QA Exames")).toBeVisible();
+  await expect(page.locator(".document-mast").getByText("Médico responsável: Dra. QA Exames", {exact:true})).toBeVisible();
   await page.getByRole("button", { name: "Conferir todos", exact: true }).click();
   await page.getByLabel("Nome do exame").fill("Hemograma fictício");
   await page.getByLabel("Tipo").selectOption("laboratory");
