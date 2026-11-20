@@ -1,5 +1,5 @@
 -- Corte C (internal foundation only): existing proposals remain the editable authority.
--- No API/model/UI exposure, registration replacement, review/save or signing execution.
+-- No API/model/UI exposure, registration replacement or signing execution.
 -- All helpers remain owner-only until the complete conversational integration is validated.
 alter table clinical.document_proposals add column saved_document_version integer;
 update clinical.document_proposals p set saved_document_version=d.version from clinical.documents d where d.id=p.document_id and d.author_id=p.actor_id and d.athlete_id=p.athlete_id and d.content=p.content;
@@ -100,3 +100,124 @@ end $$;
 
 -- Not exposed to authenticated clients or the service gateway in this foundation.
 revoke all on function clinical.chat_proposal_lock(uuid),clinical.chat_proposal_dto(clinical.document_proposals),clinical.chat_document_proposal_read(uuid,text),clinical.chat_proposal_replace(clinical.document_proposals,jsonb,integer,uuid,text,text),clinical.chat_document_proposal_patch(uuid,integer,jsonb,uuid) from public,anon,authenticated,service_role;
+
+-- A workspace points to the exact proposal revision used by the shared review.
+-- A confirmed receipt remains historical evidence; it cannot authorize a newer source.
+alter table clinical.chat_document_workspaces add column source_proposal_version integer;
+
+create function clinical.chat_review_source_bind() returns trigger
+language plpgsql security definer set search_path='' as $$
+declare p clinical.document_proposals;rv clinical.document_reviews;
+begin
+ select * into p from clinical.document_proposals where request_id=new.document_id;
+ if p.request_id is null then new.source_proposal_version:=null;return new;end if;
+ select * into rv from clinical.document_reviews where id=new.review_id;
+ if p.actor_id is distinct from new.professional_id
+  or p.session_id is distinct from new.session_id or p.athlete_id is distinct from new.athlete_id
+  or p.discarded_at is not null or rv.professional_id is distinct from p.actor_id
+  or rv.document_type is distinct from p.document_type or rv.content is distinct from p.content
+  or coalesce(rv.saved_version,rv.expected_version) is distinct from coalesce(p.saved_document_version,0)
+ then raise check_violation using message='proposal_review_mismatch';end if;
+ new.source_proposal_version:=p.version;
+ return new;
+end $$;
+create trigger chat_review_source_bind before insert or update of review_id
+on clinical.chat_document_workspaces for each row execute function clinical.chat_review_source_bind();
+
+create or replace function clinical.chat_workspace_current(w clinical.chat_document_workspaces)
+returns boolean language sql stable security definer set search_path='' as $$
+ select exists(select 1 from clinical.conversation_sessions s join clinical.chat_document_contexts c on c.session_id=s.id
+ where s.id=w.session_id and s.professional_id=w.professional_id and s.status='active' and s.athlete_id=w.athlete_id
+ and s.operation_epoch=w.session_operation_epoch and s.security_epoch=w.security_epoch
+ and s.security_epoch=clinical.conversation_epoch(w.professional_id) and c.workspace_id=w.id)
+ and clinical.can_author_documents(w.professional_id,w.athlete_id)
+ and (
+  not exists(select 1 from clinical.document_proposals p where p.request_id=w.document_id)
+  or exists(select 1 from clinical.document_proposals p join clinical.document_reviews rv on rv.id=w.review_id
+   where p.request_id=w.document_id and p.actor_id=w.professional_id and p.session_id=w.session_id
+   and p.athlete_id=w.athlete_id and p.discarded_at is null and p.version=w.source_proposal_version
+   and rv.document_type=p.document_type and rv.content=p.content
+   and coalesce(rv.saved_version,rv.expected_version)=coalesce(p.saved_document_version,0))
+ );
+$$;
+
+-- Defaults stay traditional_ui/human_ui. Controlled chat services set provenance
+-- before calling this SAME review engine, instead of inventing clinical events.
+create or replace function clinical.review_audit(op text,resource uuid,meta jsonb default '{}',result text default 'success')
+returns void language sql security definer set search_path='' as $$
+ insert into clinical.audit_events(actor_user_id,resource_type,resource_id,operation,outcome,origin_channel,execution_method,safe_metadata)
+ values(auth.uid(),'document_review',resource,op,result,clinical.audit_channel(),clinical.audit_method(),meta);
+$$;
+
+create function clinical.chat_document_proposal_review(request_id uuid,expected_version integer,idempotency_key uuid)
+returns jsonb language plpgsql security definer set search_path='' as $$
+declare p clinical.document_proposals;rv jsonb;bound jsonb;revision integer;
+begin
+ p:=clinical.chat_proposal_lock(request_id);
+ if p.request_id is null then return '{"error":"denied"}';end if;
+ if idempotency_key is null then return '{"error":"invalid"}';end if;
+ if p.version is distinct from expected_version then return '{"error":"conflict"}';end if;
+ if clinical.document_lock_reason(p.request_id) is not null then return '{"error":"locked"}';end if;
+ perform pg_catalog.set_config('cbb.origin_channel','ai_chat',true);
+ perform pg_catalog.set_config('cbb.execution_method','agent_tool',true);
+ rv:=public.document_review_command('open',jsonb_build_object(
+  'athlete_id',p.athlete_id,'document_id',p.request_id,'version',coalesce(p.saved_document_version,0),
+  'kind',p.document_type,'content',p.content,'idempotency_key',idempotency_key));
+ if rv ? 'error' then return rv;end if;
+ select w.revision into revision from clinical.chat_document_workspaces w
+ where w.session_id=p.session_id and w.document_id=p.request_id for update;
+ bound:=public.chat_document_bind(p.session_id,(rv->'review'->>'id')::uuid,coalesce(revision,0),idempotency_key);
+ if bound ? 'error' then return bound;end if;
+ return bound||jsonb_build_object('document',clinical.chat_proposal_dto(p));
+end $$;
+
+-- Private application service: callers must first verify the ORIGINAL human save
+-- request. Never expose this helper as a model tool or accept a model boolean.
+-- Complete documents use document_review_command:save; incomplete ones retain
+-- the traditional document_save draft contract. Neither path signs or emits.
+create function clinical.chat_document_proposal_save(request_id uuid,expected_version integer,idempotency_key uuid)
+returns jsonb language plpgsql security definer set search_path='' as $$
+declare p clinical.document_proposals;prior clinical.chat_proposal_changes;reviewed jsonb;saved jsonb;
+ fingerprint text;review_id uuid;before_version integer;before_hash text;
+begin
+ p:=clinical.chat_proposal_lock(request_id);
+ if p.request_id is null then return '{"error":"denied"}';end if;
+ if idempotency_key is null then return '{"error":"invalid"}';end if;
+ fingerprint:=encode(extensions.digest(jsonb_build_object('operation','save_without_signature','expectedVersion',expected_version)::text,'sha256'),'hex');
+ select * into prior from clinical.chat_proposal_changes c where c.professional_id=auth.uid() and c.idempotency_key=chat_document_proposal_save.idempotency_key;
+ if prior.id is not null then
+  if prior.proposal_id<>p.request_id or prior.fingerprint<>fingerprint or prior.after_version<>p.version then return '{"error":"conflict"}';end if;
+  return jsonb_build_object('document',clinical.chat_proposal_dto(p),'effect','saved_without_signature');
+ end if;
+ if p.version is distinct from expected_version then return '{"error":"conflict"}';end if;
+ if clinical.document_lock_reason(p.request_id) is not null then return '{"error":"locked"}';end if;
+ before_version:=p.version;before_hash:=p.content_hash;
+ perform pg_catalog.set_config('cbb.origin_channel','ai_chat',true);
+ perform pg_catalog.set_config('cbb.execution_method','agent_tool',true);
+ -- The subtransaction keeps review, binding, domain save and proposal linkage atomic.
+ begin
+  if clinical.document_ready(p.document_type,p.content) then
+   reviewed:=clinical.chat_document_proposal_review(p.request_id,p.version,idempotency_key);
+   if reviewed ? 'error' then return reviewed;end if;
+   review_id:=(reviewed->'review'->>'id')::uuid;
+   saved:=public.document_review_command('save',jsonb_build_object('review_id',review_id));
+  else
+   saved:=public.document_save(p.athlete_id,p.request_id,coalesce(p.saved_document_version,0),p.document_type,p.content,'save');
+  end if;
+  if saved ? 'error' then raise exception 'chat_save_rejected';end if;
+  update clinical.document_proposals set document_id=p.request_id,
+   saved_document_version=(select d.version from clinical.documents d where d.id=p.request_id)
+   where clinical.document_proposals.request_id=p.request_id returning * into p;
+  if p.saved_document_version is null then raise exception 'chat_save_rejected';end if;
+  insert into clinical.chat_proposal_changes(professional_id,session_id,proposal_id,idempotency_key,fingerprint,before_version,after_version,before_hash,after_hash,operation)
+  values(p.actor_id,p.session_id,p.request_id,idempotency_key,fingerprint,before_version,p.version,before_hash,p.content_hash,'document.proposal_saved');
+  perform clinical.chat_operation_audit(p.actor_id,p.session_id,p.request_id,'document.proposal_saved','success',jsonb_build_object('version',p.version,'clinical_version',p.saved_document_version,'idempotency_key',idempotency_key));
+ exception when raise_exception then
+  return jsonb_build_object('error',coalesce(saved->>'error','unavailable'));
+ end;
+ return jsonb_build_object('document',clinical.chat_proposal_dto(p),'effect','saved_without_signature');
+end $$;
+
+revoke all on function clinical.chat_review_source_bind(),clinical.chat_workspace_current(clinical.chat_document_workspaces),
+clinical.review_audit(text,uuid,jsonb,text),clinical.chat_document_proposal_review(uuid,integer,uuid),
+clinical.chat_document_proposal_save(uuid,integer,uuid) from public,anon,authenticated,service_role;

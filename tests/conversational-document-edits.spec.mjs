@@ -1,25 +1,28 @@
 import { test, expect } from "./fixtures.mjs";
 import { randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
+import { execFile } from "node:child_process";
 import {
   workflowFixture,
   workflowSql as sql,
 } from "./helpers/workflow-fixtures.mjs";
 
-// Exercise the future migration in a rollback transaction. It is not applied to
-// the local baseline while review/save/UI integration of corte C is pending.
-const migration =
+// Each scenario rolls back its mutations. Before local installation, the private
+// migration itself also runs in that transaction. Real concurrency uses the
+// installed private schema and fixtures cleaned through workflowFixture.
+const installed =
   sql(
     "select to_regprocedure('clinical.chat_document_proposal_patch(uuid,integer,jsonb,uuid)') is not null",
-  ) === "t"
-    ? ""
-    : readFileSync(
-        new URL(
-          "../supabase/migrations/20261120000700_conversational_document_edits.sql",
-          import.meta.url,
-        ),
-        "utf8",
-      );
+  ) === "t";
+const migration = installed
+  ? ""
+  : readFileSync(
+      new URL(
+        "../supabase/migrations/20261120000700_conversational_document_edits.sql",
+        import.meta.url,
+      ),
+      "utf8",
+    );
 let f, session;
 const proposals = {};
 const quote = (value) => `'${String(value).replaceAll("'", "''")}'`;
@@ -306,3 +309,289 @@ test("a saved document changed outside the proposal is not overwritten", () => {
   expect(denied.error).toBe("denied");
   expect(read.error).toBe("denied");
 });
+
+function review(p, version = 1, key = randomUUID()) {
+  return `clinical.chat_document_proposal_review('${p.id}',${version},'${key}')`;
+}
+function save(p, version = 1, key = randomUUID()) {
+  return `clinical.chat_document_proposal_save('${p.id}',${version},'${key}')`;
+}
+function complete(p) {
+  // Surgery alone needs a justification to open the shared review. The value is
+  // supplied explicitly by the fictitious professional, never inferred.
+  return p === proposals.surgical_order
+    ? `select ${patch(p, [{ operation: "set_field", field: "justification", value: "Justificativa explícita DEMO" }])};`
+    : "";
+}
+for (const kind of ["prescription", "exam_request", "surgical_order"]) {
+  test(`${kind}: exact shared review is persistent, idempotent and not a clinical save`, () => {
+    const p = proposals[kind],
+      version = kind === "surgical_order" ? 2 : 1,
+      key = randomUUID();
+    const [first, again, count, source] = run(
+      complete(p) +
+        result(review(p, version, key)) +
+        result(review(p, version, key)) +
+        result(`(select count(*) from clinical.documents where id='${p.id}')`) +
+        result(
+          `(select source_proposal_version from clinical.chat_document_workspaces where document_id='${p.id}')`,
+        ),
+    );
+    expect(first.error, JSON.stringify(first)).toBeUndefined();
+    expect(again).toEqual(first);
+    expect(first.review.material.content).toEqual(first.document.content);
+    expect(first.review.document_id).toBe(p.id);
+    expect(source).toBe(version);
+    expect(count).toBe(0);
+  });
+  test(`${kind}: shared save is linked, replayable, unsigned and editable afterwards`, () => {
+    const p = proposals[kind],
+      version = kind === "surgical_order" ? 2 : 1,
+      key = randomUUID();
+    const [first, again, details, edited, savedAgain] = run(
+      complete(p) +
+        result(save(p, version, key)) +
+        result(save(p, version, key)) +
+        result(
+          `(select jsonb_build_object('version',d.version,'content',d.content,'linked_version',p.saved_document_version,'attempts',(select count(*) from clinical.signature_attempts a where a.professional_id=auth.uid())) from clinical.documents d join clinical.document_proposals p on p.document_id=d.id where d.id='${p.id}')`,
+        ) +
+        result(
+          patch(
+            p,
+            [
+              {
+                operation: "set_field",
+                field:
+                  kind === "surgical_order"
+                    ? "additional"
+                    : kind === "exam_request"
+                      ? "additional"
+                      : "notes",
+                value: "Edição posterior DEMO",
+              },
+            ],
+            version,
+          ),
+        ) +
+        result(save(p, version + 1)),
+    );
+    expect(first.error, JSON.stringify(first)).toBeUndefined();
+    expect(again).toEqual(first);
+    expect(first.document.state).toBe("saved");
+    expect(first.document.documentId).toBe(p.id);
+    expect(first.effect).toBe("saved_without_signature");
+    expect(details.version).toBe(1);
+    expect(details.linked_version).toBe(1);
+    expect(details.attempts).toBe(0);
+    expect(edited.document.state).toBe("proposal");
+    expect(savedAgain.document.state).toBe("saved");
+    expect(savedAgain.document.version).toBe(version + 1);
+  });
+}
+test("incomplete surgery stays a draft without inventing justification", () => {
+  const p = proposals.surgical_order;
+  const [blocked, saved, counts] = run(
+    result(review(p)) +
+      result(save(p)) +
+      result(
+        `(select jsonb_build_object('reviews',(select count(*) from clinical.document_reviews where document_id='${p.id}'),'content',content,'status',status) from clinical.documents where id='${p.id}')`,
+      ),
+  );
+  expect(blocked.error).toBe("incomplete");
+  expect(saved.document.state).toBe("saved");
+  expect(counts.content.justification).toBe("");
+  expect(counts.status).toBe("draft");
+  expect(counts.reviews).toBe(0);
+});
+test("edit invalidates an already confirmed authorization; review rebinding restores only a fresh workspace", () => {
+  const p = proposals.prescription;
+  const prefix = `create temporary table prepared as select ${review(p)} as data;
+    select public.chat_document_select_identity((select (data->'workspace'->>'id')::uuid from prepared),1,'${f.inventory.identities[0].id}');
+    create temporary table challenge as select public.chat_operation_prepare((select (data->'workspace'->>'id')::uuid from prepared),2,'${randomUUID()}') as data;
+    select public.chat_operation_present('${f.owner.id}','${session}',(select (data->'challenge'->>'id')::uuid from challenge),(select (data->'challenge'->>'nonce')::uuid from challenge),(select data->'challenge'->>'summaryHash' from challenge));
+    create temporary table human as select public.chat_capture_human_input('${f.owner.id}','${session}',(select (data->'challenge'->>'id')::uuid from challenge),'${randomUUID()}','Sim','text') as data;`;
+  const [confirmed, edit, current, state, rebound, oldReceipt] = run(
+    prefix +
+      result(
+        `public.chat_operation_confirm('${session}',(select (data->'challenge'->>'id')::uuid from challenge),(select (data->'challenge'->>'nonce')::uuid from challenge),(select (data->>'inputId')::uuid from human))`,
+      ) +
+      result(
+        patch(p, [
+          { operation: "set_field", field: "notes", value: "Versão nova DEMO" },
+        ]),
+      ) +
+      result(
+        `(select clinical.chat_challenge_current(c) from clinical.chat_operation_challenges c where c.id=(select (data->'challenge'->>'id')::uuid from challenge))`,
+      ) +
+      result(`public.chat_document_state('${session}')`) +
+      result(review(p, 2)) +
+      result(
+        `(select count(*) from clinical.chat_operation_authorizations where session_id='${session}')`,
+      ),
+  );
+  expect(confirmed.effect, JSON.stringify(confirmed)).toBe(
+    "authorization_recorded",
+  );
+  expect(edit.document.version).toBe(2);
+  expect(current).toBe(false);
+  expect(state.error).toBe("stale");
+  expect(rebound.workspace.identityId).toBeNull();
+  expect(rebound.workspace.deliveryRequested).toBe(false);
+  expect(rebound.authorization).toBeNull();
+  expect(oldReceipt).toBe(1);
+});
+test("shared review audit records actual chat provenance; traditional defaults remain unchanged", () => {
+  const p = proposals.prescription;
+  const [saved, provenance, traditional] = run(
+    result(save(p)) +
+      result(
+        `(select jsonb_agg(jsonb_build_object('channel',origin_channel,'method',execution_method)) from clinical.audit_events where actor_user_id=auth.uid() and operation='document_review.saved_without_signature')`,
+      ) +
+      `select set_config('cbb.origin_channel','',true);select set_config('cbb.execution_method','',true);select clinical.review_audit('fixture.traditional','${randomUUID()}');` +
+      result(
+        `(select jsonb_build_object('channel',origin_channel,'method',execution_method) from clinical.audit_events where actor_user_id=auth.uid() and operation='fixture.traditional')`,
+      ),
+  );
+  expect(saved.error).toBeUndefined();
+  expect(provenance).toEqual([{ channel: "ai_chat", method: "agent_tool" }]);
+  expect(traditional).toEqual({
+    channel: "traditional_ui",
+    method: "human_ui",
+  });
+});
+test("review and save helpers remain inaccessible to application roles", () => {
+  const [grants] = run(
+    result(
+      `(select jsonb_agg(has_function_privilege(r,f,'EXECUTE')) from unnest(array['anon','authenticated','service_role']) r cross join unnest(array['clinical.chat_document_proposal_review(uuid,integer,uuid)','clinical.chat_document_proposal_save(uuid,integer,uuid)']) f)`,
+    ),
+  );
+  expect(grants.every((x) => x === false)).toBe(true);
+});
+test("a superseded review cannot be rebound to the workspace", () => {
+  const p = proposals.prescription;
+  expect(() =>
+    run(
+      `create temporary table prepared as select ${review(p)} as data;` +
+        `select ${patch(p, [{ operation: "set_field", field: "notes", value: "Nova versão DEMO" }])};` +
+        result(
+          `public.chat_document_bind('${session}',(select (data->'review'->>'id')::uuid from prepared),1,'${randomUUID()}')`,
+        ),
+    ),
+  ).toThrow(/proposal_review_mismatch/);
+});
+test("incomplete draft can be completed and saved through the shared review", () => {
+  const p = proposals.surgical_order;
+  const [first, edited, reviewed, saved, clinical] = run(
+    result(save(p)) +
+      result(
+        patch(p, [
+          {
+            operation: "set_field",
+            field: "justification",
+            value: "Justificativa explícita DEMO",
+          },
+        ]),
+      ) +
+      result(review(p, 2)) +
+      result(save(p, 2)) +
+      result(
+        `(select jsonb_build_object('version',version,'content',content) from clinical.documents where id='${p.id}')`,
+      ),
+  );
+  expect(first.document.state).toBe("saved");
+  expect(edited.document.version).toBe(2);
+  expect(reviewed.review.expected_version).toBe(1);
+  expect(saved.error).toBeUndefined();
+  expect(clinical.version).toBe(2);
+  expect(clinical.content.justification).toBe("Justificativa explícita DEMO");
+});
+test("a document with signing in progress rejects editing and another save", () => {
+  const p = proposals.prescription;
+  const [signed, edit, saved] = run(
+    `create temporary table prepared as select ${review(p)} as data;` +
+      result(
+        `public.document_review_command('sign',jsonb_build_object('review_id',(select data->'review'->>'id' from prepared),'review_hash',(select data->'review'->>'content_hash' from prepared),'identity_id','${f.inventory.identities[0].id}','idempotency_key','${randomUUID()}','confirmed',true,'scenario','delayed','delivery_requested',false))`,
+      ) +
+      result(
+        patch(p, [
+          { operation: "set_field", field: "notes", value: "Não aplicar DEMO" },
+        ]),
+      ) +
+      result(save(p)),
+  );
+  expect(signed.error, JSON.stringify(signed)).toBeUndefined();
+  expect(edit.error).toBe("locked");
+  expect(saved.error).toBe("locked");
+});
+
+function concurrentSql(input) {
+  return new Promise((resolve, reject) => {
+    const child = execFile(
+      "docker",
+      [
+        "exec",
+        "-i",
+        "supabase_db_prontuario-cbb",
+        "psql",
+        "-X",
+        "-U",
+        "postgres",
+        "-At",
+        "-v",
+        "ON_ERROR_STOP=1",
+      ],
+      { encoding: "utf8" },
+      (error, stdout) => {
+        if (error) reject(error);
+        else
+          resolve(
+            JSON.parse(
+              stdout
+                .split("\n")
+                .find((s) => s.startsWith("RESULT:"))
+                .slice(7),
+            ),
+          );
+      },
+    );
+    child.stdin.end(input);
+  });
+}
+for (const sameKey of [false, true])
+  test(`real concurrent edits: ${sameKey ? "same key is idempotent" : "stale revision loses"}`, async () => {
+    test.skip(
+      !installed,
+      "Real concurrency requires the private migration installed in the local test database.",
+    );
+    const p = { id: randomUUID(), content: proposals.prescription.content },
+      key = randomUUID();
+    expect(
+      (
+        await f.rpc("clinical_document_proposal_register", {
+          target: f.athlete,
+          request_id: p.id,
+          kind: "prescription",
+          payload: p.content,
+        })
+      ).ok,
+    ).toBe(true);
+    const changes = [
+      { operation: "set_field", field: "notes", value: "Concorrência DEMO" },
+    ];
+    const jobs = [0, 1].map(
+      (n) =>
+        `begin;select set_config('request.jwt.claim.sub','${f.owner.id}',true);select pg_advisory_xact_lock(hashtextextended('${f.owner.id}',0));select pg_sleep(0.15);${result(patch(p, changes, 1, sameKey ? key : n ? randomUUID() : key))}commit;`,
+    );
+    const replies = await Promise.all(jobs.map(concurrentSql));
+    if (sameKey) expect(replies[0]).toEqual(replies[1]);
+    else {
+      expect(replies.filter((x) => x.document?.version === 2)).toHaveLength(1);
+      expect(replies.filter((x) => x.error === "conflict")).toHaveLength(1);
+    }
+    const counts = JSON.parse(
+      sql(
+        `select jsonb_build_object('version',(select version from clinical.document_proposals where request_id='${p.id}'),'changes',(select count(*) from clinical.chat_proposal_changes where proposal_id='${p.id}'),'audit',(select count(*) from clinical.audit_events where resource_id='${p.id}' and operation='document.proposal_patched'))`,
+      ),
+    );
+    expect(counts).toEqual({ version: 2, changes: 1, audit: 1 });
+  });
