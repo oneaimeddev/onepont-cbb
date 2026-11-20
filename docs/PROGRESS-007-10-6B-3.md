@@ -11,7 +11,7 @@ Especificação completa: [specs/HANDOFF-007-10-6B-3.md](specs/HANDOFF-007-10-6B
 | A — Segurança conversacional | Concluído e validado neste checkpoint | Quatro P0 corrigidos; resultados abaixo |
 | B — Infraestrutura de capacidades | Concluído e validado | Catálogo, estado persistente e autorização segura; execução clínica desabilitada |
 | C — Criação/alterações | Concluído no escopo textual delimitado e validado | Criação com fonte explícita nos três tipos, edição CAS, revisão, salvamento humano e retomada |
-| D — Assinatura/entrega | Não iniciado | Confirmação contextual, integração compartilhada e retentativas |
+| D — Assinatura/entrega | Backend e HTTP concluídos/validados; UI em E | Recibo atômico, motor compartilhado, status, retentativa/reenvio e derivação |
 | E — UX/homologação | Não iniciado | Preview, voz, histórico, mobile, paridade e regressão final |
 
 **O handoff completo ainda não está concluído nem homologado.** A/B permanecem concluídos. C foi concluído para os comandos textuais delimitados descritos no fechamento abaixo; a homologação ampla de linguagem/voz/UX permanece em E. A nova jornada de assinatura/entrega pelo chat não está habilitada. O fluxo tradicional do B.2 foi preservado.
@@ -257,3 +257,12 @@ Riscos residuais: formato de criação conservador pode pedir esclarecimento com
 4. Concluir D e seu commit antes de E. Depois homologar texto/voz, estados/histórico/recuperação, acessibilidade/mobile e paridade com o fluxo tradicional. Executar suíte integral uma vez ao final estável.
 
 Ponto de parada seguro: C validado, D/E pendentes; assinatura/finalização/entrega nova pelo chat e confirmação de assinatura por voz permanecem desabilitadas. Não iniciar nova frente complexa sem orçamento para deixá-la consistente.
+
+
+## Corte D — execução validada (20/11/2026)
+
+Migration aditiva `20261120001100_chat_workflow_execution.sql` aplicada e registrada apenas localmente; SHA-256 `1f5c51b942bb9d37201cf4d6ff0fe19151a445504fc226e6a8312ef1a403d008`. O executor consome a autorização B com locks e checa novamente sessão/epochs, autorização clínica, CAS/revisão/material, identidade/conexão, contato/destinatário, expiração, apresentação e entrada humana aceita. O recibo e `document_review_command:sign` são atômicos; a chave nativa é a autorização. Concorrência/replay produzem uma tentativa. Os eventos nativos herdam a origem do chat; o fluxo tradicional conserva a origem anterior. Resultado demonstrativo não vira assinatura criptográfica ou entrega real.
+
+Adaptador conversacional determinístico: escolha explícita de identidade, preparo de revisão/resumo, confirmação original autenticada, consulta de assinatura/entrega, retentativa/reenvio com justificativa e frase explícita, derivação após confirmação. Não há ferramenta de modelo para executar/confimar. Confirmação de alto impacto por voz permanece recusada com alternativa textual no chat. APIs verificam contexto e proposta antes de acessar o motor. Execução nova só ocorre após apresentação atestada do resumo.
+
+Validação: **17/17** testes de domínio (três documentos, consumo único/concorrente, invalidação, expiração, autoria, destinatário, modo, derivado sem sobrescrita e retry/resend sem nova assinatura); **3/3** testes HTTP reais dos três tipos, da escolha à finalização/consulta e replay. Lint, build e typecheck aprovados. Sem suíte integral neste corte. Próximo passo: E, apresentar o resumo real e registrar apresentação somente após render, integrar recuperação/estado/histórico/voz acessível, produzir matriz e evidências, executar suíte integral ao estabilizar.

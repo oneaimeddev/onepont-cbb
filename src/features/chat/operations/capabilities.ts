@@ -81,6 +81,17 @@ export const operationGatewayInput = z.discriminatedUnion("action", [
     inputMode: z.enum(["text", "voice"]).default("text"),
   }),
   session.extend({ action: z.literal("cancel"), challengeId: id }),
+  session.extend({ action: z.literal("execute"), authorizationId: id }),
+  z
+    .object({
+      action: z.literal("inspect"),
+      requestId: id,
+      athleteId: id,
+      kind,
+      version: revision,
+      contentHash: z.string().regex(/^[a-f0-9]{32}$/),
+    })
+    .strict(),
 ]);
 export type OperationGatewayInput = z.infer<typeof operationGatewayInput>;
 
@@ -240,7 +251,7 @@ export const clinicalCapabilities = {
     "infrastructure",
   ),
   "operation.confirm": capability(
-    "Validar entrada humana original; não executar assinatura neste corte",
+    "Validar entrada humana original vinculada ao desafio; executor clínico separado",
     operationGatewayInput.options[6],
     "chat_operation_confirm",
     "authorization",

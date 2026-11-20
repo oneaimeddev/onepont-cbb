@@ -4,6 +4,7 @@ export default defineConfig({
     "**/tests/conversational-document-edits.spec.mjs",
     "**/tests/chat-document-adapters.spec.mjs",
     "**/tests/chat-document-creation.spec.mjs",
+    "**/tests/chat-workflow-execution.spec.mjs",
     "**/tests/chat-document-message-save.spec.mjs",
     "**/tests/chat-operations.spec.mjs",
     "**/tests/conversation-security.spec.mjs",

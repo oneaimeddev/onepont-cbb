@@ -2,6 +2,7 @@ import "server-only";
 import { createClient } from "@supabase/supabase-js";
 import { supabaseServer } from "../../../lib/supabase";
 import { signingDemoEnabled } from "../../signing/server";
+import { inspectDocumentJourney } from "./workflow-service";
 import type { OperationGatewayInput } from "./capabilities";
 
 function trustedClient() {
@@ -23,7 +24,7 @@ export async function operationGateway(input: OperationGatewayInput) {
   if (auth.error || !auth.data.user) return { error: "denied" };
   const actor = auth.data.user.id;
   if (
-    ["prepare", "present", "confirm"].includes(input.action) &&
+    ["prepare", "present", "confirm", "execute"].includes(input.action) &&
     !signingDemoEnabled()
   )
     return { error: "mode_unavailable" };
@@ -32,6 +33,12 @@ export async function operationGateway(input: OperationGatewayInput) {
     return result.error ? { error: "unavailable" } : result.data;
   };
   switch (input.action) {
+    case "inspect":
+      return inspectDocumentJourney(input);
+    case "execute":
+      return rpc("chat_operation_execute", {
+        authorization_id: input.authorizationId,
+      });
     case "state":
       return rpc("chat_document_state", { session_id: input.sessionId });
     case "bind":
@@ -88,12 +95,21 @@ export async function operationGateway(input: OperationGatewayInput) {
       });
       if (captured.error || captured.data?.error)
         return captured.data ?? { error: "unavailable" };
-      return rpc("chat_operation_confirm", {
+      const authorized = await rpc("chat_operation_confirm", {
         session_id: input.sessionId,
         challenge_id: input.challengeId,
         nonce: input.nonce,
         input_id: captured.data.inputId,
       });
+      if (authorized?.error || !authorized?.authorizationId) return authorized;
+      const execution = await rpc("chat_operation_execute", {
+        authorization_id: authorized.authorizationId,
+      });
+      return {
+        ...authorized,
+        execution,
+        ...(execution?.error ? { error: execution.error } : {}),
+      };
     }
   }
 }

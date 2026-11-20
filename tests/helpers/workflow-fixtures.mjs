@@ -34,7 +34,7 @@ export function cleanupWorkflow(sql, ids) {
     `do $$ begin if to_regclass('clinical.chat_proposal_changes') is not null then delete from clinical.chat_proposal_changes where professional_id in(${owned});end if;end $$;`,
   );
   sql(
-    `delete from clinical.chat_operation_authorizations where professional_id in(${owned});delete from clinical.chat_human_inputs where professional_id in(${owned});delete from clinical.chat_operation_challenges where professional_id in(${owned});delete from clinical.chat_document_contexts where workspace_id in(select id from clinical.chat_document_workspaces where professional_id in(${owned}));delete from clinical.chat_document_workspaces where professional_id in(${owned});`,
+    `do $$ begin if to_regclass('clinical.chat_operation_executions') is not null then delete from clinical.chat_operation_executions where professional_id in(${owned});end if;end $$;delete from clinical.chat_operation_authorizations where professional_id in(${owned});delete from clinical.chat_human_inputs where professional_id in(${owned});delete from clinical.chat_operation_challenges where professional_id in(${owned});delete from clinical.chat_document_contexts where workspace_id in(select id from clinical.chat_document_workspaces where professional_id in(${owned}));delete from clinical.chat_document_workspaces where professional_id in(${owned});`,
   );
   const req = `select id from clinical.document_delivery_requests where professional_id in(${owned})`;
   sql(

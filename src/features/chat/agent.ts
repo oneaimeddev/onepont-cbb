@@ -1,5 +1,6 @@
 import "server-only";
 import { displayedProposalSchema } from "./operations/document-intent";
+import { workflowConversation } from "./operations/workflow-service";
 import { documentConversation } from "./operations/document-service";
 import { creationPatientMatches, documentCreationRequested, groundDocumentCreation, stableCreationItemId } from "./operations/document-creation";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
@@ -938,7 +939,7 @@ function failureCode(error: unknown) {
 export async function openIntelligenceStream(input: unknown): Promise<{ stream: ReadableStream<Uint8Array> } | { error: "unavailable" | "invalid" | "limit" | "provider" }> {
   const documentInput = requestSchema.safeParse(input);
   if (documentInput.success && documentInput.data.messages.at(-1)?.role === "user") {
-    const reply = await documentConversation({ message: documentInput.data.messages.at(-1)!.content, athleteId: documentInput.data.contextAthleteId ?? null, proposals: documentInput.data.displayedProposals ?? [], messageId: documentInput.data.messageId, inputMode: documentInput.data.inputMode });
+    const reply = await workflowConversation({ message: documentInput.data.messages.at(-1)!.content, athleteId: documentInput.data.contextAthleteId ?? null, proposals: documentInput.data.displayedProposals ?? [], messageId: documentInput.data.messageId, inputMode: documentInput.data.inputMode }) ?? await documentConversation({ message: documentInput.data.messages.at(-1)!.content, athleteId: documentInput.data.contextAthleteId ?? null, proposals: documentInput.data.displayedProposals ?? [], messageId: documentInput.data.messageId, inputMode: documentInput.data.inputMode });
     if (reply) {
       const bytes = new TextEncoder().encode(`event: done\ndata: ${JSON.stringify({ ...reply, athletes: [], navigation: null, search: null, draft: null, context: null })}\n\n`);
       return { stream: new ReadableStream<Uint8Array>({ start(controller) { controller.enqueue(bytes); controller.close(); } }) };
