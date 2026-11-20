@@ -10,11 +10,11 @@ Especificação completa: [specs/HANDOFF-007-10-6B-3.md](specs/HANDOFF-007-10-6B
 |---|---|---|
 | A — Segurança conversacional | Concluído e validado neste checkpoint | Quatro P0 corrigidos; resultados abaixo |
 | B — Infraestrutura de capacidades | Concluído e validado | Catálogo, estado persistente e autorização segura; execução clínica desabilitada |
-| C — Criação/alterações | Não iniciado | Edição natural dos três documentos e revisão persistente |
+| C — Criação/alterações | Em andamento; apenas base interna validada | Patch por UUID/CAS preparado, sem exposição ou aplicação permanente da migration |
 | D — Assinatura/entrega | Não iniciado | Confirmação contextual, integração compartilhada e retentativas |
 | E — UX/homologação | Não iniciado | Preview, voz, histórico, mobile, paridade e regressão final |
 
-**O handoff completo ainda não está concluído nem homologado.** O checkpoint atual encerra A e B consistentes, antes de abrir a frente C, conforme o orçamento. A nova jornada de assinatura/entrega pelo chat não está habilitada. O fluxo tradicional do B.2 foi preservado.
+**O handoff completo ainda não está concluído nem homologado.** O checkpoint atual preserva A/B concluídos e registra a base interna de C. C ainda não foi entregue funcionalmente ao usuário. A nova jornada de assinatura/entrega pelo chat não está habilitada. O fluxo tradicional do B.2 foi preservado.
 
 ## Corte A — implementação
 
@@ -110,6 +110,32 @@ npm run test:chat-operations
 npx playwright test tests/chat-operations.spec.mjs tests/chat-operations-api.spec.mjs tests/conversation-security.spec.mjs tests/workflow-backend.spec.mjs --project=app --workers=1 --reporter=line
 ```
 
+## Corte C — checkpoint interno, integração ainda pendente
+
+Commit `05f9857` — `feat: stage private versioned document edits without chat exposure`.
+
+- A proposta clínica existente é a autoridade editável; não há outra cópia editável de conteúdo, outro motor clínico ou substituição do registro/salvamento legado.
+- Preparados helpers **privados em `clinical`** para leitura autorizada e alterações esparsas (`set_field`, `append_field`, `add_item`, `remove_item`, `reorder_items`). Referências de itens usam UUID. Campos não mencionados e grafia são preservados; limites/enums usam o canonicalizador existente. Append verifica o tamanho combinado, evitando truncamento silencioso.
+- Lock do profissional/sessão, contexto do atleta, acesso atual, CAS da proposta, ledger de idempotência e evento de auditoria sem corpo clínico. Proposta salva exige versão clínica correspondente; alteração externa impede trabalhar sobre a referência antiga.
+- Patch invalida desafios pendentes já associados ao mesmo identificador lógico. **Isso ainda não constitui o vínculo completo de revisão/autorização:** rebinding de revisão, fonte/versão no workspace e revalidação de recibos confirmados dependem da integração seguinte e são necessários antes de exposição.
+- Sem wrappers públicos, grants para `anon`/`authenticated`/`service_role`, ferramenta do modelo, gateway, botão ou integração de produção. Nada novo de C está anunciado como disponível. Não houve mudança em assinatura, entrega, revisão ou salvamento da aplicação atual.
+- Migration `20261120000700_conversational_document_edits.sql` está **preparada no Git, não aplicada nem registrada permanentemente no banco local**. Os testes executam a migration e as operações dentro de transações com `ROLLBACK`; as fixtures usam somente atletas/profissionais fictícios. O runner também aceita o schema já instalado futuramente.
+
+### Validação deste checkpoint C
+
+- **25 testes novos** de backend: três documentos, UUID/ordem, campos preservados, grafia, CAS, repetição idempotente, auditoria única, falha atômica, formatos/limites inválidos, usuário alheio, sessão encerrada/arquivada, troca de atleta, revogação, ambiguidade, grants privados e versão alterada pela interface tradicional.
+- Reutilizados **22 testes do protocolo B + 15 testes P0 de A** (37 regressões diretamente relacionadas).
+- Lote de 62: **61/62 aprovados**. A única falha era uma asserção do teste novo esperando `ok` no retorno de `document_save`; esse contrato retorna `id`/`version`. A fixture foi aprimorada para salvar e depois alterar pelo serviço tradicional real antes de verificar a recusa da proposta antiga.
+- Reteste final direcionado: **2/2 aprovados** (alteração externa e grants, estes ampliados para verificar também INSERT na tabela privada). Há evidência positiva para os 62 cenários únicos entre lote e reteste; não se afirma uma execução final única 62/62.
+- `npm run lint`, `npm run typecheck`, `npm run build` e `git diff --check`: aprovados após as alterações. Sem browser visível, nova captura ou chamada paga à IA neste checkpoint de backend.
+- Suíte integral não executada: C/D/E ainda pendentes; política do adendo reserva essa execução ao fim da branch estável. Não se repetiram os módulos tradicionais B.2 porque nenhum caminho de produção foi ligado ou modificado neste checkpoint.
+- **Não validados ainda:** interpretação natural integrada, criação/revisão/preview no chat, reconstrução após recarga, concorrência real da jornada integrada, invalidação completa de workspaces/recibos, assinatura/finalização/entrega pelo chat e voz. Estes continuam requisitos de C–E, sem alegação de prontidão.
+
+```sh
+npx playwright test --config playwright.document-edits.config.ts
+npx playwright test --config playwright.document-edits.config.ts --grep "saved document changed|new functions are not exposed"
+```
+
 ## Commits e estado
 
 `a0502a4` — `fix: guard conversational lifecycle and revoked clinical history` (corte A funcional, migration, testes e especificação). Atualização de progresso A: `b8555a4`.
@@ -121,10 +147,10 @@ Sem merge, push ou deploy. `main` e `origin/main` preservadas em `51c1426`. As m
 ## Retomada — próximo passo exato
 
 1. Ler este arquivo, `CHAT-OPERATIONS-CONTRACT.md` e a especificação; conferir branch, `git status` e `git log`. Não refazer A/B e não reaplicar migrations já registradas.
-2. **Iniciar apenas C:** inspecionar a integração entre propostas existentes, revisões compartilhadas e workspaces. Escolher uma autoridade de conteúdo, preservando vínculo e identificador do documento; não manter duas cópias editáveis concorrentes nem criar outro motor clínico.
+2. **Continuar apenas C:** a base privada está no commit `05f9857`; seus testes carregam a migration em transação e desfazem o schema no fim. Não reaplicar A/B e não anunciar C como pronto. Antes de aplicar permanentemente C, integrar o restante e adaptar a limpeza das fixtures ao ledger. Em seguida, inspecionar a integração entre propostas existentes, revisões compartilhadas e workspaces. Escolher uma autoridade de conteúdo, preservando vínculo e identificador do documento; não manter duas cópias editáveis concorrentes nem criar outro motor clínico.
 3. Integrar criação dos três documentos e alterações naturais a operações estruturadas. Identificar itens por UUID, preservar campos não mencionados, desambiguar atleta/documento/item/valor, pedir dados ausentes. Mudança deve criar/revincular a revisão exata e invalidar confirmações anteriores; aplicar CAS e recuperar estado da persistência.
 4. Testar e commitar C antes de D. Não ativar `operation.confirm` como ferramenta do modelo. A entrada de confirmação continuará sendo a mensagem original autenticada, não saída do modelo ou texto do documento.
 5. D: execução clínica idempotente vinculada ao recibo, com nova checagem de estado/epochs/acesso/versão/hash/identidade/destinatário/expiração na transação que invoca `document_review_command` e o motor B.2. Propagar origem de chat também aos eventos clínicos compartilhados, além dos eventos operacionais já implementados. Nunca tratar o recibo como assinatura concluída.
 6. E: apresentar o documento e resumo no chat antes do ack de apresentação; integrar acompanhamento/recuperação, voz segura, acessibilidade, matriz de paridade, inventário pendente e evidências reais. Executar a suíte integral no fim da branch estável.
 
-Ponto de parada seguro após B: criação/alteração natural completa, assinatura/finalização/entrega integral pelo chat e confirmação de assinatura por voz **continuam pendentes e não habilitadas**. O orçamento limitado permanece como restrição; não abrir uma nova frente complexa sem poder deixá-la em estado consistente.
+Ponto de parada seguro neste checkpoint C: criação/alteração natural completa, assinatura/finalização/entrega integral pelo chat e confirmação de assinatura por voz **continuam pendentes e não habilitadas**. O orçamento limitado permanece como restrição; não abrir uma nova frente complexa sem poder deixá-la em estado consistente.
