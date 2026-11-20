@@ -322,6 +322,13 @@ test("leases retomam a mesma tentativa; evento duplicado/fora de ordem não sobr
     id = x.review.document_id;
   const claim = await admin.rpc("claim_document_delivery_job", { target: id });
   const first = claim.data.job;
+  expect(claim.error).toBeNull();
+  if (!first) {
+    const diagnostic = sql(
+      `select jsonb_build_object('demo',(select demo_enabled from clinical.signing_environment where id),'policy',(select fixture_policy_enabled from clinical.document_delivery_environment where id),'requests',(select jsonb_agg(jsonb_build_object('state',r.state,'job_state',j.state,'available_at',j.available_at,'lease_expires_at',j.lease_expires_at,'authorized',clinical.delivery_authorization_valid(r))) from clinical.document_delivery_requests r left join clinical.document_delivery_jobs j on j.request_id=r.id where r.document_id='${id}'))`,
+    );
+    expect(first, diagnostic).not.toBeNull();
+  }
   expect(first.dispatchKind).toBe("submit");
   sql(
     `update clinical.document_delivery_jobs set lease_expires_at=clock_timestamp()-interval '1 second' where request_id='${first.requestId}'`,

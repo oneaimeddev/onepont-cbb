@@ -34,12 +34,20 @@ export function turnCarriesContent(turn: Pick<ChatTurn, "text" | "athletes" | "n
   return Boolean(turn.text.trim() || turn.athletes.length > 0 || turn.navigation || turn.draft || turn.document || turn.readings || turn.analysis);
 }
 
-export function conversationTurn(turn: ChatTurn): ChatTurn {
+export function conversationTurn(turn: ChatTurn) {
   const draft = !turn.draft || (turn.draft.state !== "saved" && turn.draft.state !== "finalized") || !turn.draft.recordId
     ? null
     : { ...turn.draft, body: "", missing: [], error: null };
   const document = turn.document ? storedDocument(turn.document) : null;
   return { ...turn, draft, document, analysis: presentedAnalysis(turn.analysis) };
+}
+
+// Async callbacks from a card moved/replaced by a newer reply cannot resurrect
+// the old card or overwrite a newer displayed revision.
+export function updateDocumentTurn(turns: ChatTurn[], turnId: string, document: DocumentDraft, text: string | null) {
+  const current = turns.find((turn) => turn.id === turnId)?.document;
+  if (!current || current.requestId !== document.requestId || (current.version ?? 0) > (document.version ?? 0)) return turns;
+  return turns.map((turn) => turn.id === turnId ? { ...turn, document, text: text ?? turn.text } : turn);
 }
 
 function storedTurn(value: unknown): ChatTurn | null {

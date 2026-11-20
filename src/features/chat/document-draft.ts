@@ -3,10 +3,14 @@ import {
   type DocumentContent, type DocumentKind, type ExamContent, type ExamItem, type ExamType, type Laterality, type MedicationItem, type PrescriptionContent, type Priority, type SurgicalContent,
 } from "../documents/content";
 import { uuidPattern } from "./guards";
+import type { ReviewMaterial } from "../documents/review-types";
 
 export type DocumentDraftState = "proposal" | "saving" | "saved" | "error" | "discarded";
 
 export type DocumentDraft = {
+  preview?: ReviewMaterial | null;
+  readOnlyReason?: string | null;
+  locallyEdited?: boolean;
   requestId: string;
   athleteId: string;
   athleteName: string;
@@ -176,8 +180,22 @@ export function presentedDocument(value: unknown): DocumentDraft | null {
       return next ? [next] : [];
     }).slice(0, 12)
     : content ? documentMissing(row.kind, content) : [];
+  let preview: ReviewMaterial | null = null;
+  if (row.preview && typeof row.preview === "object" && content) {
+    const material = row.preview as Record<string, unknown>;
+    const previewContent = row.kind === "prescription" ? presentedPrescription(material.content) : row.kind === "exam_request" ? presentedExam(material.content) : presentedSurgical(material.content);
+    if (material.id === row.requestId && material.athlete_id === row.athleteId && material.document_type === row.kind &&
+      (material.status === "draft" || material.status === "ready_for_review") && typeof material.version === "number" && Number.isInteger(material.version) && material.version > 0 &&
+      typeof material.created_at === "string" && Number.isFinite(Date.parse(material.created_at)) && typeof material.updated_at === "string" && Number.isFinite(Date.parse(material.updated_at)) &&
+      typeof material.author_name === "string" && typeof material.athlete_name === "string" && JSON.stringify(previewContent) === JSON.stringify(content)) {
+      preview = { id: row.requestId, athlete_id: row.athleteId, athlete_name: material.athlete_name, document_type: row.kind, status: material.status, version: material.version, created_at: material.created_at, updated_at: material.updated_at, author_name: material.author_name, credential_label: typeof material.credential_label === "string" ? material.credential_label : null, content: previewContent! };
+    }
+  }
   return {
+    preview,
     requestId: row.requestId,
+    readOnlyReason: typeof row.readOnlyReason === "string" ? clip(row.readOnlyReason, 80) : null,
+    locallyEdited: row.locallyEdited === true,
     athleteId: row.athleteId,
     athleteName,
     professionalName,
@@ -194,20 +212,29 @@ export function presentedDocument(value: unknown): DocumentDraft | null {
   };
 }
 
-export function storedDocument(document: DocumentDraft): DocumentDraft | null {
-  if (document.state !== "saved" || !document.documentId) return null;
+export function storedDocument(document: DocumentDraft) {
+  if (document.state === "discarded") return null;
   return {
-    ...document,
-    content: null,
-    missing: [],
-    error: null,
-    contentHash: null,
-    credentialLabel: null,
+    requestId: document.requestId, athleteId: document.athleteId,
+    kind: document.kind, documentId: document.documentId,
+    state: document.documentId ? "saved" : "proposal",
+    athleteName: document.athleteName, professionalName: document.professionalName,
     title: document.title.slice(0, 160),
   };
 }
 
+export function displayedDocumentProposals(turns: { document: DocumentDraft | null }[], selectedRequestId: string | null) {
+  const proposals = turns.flatMap(({ document: p }) => p && p.contentHash && p.version && p.state !== "discarded"
+    ? [{ requestId: p.requestId, athleteId: p.athleteId, kind: p.kind, version: p.version, contentHash: p.contentHash, dirty: p.locallyEdited === true }] : []);
+  const selected = proposals.filter((p) => p.requestId === selectedRequestId);
+  if (selected.length) return selected.slice(-1);
+  if (selectedRequestId && turns.some(({ document: p }) => p?.requestId === selectedRequestId)) return [];
+  return [...new Map(proposals.map((p) => [p.requestId, p])).values()].slice(-12);
+}
+
 export function documentSaveMessage(code: string) {
+  if (code === "conflict" || code === "stale") return "A proposta mudou. Reabra a conversa para revisar a versão atual antes de salvar.";
+  if (code === "locked") return "Este documento está bloqueado para edição. Consulte seu estado no prontuário.";
   if (code === "unapproved") return "A gravação precisa da sua confirmação.";
   if (code === "denied") return "Você não tem permissão para gravar este documento.";
   if (code === "reused") return "Esta confirmação não corresponde ao documento revisado.";

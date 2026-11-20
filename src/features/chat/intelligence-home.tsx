@@ -17,7 +17,7 @@ import { conversationFailure, parseConversation, parseHistory, postConversation,
 import { ClinicalDraftCard } from "./clinical-draft-card";
 import { draftSaveMessage, presentedDraft } from "./clinical-draft";
 import { DocumentDraftCard } from "./document-draft-card";
-import { documentSaveMessage, presentedDocument, type DocumentDraft } from "./document-draft";
+import { documentSaveMessage, displayedDocumentProposals, presentedDocument, type DocumentDraft } from "./document-draft";
 import { confirmSpokenDocument } from "./document-draft-actions";
 import { confirmSpokenDraft } from "./clinical-draft-actions";
 import { athleteCardLine, compactDirectoryReply, presentedAthletes, presentedContext, presentedNavigation, presentedSearch, uuidPattern, type PresentedAthlete, type PresentedSearch } from "./guards";
@@ -30,7 +30,7 @@ import { ClinicalReadings } from "./clinical-reading";
 import { historyRequest, presentedAnalysis, type HistoryAnalysis } from "./history-analysis";
 import { LongitudinalCard } from "./longitudinal-card";
 import { createdDocumentIds, presentedDocumentRoster, presentedReadings, type ReadingBoard, type ReadingRef } from "./document-resolution";
-import { conversationSnapshot, discardInactiveTranscript, loadScroll, loadTurns, readConversationSnapshot, rememberServerSnapshot, replaceTurns, saveScroll, subscribeTurns, transcriptFollowsServer, turnCarriesContent, turnsFrom, type ChatTurn } from "./transcript";
+import { conversationSnapshot, discardInactiveTranscript, loadScroll, loadTurns, readConversationSnapshot, rememberServerSnapshot, replaceTurns, saveScroll, subscribeTurns, transcriptFollowsServer, turnCarriesContent, turnsFrom, updateDocumentTurn, type ChatTurn } from "./transcript";
 import { hasUnsavedClinicalDraft, setUnsavedClinicalDraft } from "../clinical/unsaved";
 import { useVoiceSession } from "./voice/use-voice-session";
 import { VoicePanel, VoiceToggle } from "./voice/voice-panel";
@@ -225,6 +225,7 @@ export function IntelligenceHome({
   const persistQueue = useRef(Promise.resolve());
   const epochRef = useRef(0);
   const sessionRef = useRef<string | null>(initialSessionId);
+  const selectedProposalRef = useRef<string | null>(null);
   const stickRef = useRef(true);
   const pinRef = useRef(false);
   const scrollRestoredRef = useRef(false);
@@ -520,7 +521,12 @@ export function IntelligenceHome({
   }
 
   function finishTurn(id: string, text: string, athletes: PresentedAthlete[], navigation: ChatTurn["navigation"], search: PresentedSearch | null, draft: ChatTurn["draft"] = null, document: ChatTurn["document"] = null, readings: ReadingBoard | null = null, analysis: HistoryAnalysis | null = null) {
-    patchTurns((current) => current.map((turn) => turn.id === id ? { ...turn, text, athletes, navigation, search, draft, document, readings, analysis } : turn));
+    if (document) selectedProposalRef.current = document.requestId;
+    patchTurns((current) => {
+      return current.map((turn) => turn.id === id
+        ? { ...turn, text, athletes, navigation, search, draft, document, readings, analysis }
+        : document && turn.document?.requestId === document.requestId ? { ...turn, document: null } : turn);
+    });
   }
 
   function updateDocument(turnId: string, document: DocumentDraft) {
@@ -529,8 +535,8 @@ export function IntelligenceHome({
       : document.state === "discarded"
         ? "A proposta foi descartada. Nenhum documento foi gravado."
         : null;
-    patchTurns((current) => current.map((turn) => turn.id === turnId ? { ...turn, document, text: text ?? turn.text } : turn));
-    if (document.state === "saved" || document.state === "discarded") queuePersist(currentAthlete(), epochRef.current);
+    patchTurns((current) => updateDocumentTurn(current, turnId, document, text));
+    if (!document.locallyEdited && document.state !== "saving") queuePersist(currentAthlete(), epochRef.current);
   }
 
   function updateDraft(turnId: string, draft: ChatTurn["draft"]) {
@@ -731,6 +737,8 @@ export function IntelligenceHome({
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           messages: history,
+          messageId: userTurn.id,
+          displayedProposals: displayedDocumentProposals(loadTurns(), selectedProposalRef.current),
           contextAthleteId: currentAthlete(),
           inputMode,
           roster,
@@ -1061,7 +1069,7 @@ export function IntelligenceHome({
                   ) : null}
                   {turn.navigation && turn.athletes.length === 0 ? <Link className="ia-open" href={turn.navigation.href} prefetch={false}>Abrir prontuário de {turn.navigation.name}</Link> : null}
                   {turn.draft ? <ClinicalDraftCard draft={turn.draft} canFinalize={canFinalize && turn.draft.athleteId === selectedId} onChange={(next) => updateDraft(turn.id, next)} /> : null}
-                  {turn.document ? <DocumentDraftCard draft={turn.document} onChange={(next) => updateDocument(turn.id, next)} /> : null}
+                  {turn.document ? <DocumentDraftCard draft={turn.document} onChange={(next) => updateDocument(turn.id, next)} onSelect={() => { selectedProposalRef.current = turn.document!.requestId; }} /> : null}
                   {turn.clinicalSearch ? <ClinicalSearchCards board={turn.clinicalSearch} onSelect={selectAthlete}
                     onResults={(data:ActivityResult)=>{
                       const athletes=presentedAthletes(data.items.map(item=>({id:item.athlete_id,name:item.name,category:item.category,club:item.club,division:item.division,facts:[item.category,item.club,item.division,item.modality].filter(Boolean)})));

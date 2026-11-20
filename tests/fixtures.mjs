@@ -8,6 +8,7 @@ export const test = base.extend({
       if (
         path.startsWith("docs/visual/") &&
         !path.startsWith("docs/visual/handoff-007-10-6b-2/") &&
+        !path.startsWith("docs/visual/handoff-007-10-6b-3/") &&
         process.env.CBB_REGENERATE_HISTORICAL_EVIDENCE !== "1"
       )
         return Buffer.alloc(0);

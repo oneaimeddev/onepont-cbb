@@ -1,4 +1,6 @@
 import "server-only";
+import { displayedProposalSchema } from "./operations/document-intent";
+import { documentConversation } from "./operations/document-service";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createOpenAI } from "@ai-sdk/openai";
 import { APICallError, streamText, stepCountIs, tool } from "ai";
@@ -24,6 +26,8 @@ const messageSchema = z.object({
 }).strict();
 
 const requestSchema = z.object({
+  displayedProposals: z.array(displayedProposalSchema).max(12).optional(),
+  messageId: z.string().uuid().optional(),
   messages: z.array(messageSchema).min(1).max(8),
   contextAthleteId: z.string().nullable().optional(),
   inputMode: z.enum(["text", "voice"]).optional(),
@@ -960,6 +964,14 @@ function failureCode(error: unknown) {
 }
 
 export async function openIntelligenceStream(input: unknown): Promise<{ stream: ReadableStream<Uint8Array> } | { error: "unavailable" | "invalid" | "limit" | "provider" }> {
+  const documentInput = requestSchema.safeParse(input);
+  if (documentInput.success && documentInput.data.messages.at(-1)?.role === "user") {
+    const reply = await documentConversation({ message: documentInput.data.messages.at(-1)!.content, athleteId: documentInput.data.contextAthleteId ?? null, proposals: documentInput.data.displayedProposals ?? [], messageId: documentInput.data.messageId, inputMode: documentInput.data.inputMode });
+    if (reply) {
+      const bytes = new TextEncoder().encode(`event: done\ndata: ${JSON.stringify({ ...reply, athletes: [], navigation: null, search: null, draft: null, context: null })}\n\n`);
+      return { stream: new ReadableStream<Uint8Array>({ start(controller) { controller.enqueue(bytes); controller.close(); } }) };
+    }
+  }
   const clinicalInput=requestSchema.safeParse(input);
   if(clinicalInput.success&&clinicalInput.data.messages.at(-1)?.role==="user") {
     const message=clinicalInput.data.messages.at(-1)!.content;

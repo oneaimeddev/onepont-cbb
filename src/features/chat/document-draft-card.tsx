@@ -1,13 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
+import { DocumentPreview } from "../documents/preview";
+import type { ReviewMaterial } from "../documents/review-types";
+import "../documents/documents.css";
 import { setUnsavedClinicalDraft } from "../clinical/unsaved";
 import {
   documentKinds, emptyMedication, examTypeLabels, lateralityLabels, priorityLabels,
   type ExamContent, type Laterality, type MedicationItem, type PrescriptionContent, type Priority, type SurgicalContent,
 } from "../documents/content";
-import { discardDocumentDraft, saveDocumentDraft } from "./document-draft-actions";
+import { discardDocumentDraft, saveDocumentDraft, reviewDocumentDraft } from "./document-draft-actions";
 import { documentMissing, documentSaveMessage, documentTitle, type DocumentDraft } from "./document-draft";
 
 const statusCopy: Record<DocumentDraft["state"], string> = {
@@ -103,26 +106,38 @@ function SurgicalRead({ content }: { content: SurgicalContent }) {
   );
 }
 
-export function DocumentDraftCard({ draft, onChange }: {
+export function DocumentDraftCard({ draft, onChange, onSelect }: {
   draft: DocumentDraft;
   onChange: (next: DocumentDraft) => void;
+  onSelect?: () => void;
 }) {
   const [editing, setEditing] = useState(false);
+  const [feedback, setFeedback] = useState("");
+  const [preview, setPreview] = useState<{ source: string; material: ReviewMaterial } | null>(null);
+  const operationRef = useRef<{ fingerprint: string; key: string } | null>(null);
+  const source = JSON.stringify([draft.version, draft.contentHash, draft.content]);
+  const activePreview = !draft.readOnlyReason && !draft.locallyEdited ? preview?.source === source ? preview.material : draft.preview : null;
+  function operationKey(intent: string) {
+    const fingerprint = `${intent}:${source}`;
+    if (operationRef.current?.fingerprint !== fingerprint) operationRef.current = { fingerprint, key: crypto.randomUUID() };
+    return operationRef.current.key;
+  }
   const [blankItem] = useState(emptyMedication);
   const [pending, startTransition] = useTransition();
   const busy = pending || draft.state === "saving";
-  const open = (draft.state === "proposal" || draft.state === "error") && draft.content !== null;
+  const open = !draft.readOnlyReason && (draft.state === "proposal" || draft.state === "error") && draft.content !== null;
   const copy = documentKinds[draft.kind];
   const label = draft.kind === "prescription" ? "Proposta de prescrição" : draft.kind === "exam_request" ? "Proposta de solicitação de exames" : "Proposta de pedido cirúrgico";
 
   useEffect(() => {
-    const unsaved = draft.state === "proposal" || draft.state === "saving" || draft.state === "error";
+    const unsaved = !draft.readOnlyReason && (draft.state === "proposal" || draft.state === "saving" || draft.state === "error");
     setUnsavedClinicalDraft(unsaved);
-  }, [draft.state]);
+  }, [draft.state, draft.readOnlyReason]);
 
   function replace(content: DocumentDraft["content"]) {
     onChange({
       ...draft,
+      locallyEdited: true,
       content,
       title: documentTitle(draft.kind, content),
       missing: documentMissing(draft.kind, content),
@@ -136,9 +151,9 @@ export function DocumentDraftCard({ draft, onChange }: {
     const current = draft;
     onChange({ ...current, state: "saving", error: null });
     startTransition(async () => {
-      const result = await saveDocumentDraft({ confirm: "yes", requestId: current.requestId, kind: current.kind, content: current.content! });
+      const result = await saveDocumentDraft({ confirm: "yes", requestId: current.requestId, kind: current.kind, content: current.content!, version: current.version, contentHash: current.contentHash, idempotencyKey: operationKey("save") });
       if (result.ok) {
-        onChange({ ...current, state: "saved", documentId: result.id, title: documentTitle(current.kind, current.content), error: null });
+        onChange(result.document ?? { ...current, state: "saved", documentId: result.id, title: documentTitle(current.kind, current.content), error: null });
         return;
       }
       onChange({ ...current, state: "error", error: documentSaveMessage(result.error) });
@@ -149,16 +164,16 @@ export function DocumentDraftCard({ draft, onChange }: {
     <section className="ia-draft" aria-label={label} data-draft-state={draft.state} aria-busy={busy}>
       <header>
         <h3>{draft.state === "saved" ? copy.title : copy.draftTitle}</h3>
-        <p className="ia-draft-status" aria-live="polite">{statusCopy[draft.state]}</p>
+        <p className="ia-draft-status" aria-live="polite">{draft.readOnlyReason ? "Somente consulta" : statusCopy[draft.state]}</p>
       </header>
-      <p className="ia-draft-banner">Rascunho — não assinado e não emitido.</p>
+      <p className="ia-draft-banner">{draft.readOnlyReason ? "Documento somente para consulta. Confira o estado no prontuário." : "Rascunho — não assinado e não emitido."}</p>
       <dl>
         <div><dt>Tipo</dt><dd>{copy.title}</dd></div>
         <div><dt>Atleta</dt><dd>{draft.athleteName}</dd></div>
         <div><dt>Médico responsável</dt><dd>{draft.professionalName}</dd></div>
         <div><dt>Identificação profissional</dt><dd>{draft.credentialLabel ?? "Não registrada neste rascunho"}</dd></div>
       </dl>
-      {draft.state === "discarded" ? null : editing && open && draft.kind === "prescription" && draft.content && "notes" in draft.content ? (
+      {draft.state === "discarded" ? null : activePreview && !editing ? <DocumentPreview document={activePreview} athleteName={activePreview.athlete_name} review /> : editing && open && draft.kind === "prescription" && draft.content && "notes" in draft.content ? (
         <div className="ia-draft-fields">
           {draft.content.items.map((item) => (
             <MedicationFields key={item.id} item={item} onChange={(next) => replace({ ...draft.content as PrescriptionContent, items: (draft.content as PrescriptionContent).items.map((entry) => entry.id === item.id ? next : entry) })} />
@@ -222,13 +237,23 @@ export function DocumentDraftCard({ draft, onChange }: {
         </div>
       ) : null}
       {draft.error ? <p role="alert">{draft.error}</p> : null}
-      {draft.state === "saved" ? <p>O documento foi gravado como rascunho. Ele não foi emitido nem assinado.</p> : null}
+      {draft.state === "saved" && !draft.readOnlyReason ? <p>O documento foi gravado como rascunho. Ele não foi emitido nem assinado.</p> : null}
+      {feedback ? <p role="status">{feedback}</p> : null}
       <div className="ia-draft-actions">
+        {!draft.readOnlyReason && draft.state !== "discarded" && draft.content ? <>
+          {onSelect ? <button type="button" disabled={busy} onClick={() => { onSelect(); setFeedback("Documento escolhido para a próxima solicitação nesta conversa."); }}>Usar nesta conversa</button> : null}
+          <button type="button" disabled={busy} onClick={() => startTransition(async () => {
+            const r = await reviewDocumentDraft({ requestId: draft.requestId, kind: draft.kind, content: draft.content!, version: draft.version, contentHash: draft.contentHash, idempotencyKey: operationKey("review") });
+            if (r.document) onChange(r.document);
+            if (r.error) { setFeedback(r.error === "incomplete" ? "Informe os campos obrigatórios antes da revisão documental." : documentSaveMessage(r.error)); return; }
+            if (r.review) { setPreview({ source: JSON.stringify([r.document?.version, r.document?.contentHash, r.document?.content]), material: r.review.material }); setEditing(false); setFeedback("Revisão atualizada. O documento continua sem assinatura e sem emissão."); }
+          })}>Revisar documento</button>
+        </> : null}
         {open ? (
           <>
             <button type="button" onClick={() => setEditing((value) => !value)} disabled={busy}>{editing ? "Concluir edição" : "Editar"}</button>
             <button type="button" className="ia-draft-save" onClick={save} disabled={busy}>Confirmar e salvar</button>
-            <button type="button" onClick={() => { void discardDocumentDraft(draft.requestId); onChange({ ...draft, state: "discarded", error: null }); }} disabled={busy}>Descartar</button>
+            <button type="button" onClick={() => startTransition(async () => { const r = await discardDocumentDraft(draft.requestId); if (r.ok) onChange({ ...draft, state: "discarded", error: null }); else setFeedback("Não foi possível descartar a proposta. Tente novamente."); })} disabled={busy}>Descartar</button>
           </>
         ) : null}
         {draft.state === "saved" && draft.documentId ? (
