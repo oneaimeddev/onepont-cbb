@@ -4,6 +4,7 @@ import { supabaseServer } from "../../../lib/supabase";
 import { presentedDocument } from "../document-draft";
 import {
   proposalIntent,
+  proposalSaveIntent,
   resolveProposalEdit,
   type DisplayedProposal,
 } from "./document-intent";
@@ -15,14 +16,16 @@ export async function documentConversation(input: {
   messageId?: string;
   inputMode?: "text" | "voice";
 }) {
-  const intent = proposalIntent(input.message);
+  const intent =
+    proposalSaveIntent(input.message) ?? proposalIntent(input.message);
   if (!intent) return null;
+  const save = intent.action === "save";
   if (!input.proposals.length && intent.action === "review") return null;
   const answer = (
     text: string,
     document: ReturnType<typeof presentedDocument> = null,
   ) => ({ text, document });
-  if (input.inputMode === "voice")
+  if (input.inputMode === "voice" && !save)
     return answer(
       "Revise a transcrição e envie a solicitação por texto para revisar ou alterar este documento.",
     );
@@ -74,6 +77,26 @@ export async function documentConversation(input: {
       "A proposta mudou desde a versão exibida. Atualizei o cartão; confira a versão atual e repita a alteração.",
       document,
     );
+  if (save) {
+    const r = await client.rpc("chat_document_save_message", {
+      request_id: shown.requestId,
+      expected_version: shown.version,
+      expected_hash: shown.contentHash,
+      message_key: input.messageId ?? crypto.randomUUID(),
+      utterance: input.message,
+      input_mode: input.inputMode ?? "text",
+    });
+    if (r.error || r.data?.error)
+      return answer(
+        r.data?.error === "conflict"
+          ? "A versão mudou. Confira a proposta atual antes de confirmar novamente."
+          : "Para salvar somente este rascunho, confirme o tipo do documento e diga “Pode confirmar e salvar a prescrição”, “o pedido cirúrgico” ou “a solicitação de exames”. Assinatura e emissão não estão autorizadas.",
+      );
+    return answer(
+      "Salvei esta versão como rascunho. O documento não foi assinado nem emitido.",
+      presentedDocument(r.data?.document),
+    );
+  }
   const key = input.messageId ?? crypto.randomUUID();
   if (intent.action === "review") {
     const r = await client.rpc("chat_document_proposal_review", {

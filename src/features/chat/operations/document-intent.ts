@@ -23,6 +23,29 @@ export type ProposalPatch =
   | { operation: "remove_item"; itemId: string }
   | { operation: "add_item"; item: { id: string; name: string } };
 
+export function proposalSaveIntent(message: string) {
+  // Only the directive before clinical values is considered. A quoted save
+  // instruction in a note is not consent to save the document.
+  const header = foldName(message.split(/\s+para\s+|[:;\n]/iu)[0]);
+  if (
+    /\b(evolucao|anexo|cadastro)\b/.test(header) ||
+    !/\b(salve|salvar|salvamento|grave|gravar|confirmar|confirme)\b/.test(
+      header,
+    )
+  )
+    return null;
+  const kinds = [
+    /\b(prescricao|receita)\b/.test(header) ? "prescription" : null,
+    /\bexames?\b/.test(header) ? "exam_request" : null,
+    /\bcirurgico\b/.test(header) ? "surgical_order" : null,
+  ].filter(Boolean) as DisplayedProposal["kind"][];
+  return {
+    action: "save" as const,
+    kind: kinds.length === 1 ? kinds[0] : null,
+    mixed: kinds.length > 1,
+  };
+}
+
 export function proposalIntent(message: string) {
   const s = foldName(message);
   if (/\b(evolucao|anexo|cadastro|filtro)\b/.test(s.split(/\s+para\s+|:/)[0]))

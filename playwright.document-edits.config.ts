@@ -3,6 +3,8 @@ export default defineConfig({
   testMatch: [
     "**/tests/conversational-document-edits.spec.mjs",
     "**/tests/chat-document-adapters.spec.mjs",
+    "**/tests/chat-document-creation.spec.mjs",
+    "**/tests/chat-document-message-save.spec.mjs",
     "**/tests/chat-operations.spec.mjs",
     "**/tests/conversation-security.spec.mjs",
     "**/tests/workflow-backend.spec.mjs",

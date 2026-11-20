@@ -1,6 +1,7 @@
 import "server-only";
 import { displayedProposalSchema } from "./operations/document-intent";
 import { documentConversation } from "./operations/document-service";
+import { creationPatientMatches, documentCreationRequested, groundDocumentCreation, stableCreationItemId } from "./operations/document-creation";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createOpenAI } from "@ai-sdk/openai";
 import { APICallError, streamText, stepCountIs, tool } from "ai";
@@ -13,9 +14,9 @@ import type { AttachmentBoard } from "../attachments/types";
 import { supabaseServer } from "../../lib/supabase";
 import { intelligenceModel } from "./config";
 import { presentedDraft, type ClinicalDraft } from "./clinical-draft";
-import { documentMissing, documentTitle, examPayload, mergeExamContent, prescriptionPayload, presentedDocument, presentedExam, surgicalPayload, type DocumentDraft } from "./document-draft";
+import { documentTitle, examPayload, prescriptionPayload, presentedDocument, surgicalPayload, type DocumentDraft } from "./document-draft";
 import { athleteCommand, rosterChoice, rosterPrompt, type AthleteCommand } from "./athlete-resolution";
-import { documentChoice, documentRequest, examFollowUp, modelDocumentSummary, type DocumentSlot, type ReadingBoard } from "./document-resolution";
+import { documentChoice, documentRequest, modelDocumentSummary, type DocumentSlot, type ReadingBoard } from "./document-resolution";
 import { athleteProfilePath, athletesFromDirectory, compactDirectoryReply, decideAthleteAccess, directoryFilters, directoryPageSize, presentedAthletes, presentedContext, presentedNavigation, presentedSearch, uuidPattern, type AthleteSearch, type PresentedAthlete, type PresentedSearch } from "./guards";
 import { historyRequest, presentedAnalysis, type HistoryAnalysis } from "./history-analysis";
 import { historyScope, modelHistory, readLongitudinalHistory } from "./history-run";
@@ -217,6 +218,8 @@ async function prepareConversation(input: unknown) {
   const documentRosterIds = (parsed.data.documentRoster ?? []).filter((id) => uuidPattern.test(id)).slice(0, 20);
   const createdIds = (parsed.data.createdDocumentIds ?? []).filter((id) => uuidPattern.test(id)).slice(0, 8);
   const utterance = parsed.data.messages.at(-1)?.content ?? "";
+  const creationTurnKey = parsed.data.messageId ?? crypto.randomUUID();
+  const documentPreparation = { attempted: false, requested: (["prescription", "exam_request", "surgical_order"] as const).some((kind) => documentCreationRequested(kind, utterance)), notice: "" };
   const command = athleteCommand(utterance);
   const speech = documentRequest(utterance);
   const published: { reading: ReadingBoard | null; analysis: HistoryAnalysis | null } = { reading: null, analysis: null };
@@ -493,49 +496,32 @@ async function prepareConversation(input: unknown) {
     execute: async () => ({ status: "confirmation_required" as const }),
   });
 
-  async function registerDocument(athleteId: string, kind: "prescription" | "surgical_order" | "exam_request", content: ReturnType<typeof prescriptionPayload> | ReturnType<typeof surgicalPayload> | ReturnType<typeof examPayload>, requestId = crypto.randomUUID()) {
+  async function registerDocument(athleteId: string, kind: "prescription" | "surgical_order" | "exam_request", content: ReturnType<typeof prescriptionPayload> | ReturnType<typeof surgicalPayload> | ReturnType<typeof examPayload>) {
+    documentPreparation.attempted = true;
+    const blocked = (fields: string[] = []) => {
+      documentPreparation.notice = "Não preparei nem alterei o documento. Confirme o atleta em contexto e informe os nomes e valores explicitamente. Para vários itens, separe cada Medicamento: ou Exame: e seus campos por ponto e vírgula ou nova linha. Alterações de propostas existentes devem usar o cartão e a versão atual.";
+      return { status: "needs_source" as const, fields };
+    };
     const decision = decideAthleteAccess(athleteId, contextAthleteId, searches);
     if (decision !== "allow") {
       const search = searches.findLast((item) => item.ids.includes(athleteId) || item.total > 1);
+      documentPreparation.notice = "Não preparei o documento. Confirme o atleta autorizado antes de continuar.";
       return { ...unavailable(decision), athletes: decision === "confirm" ? search?.athletes ?? [] : [] };
     }
-    const registered = await client.rpc("clinical_document_proposal_register", {
+    const grounded = groundDocumentCreation(kind, content, utterance, (index) => stableCreationItemId(creationTurnKey, athleteId, kind, index));
+    if (!grounded.ok) return blocked(grounded.fields);
+    const roster = await client.rpc("agent_presented_athletes", { ids: [athleteId] });
+    const intended = athletesFromDirectory(roster.error ? [] : roster.data).find((p) => p.id === athleteId);
+    if (!intended || !creationPatientMatches(utterance, intended.name)) return blocked(["athlete_context"]);
+    const registered = await client.rpc("chat_document_proposal_create", {
       target: athleteId,
-      request_id: requestId,
       kind,
-      payload: content,
+      payload: grounded.content,
+      message_key: creationTurnKey,
     });
-    const stored = registered.data as {
-      ok?: boolean;
-      error?: string;
-      sessionId?: unknown;
-      version?: unknown;
-      contentHash?: unknown;
-      athleteName?: unknown;
-      professionalName?: unknown;
-      credentialLabel?: unknown;
-    } | null;
-    if (registered.error || !stored?.ok || typeof stored.athleteName !== "string" || typeof stored.professionalName !== "string" || typeof stored.contentHash !== "string") {
-      return { status: stored?.error === "invalid" ? "invalid" as const : "denied" as const };
-    }
-    return {
-      status: "proposal" as const,
-      state: "proposal" as const,
-      requestId,
-      athleteId,
-      athleteName: stored.athleteName,
-      professionalName: stored.professionalName,
-      credentialLabel: typeof stored.credentialLabel === "string" ? stored.credentialLabel : null,
-      kind,
-      title: documentTitle(kind, content),
-      content,
-      missing: documentMissing(kind, content),
-      documentId: null,
-      error: null,
-      contentHash: stored.contentHash,
-      version: typeof stored.version === "number" ? stored.version : 1,
-      sessionId: typeof stored.sessionId === "string" ? stored.sessionId : null,
-    };
+    const document = presentedDocument(registered.data?.document);
+    if (registered.error || !document || registered.data?.error) return blocked([registered.data?.error ?? "unavailable"]);
+    return { ...document, status: document.state === "saved" ? "saved" as const : "proposal" as const, sessionId: registered.data.sessionId };
   }
 
   const preparePrescription = tool({
@@ -553,8 +539,8 @@ async function prepareConversation(input: unknown) {
         duration: z.string().max(160).optional(),
         quantity: z.string().max(160).optional(),
         instructions: z.string().max(500).optional(),
-      })).max(12),
-    }),
+      }).strict()).max(12),
+    }).strict(),
     execute: async ({ athleteId, notes, items }) => registerDocument(athleteId, "prescription", prescriptionPayload(notes ?? "", items)),
   });
 
@@ -571,7 +557,7 @@ async function prepareConversation(input: unknown) {
       priority: z.string().max(40).optional(),
       additional: z.string().max(2000).optional(),
       materials: z.string().max(1000).optional(),
-    }),
+    }).strict(),
     execute: async (input) => registerDocument(input.athleteId, "surgical_order", surgicalPayload(input)),
   });
 
@@ -592,25 +578,9 @@ async function prepareConversation(input: unknown) {
         laterality: z.string().max(40).optional(),
         technicalDetails: z.string().max(500).optional(),
         notes: z.string().max(500).optional(),
-      })).max(12),
-    }),
-    execute: async (input) => {
-      const incoming = examPayload(input);
-      const updating = examFollowUp(utterance);
-      let requestId = crypto.randomUUID();
-      let content = incoming;
-      if (updating) {
-        const current = await client.rpc("clinical_document_proposal_current", { target: input.athleteId, kind: "exam_request" });
-        const data = current.data as { ok?: boolean; error?: string; requestId?: string; content?: unknown } | null;
-        if (current.error || !data?.ok) return data?.error === "ambiguous" ? { status: "choose" as const } : unavailable("denied");
-        const stored = typeof data.requestId === "string" ? presentedExam(data.content) : null;
-        if (stored && data.requestId) {
-          requestId = data.requestId;
-          content = mergeExamContent(stored, incoming);
-        }
-      }
-      return registerDocument(input.athleteId, "exam_request", content, requestId);
-    },
+      }).strict()).max(12),
+    }).strict(),
+    execute: async (input) => registerDocument(input.athleteId, "exam_request", examPayload(input)),
   });
 
   const listDocumentDrafts = tool({
@@ -883,6 +853,8 @@ async function prepareConversation(input: unknown) {
 
   return {
     published,
+    documentView: () => documentPreparation,
+    holdClinicalNarrative: canAuthorDocuments,
     attachmentView: () => attachmentPublished,
     clinicalView: () => clinicalPublished,
     request: {
@@ -923,7 +895,7 @@ async function prepareConversation(input: unknown) {
           ? "Quando o médico pedir um pedido cirúrgico, use prepareSurgicalOrder. Informe procedimento, lateralidade, indicação, justificativa e complementos somente se ele os disse. Não invente indicação nem diagnóstico."
           : "",
         canAuthorDocuments
-          ? "Quando o médico pedir exames, use prepareExamRequest só com os exames que ele nomeou. Não escolha outros exames e não invente contraste, preparo, prioridade ou diagnóstico. Um exame citado depois complementa a proposta aberta. A justificativa só entra se ele a disse."
+          ? "preparePrescription, prepareSurgicalOrder e prepareExamRequest criam propostas novas somente quando o profissional pede criação explícita. Não use prepare* para alterar ou complementar uma proposta. Esses pedidos usam o cartão e operações com versão. Valores precisam de fonte na mensagem atual; não copie histórico nem respostas do assistente. Não converta grafia ou unidades. Para vários itens, peça Medicamento: NOME; Dose: VALOR; Unidade: VALOR; ou Exame: NOME; Tipo: VALOR, em linhas separadas. Se houver needs_source, peça esclarecimento e não afirme que preparou, alterou, salvou ou assinou."
           : "",
         canAuthorDocuments
           ? "Para consultar prescrições, pedidos cirúrgicos ou solicitações de exames já gravados, use browseClinicalDocuments ou readClinicalDocument. O cartão mostra o original. Não descreva dose, exame, indicação ou justificativa. Não diga que o documento foi emitido ou assinado. Se houver mais de um, peça para o profissional escolher."
@@ -1009,11 +981,21 @@ export async function openIntelligenceStream(input: unknown): Promise<{ stream: 
       try {
         const result = streamText(prepared.request);
         for await (const delta of result.textStream) {
-          if (delta) send("delta", { text: delta });
+          if (delta && !prepared.holdClinicalNarrative) send("delta", { text: delta });
         }
-        const view = presentationFrom(await result.steps);
+        const steps = await result.steps;
+        const view = presentationFrom(steps);
         const modelText = (await result.text).trim();
-        const text = view.document
+        const preparation = prepared.documentView();
+        const medicalDocumentTool = steps.some((step) => step.toolCalls.some((call) => ["preparePrescription", "prepareSurgicalOrder", "prepareExamRequest", "saveClinicalDocument"].includes(call.toolName)));
+        const saveOnly = !preparation.attempted && !preparation.requested && steps.some((step) => step.toolCalls.some((call) => call.toolName === "saveClinicalDocument"));
+        const text = preparation.attempted || preparation.requested || medicalDocumentTool
+          ? view.document
+            ? view.document.readOnlyReason ? "Recuperei o documento somente para consulta. Confira seu estado no prontuário."
+              : view.document.state === "saved" ? "Esta proposta já foi salva como rascunho. Recuperei o mesmo documento, sem nova gravação, assinatura ou emissão."
+                : "Preparei a proposta com os valores informados nesta mensagem. Confira o cartão antes de salvar. Ela não foi gravada no prontuário, assinada ou emitida."
+            : preparation.notice || (saveOnly ? "O sistema confere sua solicitação original para salvar somente o rascunho. Acompanhe o resultado no cartão; isso não autoriza assinatura ou emissão." : "Não preparei o documento. Informe os nomes e campos clínicos explicitamente.")
+          : view.document
           ? (modelText || "Organizei uma proposta de documento para revisão. Ela ainda não foi salva.")
           : view.draft
             ? (modelText || "Organizei uma proposta de evolução para revisão. Ela ainda não foi salva.")

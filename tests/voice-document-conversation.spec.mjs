@@ -208,9 +208,10 @@ test("desktop: one card updates, shared review saves, reload recovers exact pers
   await page.screenshot({
     path: "docs/visual/handoff-007-10-6b-3/document-chat-desktop.png",
   });
-  await card
-    .getByRole("button", { name: "Confirmar e salvar", exact: true })
-    .click();
+  await page
+    .getByRole("textbox", { name: "Mensagem", exact: true })
+    .fill("Pode confirmar e salvar a prescrição.");
+  await page.getByRole("button", { name: "Enviar", exact: true }).click();
   await expect(card.getByText("Rascunho salvo", { exact: true })).toBeVisible();
   expect(
     sql(

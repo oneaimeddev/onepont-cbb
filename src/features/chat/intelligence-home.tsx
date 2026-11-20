@@ -17,8 +17,7 @@ import { conversationFailure, parseConversation, parseHistory, postConversation,
 import { ClinicalDraftCard } from "./clinical-draft-card";
 import { draftSaveMessage, presentedDraft } from "./clinical-draft";
 import { DocumentDraftCard } from "./document-draft-card";
-import { documentSaveMessage, displayedDocumentProposals, presentedDocument, type DocumentDraft } from "./document-draft";
-import { confirmSpokenDocument } from "./document-draft-actions";
+import { displayedDocumentProposals, presentedDocument, type DocumentDraft } from "./document-draft";
 import { confirmSpokenDraft } from "./clinical-draft-actions";
 import { athleteCardLine, compactDirectoryReply, presentedAthletes, presentedContext, presentedNavigation, presentedSearch, uuidPattern, type PresentedAthlete, type PresentedSearch } from "./guards";
 import { HomeGreeting } from "./home-greeting";
@@ -631,7 +630,6 @@ export function IntelligenceHome({
       ? [{ turnId: turn.id, document: turn.document }]
       : []);
     const spokenDraft = pendingDrafts.length === 1 && pendingDocuments.length === 0 ? pendingDrafts[0] : null;
-    const spokenDocument = pendingDocuments.length === 1 && pendingDrafts.length === 0 ? pendingDocuments[0] : null;
     const confirmation = spokenDraft
       ? confirmSpokenDraft({
         utterance: message,
@@ -642,15 +640,7 @@ export function IntelligenceHome({
         restricted: spokenDraft.draft.restricted,
         inputMode,
       }).then((result) => ({ kind: "draft" as const, result }))
-      : pendingDocuments.length > 0
-        ? confirmSpokenDocument({
-          utterance: message,
-          requestId: spokenDocument?.document.requestId ?? null,
-          kind: spokenDocument?.document.kind ?? null,
-          content: spokenDocument?.document.content ?? null,
-          inputMode,
-        }).then((result) => ({ kind: "document" as const, result }))
-        : pendingDrafts.length > 1
+      : pendingDrafts.length > 1 && pendingDocuments.length === 0
           ? confirmSpokenDraft({
             utterance: message,
             requestId: null,
@@ -841,31 +831,8 @@ export function IntelligenceHome({
           const outcome = await confirmation;
           if (outcome.kind === "draft" && outcome.result.ok && spokenDraft) {
             updateDraft(spokenDraft.turnId, { ...spokenDraft.draft, state: "saved", recordId: outcome.result.id, error: null });
-          } else if (outcome.kind === "document" && outcome.result.ok) {
-            const saved = outcome.result;
-            const match = spokenDocument && spokenDocument.document.requestId === saved.requestId
-              ? spokenDocument
-              : pendingDocuments.find((item) => item.document.requestId === saved.requestId) ?? null;
-            if (match) {
-              updateDocument(match.turnId, { ...match.document, state: "saved", documentId: saved.id, error: null });
-              if (match.document.kind === "exam_request") {
-                patchTurns((current) => current.map((turn) => turn.id === match.turnId ? {
-                  ...turn,
-                  readings: {
-                    source: "document",
-                    athleteId: saved.athleteId,
-                    total: 1,
-                    page: 1,
-                    pageSize: 1,
-                    kind: "exam_request",
-                    status: "draft",
-                    items: [{ id: saved.id, athleteId: saved.athleteId, kind: "exam_request", open: true }],
-                  },
-                } : turn));
-              }
-            }
           } else if (!outcome.result.ok && outcome.result.error !== "ignored") {
-            setFailure(outcome.kind === "document" ? documentSaveMessage(outcome.result.error) : draftSaveMessage(outcome.result.error));
+            setFailure(draftSaveMessage(outcome.result.error));
           }
         } catch (error) {
           if (!(error instanceof Error)) throw error;
