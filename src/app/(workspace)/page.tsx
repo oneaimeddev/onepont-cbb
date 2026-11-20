@@ -69,8 +69,8 @@ export default async function ChatPage({ searchParams }: {
       initialSnapshot={current.snapshot}
       initialHistory={history}
       signOut={(
-        <form action={logout}>
-          <SubmitButton className="ia-signout" pendingLabel="Saindo…">Sair</SubmitButton>
+        <form action={logout} role="none">
+          <SubmitButton role="menuitem" className="ia-signout" pendingLabel="Saindo…">Sair</SubmitButton>
         </form>
       )}
       context={active && activeName ? (

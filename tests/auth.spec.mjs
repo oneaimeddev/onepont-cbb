@@ -44,7 +44,7 @@ test("backend rejeita acesso anônimo e as duas interfaces exigem login", async 
   expect(response.status()).toBe(401);
   expect((await page.request.get(`/api/atletas/${randomUUID()}/foto`)).status()).toBe(401);
   expect(response.headers()["cache-control"]).toBe("private, no-store");
-  for (const path of ["/", "/prontuarios", "/auditoria"]) {
+  for (const path of ["/", "/prontuarios", "/auditoria", "/perfil"]) {
     await page.goto(path);
     await expect(page).toHaveURL(/\/login$/);
   }
@@ -65,7 +65,7 @@ test("login individual, navegação nos dois modos e logout em tela móvel", asy
   const tasks = page.getByRole("navigation", { name: "Tarefas clínicas" });
   await expect(tasks).toHaveCount(0);
 
-  const account = page.getByRole("button", { name: "Conta de Profissional DEMO" });
+  const account = page.getByRole("button", { name: /^Conta de / });
   await account.click();
   await expect(page.getByRole("menu", { name: "Conta" }).getByText("Profissional DEMO")).toBeVisible();
   await page.keyboard.press("Escape");
@@ -86,7 +86,8 @@ test("login individual, navegação nos dois modos e logout em tela móvel", asy
   await expect(page.getByRole("heading", { name: "Atletas" })).toBeVisible();
   await menu.click();
   await expect(page.getByRole("navigation", { name: "Navegação do workspace" }).getByRole("link", { name: "Atletas", exact: true })).toHaveAttribute("aria-current", "page");
-  await page.getByRole("button", { name: "Sair" }).click();
+  await page.getByRole("button", { name: /^Conta de / }).click();
+  await page.getByRole("menuitem", { name: "Sair" }).click();
   await expect(page).toHaveURL(/\/login$/);
   expect((await page.request.get("/api/profile")).status()).toBe(401);
 });

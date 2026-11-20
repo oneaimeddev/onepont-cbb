@@ -145,7 +145,8 @@ test("busca, seleção, timeline, troca, cadastro e auditoria do atleta", async 
   ]));
   expect(JSON.stringify(events)).not.toContain("Conteúdo");
   await page.getByRole("button", { name: "Menu", exact: true }).click();
-  await page.getByRole("button", { name: "Sair", exact: true }).click();
+  await page.getByRole("button", { name: /^Conta de / }).click();
+  await page.getByRole("menuitem", { name: "Sair", exact: true }).click();
   await page.getByLabel("E-mail").fill(auditor.email);
   await page.getByLabel("Senha").fill(auditor.password);
   await page.getByRole("button", { name: "Entrar" }).click();

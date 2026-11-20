@@ -8,6 +8,7 @@ import { attachmentBoard } from "../attachments/types";
 import { attachmentRoster } from "../attachments/conversation";
 import { allowAttachmentContextChange, hasPendingAttachment } from "../attachments/pending";
 import Image from "next/image";
+import { AccountMenu } from "../../components/account-menu";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
@@ -215,7 +216,6 @@ export function IntelligenceHome({
   const pathname = usePathname();
   const router = useRouter();
   const landingRef = useRef(landing);
-  const accountRef = useRef<HTMLButtonElement>(null);
   const contextToggleRef = useRef<HTMLButtonElement>(null);
   const contextPanelRef = useRef<HTMLElement>(null);
   const historyToggleRef = useRef<HTMLButtonElement>(null);
@@ -230,7 +230,6 @@ export function IntelligenceHome({
   const scrollRestoredRef = useRef(false);
   const [attachmentOpen,setAttachmentOpen]=useState(false);
   const [attachmentPending,setAttachmentPending]=useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
   const [starting, setStarting] = useState(false);
   const [pending, setPending] = useState(false);
   const [processingTools, setProcessingTools] = useState(false);
@@ -873,11 +872,6 @@ export function IntelligenceHome({
     }
   }
 
-  function closeMenu() {
-    setMenuOpen(false);
-    accountRef.current?.focus();
-  }
-
   const panels = useSyncExternalStore(subscribePanels, readPanels, () => panelsOpen);
   const isNarrow = useSyncExternalStore(subscribeNarrow, readNarrow, () => false);
   const historyCollapsed = panels.history && !isNarrow;
@@ -1017,39 +1011,7 @@ export function IntelligenceHome({
               Contexto
             </button>
           ) : null}
-          <div
-            className="ia-user"
-            onKeyDown={(event) => {
-              if (event.key === "Escape" && menuOpen) closeMenu();
-            }}
-          >
-            <button
-              ref={accountRef}
-              type="button"
-              aria-expanded={menuOpen}
-              aria-haspopup="menu"
-              aria-label={`Conta de ${profile.displayName}`}
-              onClick={() => setMenuOpen((open) => !open)}
-            >
-              <span className="ia-avatar" aria-hidden="true">{profile.initials}</span>
-              <span>
-                <strong>{profile.displayName}</strong>
-                <small>{profile.profession}</small>
-              </span>
-            </button>
-            {menuOpen ? (
-              <div className="ia-menu" role="menu" aria-label="Conta">
-                <div className="ia-menu-id">
-                  <strong>{profile.displayName}</strong>
-                  <small>{profile.profession}</small>
-                </div>
-                {profile.canReadAudit ? (
-                  <Link role="menuitem" href="/auditoria" prefetch={false} onClick={() => setMenuOpen(false)}>Auditoria</Link>
-                ) : null}
-                {signOut}
-              </div>
-            ) : null}
-          </div>
+          <AccountMenu profile={profile} signOut={signOut} />
           </div>
         </header>
 

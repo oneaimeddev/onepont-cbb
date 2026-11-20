@@ -252,7 +252,8 @@ test("menu por teclado, Escape, foco e autorização preservada", async ({ page 
   await trigger.click();
   await page.getByRole("link", { name: "Nova prescrição", exact: true }).click();
   await expect(page.getByLabel("Nome do medicamento")).toBeVisible();
-  await page.getByRole("button", { name: "Sair", exact: true }).click();
+  await page.getByRole("button", { name: /^Conta de / }).click();
+  await page.getByRole("menuitem", { name: "Sair", exact: true }).click();
   await page.waitForURL(/login/);
   await login(page, blocked);
   await page.goto(`/atletas/${athlete}`);

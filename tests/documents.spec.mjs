@@ -173,7 +173,9 @@ test("rascunhos médicos, revisão e bloqueios", async ({ page }) => {
   expect(trail).not.toContain("Artroscopia");
   expect(trail).not.toContain("Justificativa fictícia");
 
-  await page.getByRole("button", { name: "Sair", exact: true }).click();
+  await page.getByRole("button", { name: /^Conta de / }).click();
+
+  await page.getByRole("menuitem", { name: "Sair", exact: true }).click();
   await page.waitForURL(/\/login/);
   await page.getByLabel("E-mail").fill(physio.email);
   await page.getByLabel("Senha", { exact: true }).fill(physio.password);

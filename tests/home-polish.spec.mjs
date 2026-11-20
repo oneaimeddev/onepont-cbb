@@ -200,9 +200,9 @@ test("login mostra Home sem criar sessão; histórico, contexto e documentos sã
     page.getByRole("complementary", { name: "Contexto da tarefa" }),
   ).toContainText("Atleta Home DEMO");
   await page
-    .getByRole("button", { name: "Conta de Profissional DEMO" })
+    .getByRole("button", { name: /^Conta de / })
     .click();
-  await page.getByRole("button", { name: "Sair", exact: true }).click();
+  await page.getByRole("menuitem", { name: "Sair", exact: true }).click();
   await page.waitForURL("/login");
   await login(page);
   await expect(

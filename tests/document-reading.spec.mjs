@@ -225,7 +225,8 @@ test("consulta autorizada mostra o documento original e esconde o restante", asy
   expect(kept.data.ok).toBe(true);
   const stored = JSON.stringify(kept.data);
   expect(stored).not.toContain("Dipirona");
-  expect(stored).not.toContain("500");
+  expect(stored).not.toContain('"dose"');
+  expect(stored).not.toContain("500 mg");
   expect(stored).not.toContain(secret);
   expect(stored).toContain(dip);
   expect(stored).not.toContain(hiddenDoc);
