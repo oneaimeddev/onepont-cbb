@@ -61,12 +61,11 @@ export type VerifiedDeliveryArtifact = {
   artifactId: string;
   validationEvidenceId: string;
 };
-export interface DocumentDeliveryExtension {
-  deliverExplicitly(
-    artifact: VerifiedDeliveryArtifact,
-    consentId: string,
-  ): Promise<void>;
-}
+export type DeliveryState="requested"|"waiting"|"sent"|"failed"|"delivered";
+export type VerifiedDeliveryRequest={documentId:string;documentVersion:number;artifact:VerifiedDeliveryArtifact;senderProfessionalId:string;recipientAuthorizationId:string;channel:"whatsapp";explicitConsentId:string;idempotencyKey:string};
+export type DeliveryOutcome={requestId:string;state:DeliveryState;auditReference:string;retryable:boolean};
+/** A future server must revalidate artifact, recipient and consent; client flags are never authority. */
+export interface DocumentDeliveryExtension {deliverExplicitly(request:VerifiedDeliveryRequest):Promise<DeliveryOutcome>;getStatus?(requestId:string):Promise<DeliveryOutcome>;retry?(requestId:string,idempotencyKey:string):Promise<DeliveryOutcome>;}
 export const demoNotice = "DEMONSTRAÇÃO — DOCUMENTO NÃO ASSINADO DIGITALMENTE";
 export const signingStateLabels: Record<SigningState, string> = {
   authorizing: "Autorização simulada registrada",

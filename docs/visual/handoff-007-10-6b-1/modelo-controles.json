@@ -1,0 +1,30 @@
+{
+  "migration": "20261120000300",
+  "tables": [
+    {
+      "name": "document_reviews",
+      "rls": true,
+      "authenticated_read": false,
+      "authenticated_write": false
+    },
+    {
+      "name": "signature_demo_delivery_intents",
+      "rls": true,
+      "authenticated_read": false,
+      "authenticated_write": false
+    }
+  ],
+  "intent_constraints": [
+    "FOREIGN KEY (attempt_id) REFERENCES clinical.signature_attempts(id)",
+    "UNIQUE (attempt_id)",
+    "CHECK ((channel = 'whatsapp'::text))",
+    "CHECK ((NOT eligible_for_real))",
+    "PRIMARY KEY (id)",
+    "FOREIGN KEY (professional_id) REFERENCES profiles(id)",
+    "CHECK ((provenance = 'demo'::text))",
+    "CHECK ((NOT recipient_authorized))",
+    "FOREIGN KEY (review_id, professional_id) REFERENCES clinical.document_reviews(id, professional_id)",
+    "CHECK ((state = 'demo_intent_no_send'::text))"
+  ],
+  "anonymous_review_execute": false
+}

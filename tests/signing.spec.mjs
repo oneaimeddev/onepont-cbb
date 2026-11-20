@@ -181,7 +181,7 @@ test.afterAll(async () => {
   if (users.length) {
     const ids = users.map((x) => `'${x}'`).join(",");
     sql(
-      `delete from clinical.signature_results where attempt_id in(select id from clinical.signature_attempts where professional_id in(${ids}));delete from clinical.signature_transitions where professional_id in(${ids});delete from clinical.signature_attempts where professional_id in(${ids});delete from clinical.signature_snapshots where professional_id in(${ids});delete from clinical.signature_preferences where professional_id in(${ids});delete from clinical.signing_identities where professional_id in(${ids});delete from clinical.signature_connections where professional_id in(${ids});delete from clinical.professional_registrations where professional_id in(${ids});delete from clinical.professional_details where professional_id in(${ids});delete from clinical.athletes where id='${athlete}';delete from clinical.medical_authors where professional_id in(${ids});`,
+      `delete from clinical.signature_demo_delivery_intents where professional_id in(${ids});delete from clinical.document_reviews where professional_id in(${ids});delete from clinical.signature_results where attempt_id in(select id from clinical.signature_attempts where professional_id in(${ids}));delete from clinical.signature_transitions where professional_id in(${ids});delete from clinical.signature_attempts where professional_id in(${ids});delete from clinical.signature_snapshots where professional_id in(${ids});delete from clinical.signature_preferences where professional_id in(${ids});delete from clinical.signing_identities where professional_id in(${ids});delete from clinical.signature_connections where professional_id in(${ids});delete from clinical.professional_registrations where professional_id in(${ids});delete from clinical.professional_details where professional_id in(${ids});delete from clinical.athletes where id='${athlete}';delete from clinical.medical_authors where professional_id in(${ids});`,
     );
     for (const id of users) {
       await admin.storage
@@ -566,12 +566,8 @@ test("jornada real de interface, recuperação e capturas desktop/mobile", async
     });
   }
   await page.goto(`/atletas/${athlete}/documentos/${d.id}`);
-  await page.getByRole("link", { name: "Revisar assinatura digital" }).click();
-  await expect(page.getByText("Revisar conteúdo integral salvo")).toBeVisible();
-  await page
-    .getByRole("button", { name: "Preparar versão demonstrativa" })
-    .click();
-  await expect(page.getByText("Hash SHA-256 do conteúdo exato")).toBeVisible();
+  await page.getByRole("button", { name: "Revisar e assinar" }).click();
+  await expect(page.getByRole("heading",{name:"Revisar documento",exact:true})).toBeVisible();
   await page
     .getByLabel("Identidade para este documento")
     .selectOption(
@@ -579,7 +575,7 @@ test("jornada real de interface, recuperação e capturas desktop/mobile", async
         (i) => i.label === "Identidade DEMO B",
       ).id,
     );
-  await page.getByLabel("Revisei o conteúdo integral").check();
+  await page.getByLabel("Revisei este conteúdo").check();
   for (const width of [1440, 390, 320]) {
     await page.setViewportSize({ width, height: 900 });
     await page.addScriptTag({ path: require.resolve("axe-core/axe.min.js") });
@@ -612,7 +608,7 @@ test("jornada real de interface, recuperação e capturas desktop/mobile", async
     });
   }
   await page
-    .getByRole("button", { name: "Confirmar e autorizar simulação" })
+    .getByRole("button", { name: "Simular assinatura" })
     .click();
   await expect(
     page.getByRole("heading", { name: "Simulação concluída", exact: true }),

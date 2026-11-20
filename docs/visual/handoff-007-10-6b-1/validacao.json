@@ -1,0 +1,38 @@
+{
+  "date": "2026-11-20",
+  "branch": "feat/handoff-007-10-6b-1-document-review",
+  "base": "d29dd55",
+  "main": "162b9a9",
+  "complete_tests": {
+    "passed": 114,
+    "failed": 0
+  },
+  "final_acceptance_tests": {
+    "passed": 24,
+    "failed": 0
+  },
+  "lint": "passed",
+  "typecheck": "passed",
+  "build": "passed",
+  "review_axe_scans": 9,
+  "review_axe_violations": 0,
+  "widths": [
+    1440,
+    390,
+    320
+  ],
+  "browser": "headless Chromium",
+  "clinical_records_created_by_review_only": 0,
+  "manual_snapshot_preparation_required": false,
+  "document_snapshot_material_match_verified": true,
+  "demonstration_delivery_eligible_for_real": false,
+  "external_requests_during_simulation": 0,
+  "whatsapp_sent": 0,
+  "cryptographic_signature_produced": false,
+  "migration": "20261120000300",
+  "previous_signing_migrations_modified": false,
+  "old_visual_files_restored": 193,
+  "merge": false,
+  "push": false,
+  "deploy": false
+}

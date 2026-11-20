@@ -84,3 +84,36 @@
 }
 /* Switching the active item must not anchor the page to the fields being hidden. */
 .document-edit-scope { overflow-anchor: none; }
+
+/* The clinical review shares the document template and keeps technical preparation out of the primary flow. */
+.document-edit-scope.is-reviewing [hidden] { display:none !important; }
+.document-review-heading { margin:24px 0; }
+.document-review-heading h1 { margin-bottom:12px; }
+.document-review-layout { display:grid;grid-template-columns:minmax(0,1.55fr) minmax(300px,1fr);gap:32px;align-items:start; }
+.document-review-layout>* { min-width:0; }
+.document-review-decisions { padding:24px;background:#fff;border:1px solid var(--line,#dce3ec);border-radius:12px; }
+.document-review-decisions h3 { margin-top:0;margin-bottom:16px;font-size:1.1rem;font-weight:600; }
+.document-review-decisions label:not(.signing-choice) { display:grid;gap:8px; }
+.document-review-decisions select { width:100%;min-height:44px; }
+.document-review-decisions details { margin:24px 0; }
+.document-review-decisions summary,.document-saved-utilities summary { padding:12px 0;min-height:44px;cursor:pointer; }
+.document-review-actions { display:grid;gap:12px;margin-top:24px; }
+.document-review-actions button { width:100%;min-height:44px;white-space:normal; }
+.document-institution { display:flex;align-items:center;gap:16px;border-bottom:1px solid var(--line,#dce3ec);padding-bottom:20px;margin-bottom:20px; }
+.document-institution img { object-fit:contain; }
+.document-institution p { margin:4px 0; }
+.document-future-signature { border-top:1px solid var(--line,#dce3ec);padding-top:20px;margin-top:28px; }
+.document-recipient { padding:16px;background:#f5f7fa;border-radius:8px;overflow-wrap:anywhere; }
+.document-recipient dt { font-size:.875rem;color:var(--muted,#536579);margin-bottom:4px; }
+.document-recipient dd { margin:0 0 12px; }
+.document-delivery-result { border-left:3px solid #9b7c18;padding-left:16px; }
+.document-review-error { color:var(--danger,#a32631); }
+.document-saved-utilities { flex-basis:100%; }
+@media(max-width:1050px){.document-review-layout {grid-template-columns:1fr}.document-review-decisions {padding:20px}}
+@media(max-width:420px){.document-review-decisions{padding:16px}.document-review-heading h1{font-size:1.85rem}}
+
+.clinical-page:has(.is-reviewing) > .document-mast {display:none;}
+
+.document-editor-fields:not([hidden]) {display:contents;}
+.document-edit-scope.is-reviewing {display:block;max-width:70rem;}
+.document-review-layout > .document-sheet {max-width:none;}

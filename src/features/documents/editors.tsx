@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { SubmitButton } from "../../components/submit-button";
-import { DocumentEditorFrame, DocumentItemNavigation, DocumentTextarea, RemovalNotice, useDocumentItems } from "./editor-controls";
-import { saveDocument } from "./actions";
+import { useLayoutEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { DocumentReviewPanel } from "./review-panel";
+import { reviewCommand } from "./review-client";
+import { DocumentEditorFrame, DocumentItemNavigation, DocumentTextarea, RemovalNotice, useDocumentItems, useEditorReview } from "./editor-controls";
 import {
   emptyExamItem, emptyMedication, examSuggestions, examTypeLabels, lateralityLabels, prescriptionPending, priorityLabels, surgicalPending, examPending,
   type ExamContent, type ExamItem, type ExamType, type MedicationItem, type PrescriptionContent, type SurgicalContent,
@@ -37,24 +38,38 @@ function DraftForm({ athleteId, documentId, version, kind, content, returnTo, sa
   saved: boolean;
   dirty: boolean;
 }) {
-  return (
-    <>
-      <div className="document-action-bar">
-      <p className="document-save-state" aria-live="polite">{dirty ? "Alterações não salvas. Salve antes de pré-visualizar." : "A pré-visualização apresenta a última versão salva."}</p>
-      <form action={saveDocument} className="document-actions">
-        <input type="hidden" name="athlete" value={athleteId} />
-        <input type="hidden" name="document" value={documentId} />
-        <input type="hidden" name="version" value={version} />
-        <input type="hidden" name="kind" value={kind} />
-        <input type="hidden" name="return" value={returnTo} />
-        <input type="hidden" name="content" value={JSON.stringify(content)} />
-        <SubmitButton name="intent" value="save" pendingLabel="Salvando…">Salvar rascunho</SubmitButton>
-        <SubmitButton name="intent" value="review" className="outline" pendingLabel="Salvando…">Apresentar para revisão</SubmitButton>
-        {saved && <Link className="outline" data-document-preview href={`${returnTo}?vista=previa`}>Pré-visualizar</Link>}
-      </form>
-      </div>
-    </>
-  );
+  const scope=useEditorReview();
+  const router=useRouter();
+  const [busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState(''),[chosen,setChosen]=useState('');
+  const inFlight=useRef(false),workingVersion=useRef(version),reviewKey=useRef<string|null>(null),keyContent=useRef('');
+  const currentContent=useRef(content);useLayoutEffect(()=>{currentContent.current=content;},[content]);
+  async function act(review:boolean){
+    if(inFlight.current)return;
+    inFlight.current=true;setBusy(true);setError('');setNotice('');
+    const raw=JSON.stringify(content);
+    try{
+      if(keyContent.current!==raw){reviewKey.current=null;keyContent.current=raw;}
+      reviewKey.current??=crypto.randomUUID();
+      const result=await reviewCommand(review?'open':'draft',{athlete_id:athleteId,document_id:documentId,version:workingVersion.current,kind,content,idempotency_key:reviewKey.current});
+      if(review){
+        if(JSON.stringify(currentContent.current)!==raw){throw new Error('Os campos mudaram enquanto a revisão era aberta. Clique em Revisar e assinar novamente para conferir o conteúdo atual.');}
+        scope.show(<DocumentReviewPanel initial={result.review} inventory={result.inventory} demoEnabled={result.demo_enabled} initialIdentity={chosen} onIdentityChange={setChosen} onBack={()=>{reviewKey.current=null;scope.back();}} onPersisted={scope.release}/>);
+      }else{
+        workingVersion.current=result.version;
+        if(JSON.stringify(currentContent.current)!==raw){reviewKey.current=null;setNotice('A versão enviada foi salva. Há alterações posteriores neste formulário; revise ou salve novamente.');}
+        else{scope.release();router.push(`/atletas/${athleteId}/documentos/${documentId}?salvo=rascunho`);router.refresh();}
+      }
+    }catch(e){setError((e as Error).message);if((e as {code?:string}).code==='expired')reviewKey.current=null;}
+    finally{inFlight.current=false;setBusy(false);}
+  }
+  return <div className="document-action-bar">
+    <p className="document-save-state" aria-live="polite">{dirty?'Alterações não salvas. A revisão usará o conteúdo atual.':'Revise o documento ou mantenha-o como rascunho.'}</p>
+    <input type="hidden" name="version" value={version}/>
+    <input type="hidden" name="content" value={JSON.stringify(content)}/>
+    <div className="document-actions"><button data-review-trigger type="button" className="button" disabled={busy} onClick={()=>void act(true)}>{busy?'Processando…':'Revisar e assinar'}</button><button type="button" className="outline" disabled={busy} onClick={()=>void act(false)}>Salvar rascunho</button></div>
+    {saved&&<details open className="document-saved-utilities"><summary>Consultar versão salva</summary><Link className="outline" data-document-preview href={`${returnTo}?vista=previa`}>Pré-visualizar</Link></details>}
+    {error&&<p role="alert">{error}</p>}{notice&&<p role="status">{notice}</p>}
+  </div>;
 }
 
 export function PrescriptionEditor({ athleteId, documentId, version, initial, returnTo, saved }: {

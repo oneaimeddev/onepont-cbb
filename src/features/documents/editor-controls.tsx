@@ -1,26 +1,31 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef, useState, type ReactNode, type TextareaHTMLAttributes } from "react";
+import { createContext, useContext, useEffect, useLayoutEffect, useRef, useState, type ReactNode, type TextareaHTMLAttributes } from "react";
 import { setUnsavedClinicalDraft } from "../clinical/unsaved";
 
-// Local to document editing: no autosave, persisted history or clinical confirmation.
+const EditorReviewContext = createContext<{show:(node:ReactNode)=>void;back:()=>void;release:()=>void}|null>(null);
+export function useEditorReview(){const value=useContext(EditorReviewContext);if(!value)throw new Error("Editor context missing");return value;}
+// Document fields remain mounted while the current content is reviewed.
 export function DocumentEditorFrame({ dirty, children }: { dirty: boolean; children: ReactNode }) {
   const root = useRef<HTMLDivElement>(null);
+  const pending = useRef(dirty);
+  const [review, setReview] = useState<ReactNode>(null);
+  const release = () => { pending.current=false; setUnsavedClinicalDraft(false); };
   useEffect(() => {
-    let pending = dirty;
-    setUnsavedClinicalDraft(pending);
+    pending.current = dirty;
+    setUnsavedClinicalDraft(pending.current);
     const leave = (preview = false) => {
       const accepted = window.confirm(preview
         ? "A prévia contém somente a última versão salva. As alterações não salvas serão descartadas ao sair. Deseja abrir essa versão? Cancele para continuar editando e salvar primeiro."
         : "Existem alterações não salvas neste documento. Deseja descartá-las e sair? Cancele para continuar editando.");
       if (accepted) {
-        pending = false;
+        pending.current = false;
         setUnsavedClinicalDraft(false);
       }
       return accepted;
     };
     const click = (event: MouseEvent) => {
-      if (!pending || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      if (!pending.current || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
       const link = event.target instanceof Element ? event.target.closest("a[href]") : null;
       if (!(link instanceof HTMLAnchorElement) || link.target === "_blank" || link.hasAttribute("download")) return;
       const destination = new URL(link.href);
@@ -30,14 +35,8 @@ export function DocumentEditorFrame({ dirty, children }: { dirty: boolean; child
         event.stopImmediatePropagation();
       }
     };
-    const submit = (event: Event) => {
-      if (event.target instanceof HTMLFormElement && root.current?.contains(event.target)) {
-        pending = false;
-        setUnsavedClinicalDraft(false);
-      }
-    };
     const unload = (event: BeforeUnloadEvent) => {
-      if (pending) {
+      if (pending.current) {
         event.preventDefault();
         event.returnValue = "";
       }
@@ -46,22 +45,20 @@ export function DocumentEditorFrame({ dirty, children }: { dirty: boolean; child
     const navigation = (window as Window & { navigation?: EventTarget }).navigation;
     const navigate = (event: Event) => {
       const next = event as Event & { canIntercept?: boolean; navigationType?: string; hashChange?: boolean };
-      if (pending && next.canIntercept && next.cancelable && next.navigationType !== "reload" && !next.hashChange && !leave()) event.preventDefault();
+      if (pending.current && next.canIntercept && next.cancelable && next.navigationType !== "reload" && !next.hashChange && !leave()) event.preventDefault();
     };
     document.addEventListener("click", click, true);
-    document.addEventListener("submit", submit, true);
     window.addEventListener("beforeunload", unload);
     navigation?.addEventListener("navigate", navigate);
     return () => {
       document.removeEventListener("click", click, true);
-      document.removeEventListener("submit", submit, true);
       window.removeEventListener("beforeunload", unload);
       navigation?.removeEventListener("navigate", navigate);
       setUnsavedClinicalDraft(false);
     };
   }, [dirty]);
 
-  return <div ref={root} className="document-edit-scope">{children}</div>;
+  return <EditorReviewContext.Provider value={{show:setReview,back:()=>{setReview(null);requestAnimationFrame(()=>root.current?.querySelector<HTMLElement>('[data-review-trigger]')?.focus());},release}}><div ref={root} className={review ? "document-edit-scope is-reviewing" : "document-edit-scope"}><div className="document-editor-fields" hidden={!!review}>{children}</div>{review}</div></EditorReviewContext.Provider>;
 }
 
 export function DocumentTextarea({ value, ...props }: TextareaHTMLAttributes<HTMLTextAreaElement>) {

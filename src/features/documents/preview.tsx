@@ -1,3 +1,4 @@
+import Image from "next/image";
 const eventDate = new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short", timeZone: "America/Sao_Paulo" });
 import {
   documentKinds, examTypeLabels, isExamRequest, isPrescription, lateralityLabels, prescriptionPending, priorityLabels, statusLabels, surgicalPending, examPending,
@@ -26,22 +27,22 @@ function Pending({ groups }: { groups: { title: string; fields: string[] }[] }) 
   );
 }
 
-export function DocumentPreview({ document, athleteName }: { document: PreviewDocument; athleteName: string }) {
+export function DocumentPreview({ document, athleteName, review = false }: { document: PreviewDocument; athleteName: string; review?: boolean }) {
   const kind = documentKinds[document.document_type];
   return (
     <article className="document-sheet" aria-label="Pré-visualização do rascunho">
-      <p className="document-save-state">Pré-visualização da última versão salva.</p>
+      {review ? <><div className="document-institution"><Image src="/brand/cbb.png" width={40} height={50} alt="CBB"/><div><strong>Prontuário CBB</strong><p>Documento clínico em revisão</p></div></div><p className="document-save-state">Representação documental do conteúdo revisado. O PDF de produção ainda não está disponível.</p></> : <p className="document-save-state">Pré-visualização da última versão salva.</p>}
       <p className="document-banner">RASCUNHO — NÃO ASSINADO / NÃO EMITIDO</p>
       <header>
         <p className="document-type">{kind.title}</p>
-        <h1 className="athlete-name">{athleteName}</h1>
+        {review ? <h2 className="athlete-name">{athleteName}</h2> : <h1 className="athlete-name">{athleteName}</h1>}
         {document.status === "ready_for_review" && <p>Apresentado para revisão interna. Continua sem emissão.</p>}
       </header>
       <dl className="document-facts">
         <div><dt>Médico responsável</dt><dd>{document.author_name}</dd></div>
         <div><dt>Identificação profissional</dt><dd>{document.credential_label ?? "Não registrada neste rascunho"}</dd></div>
         <div><dt>Estado</dt><dd>{statusLabels[document.status]}</dd></div>
-        <div><dt>Atualizado</dt><dd><time dateTime={document.updated_at}>{eventDate.format(new Date(document.updated_at))}</time></dd></div>
+        <div><dt>{review ? "Data do documento" : "Atualizado"}</dt><dd><time dateTime={review ? document.created_at : document.updated_at}>{review ? new Intl.DateTimeFormat("pt-BR",{dateStyle:"short",timeZone:"America/Sao_Paulo"}).format(new Date(document.created_at)) : eventDate.format(new Date(document.updated_at))}</time></dd></div>
       </dl>
       {isPrescription(document.content) ? (
         <div>
@@ -105,7 +106,8 @@ export function DocumentPreview({ document, athleteName }: { document: PreviewDo
           <Pending groups={surgicalPending(document.content).groups} />
         </div>
       )}
-      <p>Criado em <time dateTime={document.created_at}>{eventDate.format(new Date(document.created_at))}</time>. Este documento não foi emitido nem assinado.</p>
+      {review && <section className="document-future-signature" aria-label="Assinatura digital futura"><h2>Assinatura digital</h2><p>Este documento ainda não foi assinado. A demonstração não produz assinatura digital válida.</p>{document.credential_label && <p>A identificação profissional cadastrada não comprova verificação de conselho.</p>}</section>}
+      {review ? <p>Documento em revisão. Este documento não foi emitido nem assinado.</p> : <p>Criado em <time dateTime={document.created_at}>{eventDate.format(new Date(document.created_at))}</time>. Este documento não foi emitido nem assinado.</p>}
     </article>
   );
 }

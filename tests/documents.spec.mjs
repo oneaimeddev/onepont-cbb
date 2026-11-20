@@ -38,7 +38,7 @@ function medication(name) {
 }
 
 test.afterAll(async () => {
-  sql(`delete from clinical.athletes where id in ('${athlete}', '${otherAthlete}');
+  sql(`delete from clinical.signature_demo_delivery_intents where review_id in(select id from clinical.document_reviews where athlete_id in ('${athlete}','${otherAthlete}'));delete from clinical.document_reviews where athlete_id in ('${athlete}','${otherAthlete}');delete from clinical.athletes where id in ('${athlete}', '${otherAthlete}');
     delete from clinical.medical_authors where professional_id in (${users.map((id) => `'${id}'`).join(",") || "null"});`);
   for (const id of users) await admin.auth.admin.deleteUser(id);
 });
@@ -111,9 +111,9 @@ test("rascunhos médicos, revisão e bloqueios", async ({ page }) => {
   await page.screenshot({ path: `${shots}/prescricao-previa-390x844.png`, fullPage: true });
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.getByRole("link", { name: "Voltar ao editor" }).click();
-  await page.getByRole("button", { name: "Apresentar para revisão", exact: true }).click();
-  await expect(page.getByRole("status")).toContainText("não foi emitido");
-  await expect(page.getByText("Em revisão", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Revisar e assinar", exact: true }).click();
+  await page.getByRole("button", { name: "Salvar sem assinar", exact: true }).click();
+  await expect(page.getByRole("status")).toContainText("Documento salvo sem assinatura.");
 
   const foreign = await colleague.client.rpc("document_open", { target: athlete, document_id: documentId });
   expect(foreign.data.error).toBe("denied");

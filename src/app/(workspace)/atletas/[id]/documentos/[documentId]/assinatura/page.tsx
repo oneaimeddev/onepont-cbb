@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { randomUUID } from "node:crypto";
+import { supabaseServer } from "../../../../../../../lib/supabase";
 import { notFound } from "next/navigation";
 import { openDocument } from "../../../../../../../features/documents/data";
 import { getAthlete } from "../../../../../../../features/athletes/data";
@@ -33,46 +35,67 @@ export default async function SigningPage({
     inventory && !inventory.error
       ? await signingCommand("history", { document_id: documentId })
       : null;
+  const client = await supabaseServer();
+  const { data: opened, error: reviewError } =
+    !prepared?.attempt && !prepared?.error
+      ? await client.rpc("document_review_command", {
+          action: "open",
+          payload: {
+            athlete_id: id,
+            document_id: documentId,
+            version: document.version,
+            kind: document.document_type,
+            content: document.content,
+            idempotency_key: randomUUID(),
+          },
+        })
+      : { data: null, error: null };
+  const { data: delivery } = prepared?.attempt
+    ? await client.rpc("document_demo_delivery", {
+        attempt: prepared.attempt.id,
+      })
+    : { data: null };
   return (
     <main
       id="conteudo"
       tabIndex={-1}
       className="traditional-content clinical-page"
     >
-      <Link
-        className="back-link"
-        href={`/atletas/${id}/documentos/${documentId}`}
-        prefetch={false}
-      >
-        Voltar ao documento
-      </Link>
       {prepared?.error === "stale" ? (
         <>
-          <h1>Preparação desatualizada</h1>
-          <p>
-            O documento mudou após a preparação. Retorne ao editor para revisar
-            e preparar a versão atual.
-          </p>
+          <h1>Revisão desatualizada</h1>
+          <p>O documento mudou. Volte ao editor e revise o conteúdo atual.</p>
+          <Link
+            href={`/atletas/${id}/documentos/${documentId}`}
+            prefetch={false}
+          >
+            Voltar e editar
+          </Link>
         </>
-      ) : inventory && !inventory.error ? (
+      ) : reviewError || opened?.error ? (
+        <>
+          <h1>Revisar documento</h1>
+          <p>Confira os campos essenciais no editor antes de continuar.</p>
+          <Link
+            href={`/atletas/${id}/documentos/${documentId}`}
+            prefetch={false}
+          >
+            Voltar e editar
+          </Link>
+        </>
+      ) : (
         <SigningJourney
-          key={prepared?.attempt?.id ?? prepared?.snapshot?.id ?? documentId}
+          key={prepared?.attempt?.id ?? opened?.review?.id ?? documentId}
           document={document}
           athleteName={context.athlete.social_name || context.athlete.full_name}
-          inventory={inventory}
+          inventory={inventory?.error ? null : inventory}
+          demoEnabled={!!inventory && !inventory.error}
           initialSnapshot={prepared?.snapshot ?? null}
           initialAttempt={prepared?.attempt ?? null}
+          initialReview={opened?.review ?? null}
+          initialDelivery={delivery?.error ? undefined : delivery}
           history={history?.attempts ?? []}
         />
-      ) : (
-        <>
-          <h1>Assinatura digital indisponível</h1>
-          <p>
-            Não há conector de produção configurado. O simulador está
-            desabilitado neste ambiente. O documento continua como rascunho ou
-            revisão interna, sem assinatura.
-          </p>
-        </>
       )}
     </main>
   );

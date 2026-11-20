@@ -10,7 +10,7 @@ export function sameSigningOrigin(request: Request) {
     return false;
   }
 }
-export async function signingJson(request: Request) {
+export async function signingJson(request: Request, maxBytes = 16000) {
   const reader = request.body?.getReader();
   if (!reader) throw new Error("Invalid request");
   let length = 0;
@@ -20,7 +20,7 @@ export async function signingJson(request: Request) {
       const { done, value } = await reader.read();
       if (done) break;
       length += value.byteLength;
-      if (length > 16000) throw new Error("Invalid request");
+      if (length > maxBytes) throw new Error("Invalid request");
       chunks.push(value);
     }
   } finally {
