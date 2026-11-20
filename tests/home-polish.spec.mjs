@@ -255,13 +255,13 @@ test("digitação, rotação, pausa inteligente e altura estável sem chamadas d
   await page.addInitScript(() => {
     Math.random = () => 0;
   });
-  await page.clock.install();
+  await page.clock.install({ time: new Date("2026-11-20T12:00:00Z") });
+  await page.clock.pauseAt(new Date("2026-11-20T12:00:01Z"));
   const api = [];
   page.on("request", (r) => {
     if (new URL(r.url()).pathname.startsWith("/api/")) api.push(r.url());
   });
   await login(page);
-  await page.clock.pauseAt(await page.evaluate(() => Date.now()));
   const typed = page.locator(".ia-greeting-typed");
   const accessible = page.locator(".ia-greeting > .ia-sr");
   const first = await accessible.innerText();
