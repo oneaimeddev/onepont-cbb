@@ -9,12 +9,12 @@ Especificação completa: [specs/HANDOFF-007-10-6B-3.md](specs/HANDOFF-007-10-6B
 | Corte | Estado | Entrega |
 |---|---|---|
 | A — Segurança conversacional | Concluído e validado neste checkpoint | Quatro P0 corrigidos; resultados abaixo |
-| B — Infraestrutura de capacidades | Não iniciado | Catálogo, estado operacional, desafios e confirmação segura |
+| B — Infraestrutura de capacidades | Concluído e validado | Catálogo, estado persistente e autorização segura; execução clínica desabilitada |
 | C — Criação/alterações | Não iniciado | Edição natural dos três documentos e revisão persistente |
 | D — Assinatura/entrega | Não iniciado | Confirmação contextual, integração compartilhada e retentativas |
 | E — UX/homologação | Não iniciado | Preview, voz, histórico, mobile, paridade e regressão final |
 
-**O handoff completo ainda não está concluído nem homologado.** O checkpoint deliberado encerra um corte consistente antes de abrir outra frente complexa, conforme o orçamento. A nova jornada de assinatura/entrega pelo chat não está habilitada. O fluxo tradicional do B.2 foi preservado.
+**O handoff completo ainda não está concluído nem homologado.** O checkpoint atual encerra A e B consistentes, antes de abrir a frente C, conforme o orçamento. A nova jornada de assinatura/entrega pelo chat não está habilitada. O fluxo tradicional do B.2 foi preservado.
 
 ## Corte A — implementação
 
@@ -79,18 +79,52 @@ npx playwright test tests/intelligence.spec.mjs tests/conversation-security-api.
 npx playwright test --config playwright.security.config.ts --grep "restrição assistencial"
 ```
 
+## Corte B — infraestrutura concluída
+
+Contrato técnico: [CHAT-OPERATIONS-CONTRACT.md](CHAT-OPERATIONS-CONTRACT.md).
+
+- Catálogo de 21 capacidades explícitas, com schemas Zod estritos, permissões, confirmação, auditoria, serviços e resultados. Nenhuma ferramenta nova exposta ao modelo. Operações reservadas não são anunciadas como executáveis.
+- Workspaces persistentes referenciam a revisão compartilhada (`document_review_command`), sem copiar o modelo clínico. Contexto ativo, revisão CAS, identidade explícita e intenção de entrega sobrevivem a recarga.
+- Desafios imutáveis vinculam ator, sessão, epochs, atleta, documento, versão/hash/composição, revisão, identidade/conexão, modo, política/destinatário, expiração e chave de idempotência.
+- Apresentação exige nonce e hash exatos, atestados por fronteira de backend. Entrada humana vem da requisição HTTP autenticada; produtor de prova e apresentação são exclusivos de `service_role`. O modelo e o cliente não podem inventar ator, origem ou confirmação por booleano.
+- Contador monotônico exige entrada posterior à apresentação. “Sim” só funciona para exatamente um desafio apresentado pendente e compatível. Pergunta, condicional, negação e conteúdo atribuído ao assistente não autorizam. Entrada rejeitada não revive depois.
+- Revalidação de estado da sessão, inatividade, epochs, acesso, revisão, identidade/conexão, destinatário/política, gate e expiração. Alteração/contexto ida-e-volta não reaproveita autorização. Concorrência usa lock e CAS.
+- Recibo de autorização imutável, recuperável e idempotente, com auditoria `ai_chat`/`human_message`, sem duplicar confirmação de sucesso. Metadados técnicos não copiam texto, documento, nonce ou telefone integral.
+- Gateway técnico `/api/inteligencia/operacoes`: autenticação/perfil, mesma origem, schemas estritos, limite de 16 KiB e gate de ambiente. Sem ligação à UI ou ao conjunto de ferramentas do modelo nesta etapa.
+- **Autorizar não executa:** as respostas de estado, desafio e confirmação informam `executionEnabled: false`. Não salva documento clínico, cria snapshot de assinatura, assina, finaliza ou envia. O corte D deverá criar execução idempotente e repetir as validações na transação do domínio; recibo não é resultado de assinatura nem dispensa revalidação.
+- Confirmação por voz continua indisponível no gateway e no consumidor. A habilitação depende dos cortes D/E e de provas da intenção; nenhuma alegação de suporte funcional por voz foi feita.
+
+Migração aditiva `20261120000600_chat_operation_authorizations.sql`, aplicada e registrada somente no Supabase local, preservando as anteriores e a lacuna histórica. RLS e grants restritos; vínculos sem cascatas destrutivas. A limpeza compartilhada de fixtures passou a remover apenas evidências operacionais dos profissionais fictícios, antes das referências clínicas.
+
+### Testes do corte B
+
+- Primeira validação backend: 21/21 aprovados.
+- Validação final: **62/62 aprovados numa única execução**, composta por 22 testes backend do protocolo/catálogo, 2 de API autenticada, 15 de segurança do corte A e 23 do motor tradicional B.2.
+- Inclui três documentos; estado recuperável; origem humana; ausência de execução clínica; apresentação e sequência; perguntas/condicionais; voz bloqueada; versões antigas; estado/contexto; expiração; concorrência; idempotência; ausência de destinatário; responsável do menor; contatos alterados; revogação; desconexão; gates; payload com ator/modo/booleanos forjados; schema/comando desconhecido; provas imutáveis; origem de auditoria; testes de regressão de finalização e entrega.
+- `npm run lint`, `npm run build`, `npm run typecheck`: aprovados. Uma tentativa inicial de lint em paralelo coincidiu com a remoção de `test-results` pelo Playwright; reexecutado sequencialmente com sucesso, sem alterar regras para ocultar erros.
+- `git diff --check` e correspondência entre SQL registrado/arquivo conferidos no fechamento.
+- Suíte integral não executada: C–E estão pendentes e não houve razão para repetir módulos não relacionados. Capturas de nova UX ficam para E; os testes de API usaram Chromium headless sem janela visível.
+
+```sh
+npm run test:chat-operations
+npx playwright test tests/chat-operations.spec.mjs tests/chat-operations-api.spec.mjs tests/conversation-security.spec.mjs tests/workflow-backend.spec.mjs --project=app --workers=1 --reporter=line
+```
+
 ## Commits e estado
 
-`a0502a4` — `fix: guard conversational lifecycle and revoked clinical history` (corte A funcional, migration, testes e especificação). Atualização de progresso registrada em commit documental subsequente.
+`a0502a4` — `fix: guard conversational lifecycle and revoked clinical history` (corte A funcional, migration, testes e especificação). Atualização de progresso A: `b8555a4`.
 
-Sem merge, push ou deploy. `main` e `origin/main` preservadas em `51c1426`. A nova migration já está aplicada localmente: não reaplicar o arquivo manualmente sobre objetos existentes.
+COMMIT_B_PENDENTE
+
+Sem merge, push ou deploy. `main` e `origin/main` preservadas em `51c1426`. As migrations `20261120000500` e `20261120000600` já estão aplicadas localmente: não reaplicar os arquivos manualmente sobre objetos existentes.
 
 ## Retomada — próximo passo exato
 
-1. Ler este arquivo e a especificação; conferir branch, `git status` e `git log`. Não refazer A.
-2. Confirmar orçamento disponível antes de abrir B. Manter a jornada nova indisponível até fechar os contratos e testes.
-3. **Iniciar apenas B:** catálogo explícito de capacidades; estado operacional persistente por usuário/sessão/atleta/documento; desafio de confirmação criado pelo servidor e vinculado a versão/hash, identidade, modo, destinatário, expiração, nonce/idempotência e entrada original autenticada do usuário. Saída do modelo não pode confirmar nada.
-4. Reutilizar `document_review_command`, o domínio B.2 e seus contratos; respeitar também `security_epoch`/sessão atual. Integrar auditoria com origem e correlação corretas. Evitar comandos genéricos ou um segundo motor clínico.
-5. Testar e commitar B antes de C. Depois seguir C → D → E. A matriz de paridade, inventário de outras capacidades, evidências completas e relatório final permanecem pendentes.
+1. Ler este arquivo, `CHAT-OPERATIONS-CONTRACT.md` e a especificação; conferir branch, `git status` e `git log`. Não refazer A/B e não reaplicar migrations já registradas.
+2. **Iniciar apenas C:** inspecionar a integração entre propostas existentes, revisões compartilhadas e workspaces. Escolher uma autoridade de conteúdo, preservando vínculo e identificador do documento; não manter duas cópias editáveis concorrentes nem criar outro motor clínico.
+3. Integrar criação dos três documentos e alterações naturais a operações estruturadas. Identificar itens por UUID, preservar campos não mencionados, desambiguar atleta/documento/item/valor, pedir dados ausentes. Mudança deve criar/revincular a revisão exata e invalidar confirmações anteriores; aplicar CAS e recuperar estado da persistência.
+4. Testar e commitar C antes de D. Não ativar `operation.confirm` como ferramenta do modelo. A entrada de confirmação continuará sendo a mensagem original autenticada, não saída do modelo ou texto do documento.
+5. D: execução clínica idempotente vinculada ao recibo, com nova checagem de estado/epochs/acesso/versão/hash/identidade/destinatário/expiração na transação que invoca `document_review_command` e o motor B.2. Propagar origem de chat também aos eventos clínicos compartilhados, além dos eventos operacionais já implementados. Nunca tratar o recibo como assinatura concluída.
+6. E: apresentar o documento e resumo no chat antes do ack de apresentação; integrar acompanhamento/recuperação, voz segura, acessibilidade, matriz de paridade, inventário pendente e evidências reais. Executar a suíte integral no fim da branch estável.
 
-Limitações ainda intencionais: sem nova assinatura pelo chat, sem alteração natural completa de rascunhos, sem desafio novo de confirmação, sem entrega nova pelo chat e sem alegação de confirmação de assinatura por voz. Nada disso deve ser anunciado como disponível antes dos cortes correspondentes.
+Ponto de parada seguro após B: criação/alteração natural completa, assinatura/finalização/entrega integral pelo chat e confirmação de assinatura por voz **continuam pendentes e não habilitadas**. O orçamento limitado permanece como restrição; não abrir uma nova frente complexa sem poder deixá-la em estado consistente.
