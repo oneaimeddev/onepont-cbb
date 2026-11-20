@@ -36,6 +36,8 @@ export async function POST(request: Request) {
   const client = await supabaseServer();
   const { data, error } = await client.auth.getUser();
   if (error || !data.user) return Response.json({ error: "invalid" }, { status: 401, headers: noStore });
+  const current=await client.rpc("conversation_current");
+  if(current.error||!current.data?.ok)return Response.json({error:"unavailable",text:"Inicie uma nova conversa para continuar por voz."},{status:409,headers:noStore});
   const apiKey = voiceApiKey();
   if (!apiKey) return Response.json({ error: "unavailable", text: errors.unavailable }, { status: 503, headers: noStore });
   if (!withinLimit(data.user.id)) return Response.json({ error: "limit", text: errors.limit }, { status: 429, headers: noStore });

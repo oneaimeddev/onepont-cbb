@@ -15,7 +15,8 @@
     "predev": "node scripts/copy-pdf-worker.mjs",
     "signing:demo": "node scripts/signing-demo.mjs",
     "documents:reconcile": "node scripts/reconcile-deliveries.mjs",
-    "test:workflow": "playwright test --config playwright.backend.config.ts"
+    "test:workflow": "playwright test --config playwright.backend.config.ts",
+    "test:conversation-security": "playwright test --config playwright.security.config.ts"
   },
   "private": true,
   "dependencies": {

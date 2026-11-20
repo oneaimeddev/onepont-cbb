@@ -487,13 +487,14 @@ test("agente consulta só o autorizado e a interface tradicional segue sem o pro
   await expect(previous).toBeHidden();
   await page.setViewportSize({ width: 1440, height: 900 });
   await previous.getByRole("button", { name: /Mensagem da sessão anterior/ }).click();
-  await expect(page.getByRole("region", { name: "Histórico da conversa" })).toContainText("Mensagem da sessão anterior");
-  await expect(page.getByRole("region", { name: "Histórico da conversa" })).toContainText("Resposta guardada da sessão");
-  await expect(page.getByRole("complementary", { name: "Contexto da tarefa" })).toContainText("Marina Costa");
-  await expect(previous.getByRole("button", { name: /Mensagem da sessão anterior/ })).toHaveAttribute("aria-current", "true");
-  await page.screenshot({ path: "docs/visual/handoff-007-3/historico-1440x900.png" });
-  expect(sql(`select status || '|' || coalesce(athlete_id::text, '') from clinical.conversation_sessions where id = '${recoveredId}';`).trim()).toBe(`active|${marina}`);
-  expect(sql(`select text from clinical.conversation_messages where session_id = '${recoveredId}' and role = 'user';`)).toContain("Mensagem da sessão anterior");
+  await expect(page.getByText("Não foi possível abrir essa conversa.", {exact:true})).toBeVisible();
+  await expect(page.getByRole("region", {name:"Histórico da conversa"})).toHaveCount(0);
+  expect(sql(`select status from clinical.conversation_sessions where id='${recoveredId}'`).trim()).toBe("closed");
+  const historical=await client.rpc("conversation_history_read",{target:recoveredId});
+  expect(historical.error).toBeNull();
+  expect(historical.data.readOnly).toBe(true);
+  expect(JSON.stringify(historical.data.messages)).toContain("Resposta guardada da sessão");
+  expect(sql(`select text from clinical.conversation_messages where session_id='${recoveredId}' and role='user'`)).toContain("Mensagem da sessão anterior");
   expect(hydration).toEqual([]);
 });
 

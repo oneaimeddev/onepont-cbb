@@ -31,15 +31,13 @@ export function MessageComposer({
 }) {
   const fieldRef = useRef<HTMLTextAreaElement>(null);
   const tooLong = value.length > messageLimit;
-  const status = !enabled
+  const status = failure ?? (!enabled
     ? "O assistente ainda está indisponível. O envio será habilitado quando a integração estiver pronta."
     : pending
       ? "Aguarde a conclusão para enviar outra mensagem."
       : tooLong
         ? `A mensagem passou de ${messageLimit} caracteres. Divida o texto antes de enviar.`
-        : failure
-          ? failure
-          : "As respostas usam somente os registros autorizados para o seu perfil.";
+        : "As respostas usam somente os registros autorizados para o seu perfil.");
 
   useLayoutEffect(() => {
     const field = fieldRef.current;

@@ -1,3 +1,4 @@
+import {authorizedConversationInput} from "../../../features/chat/security";
 import { getAccess } from "../../../lib/profile";
 import { supabaseServer } from "../../../lib/supabase";
 import { openIntelligenceStream } from "../../../features/chat/agent";
@@ -37,7 +38,9 @@ export async function POST(request: Request) {
   if (!withinLimit(data.user.id)) return Response.json({ error: "limit", text: errors.limit }, { status: 429 });
   let body: unknown;
   try { body = await request.json(); } catch { return Response.json({ error: "invalid", text: errors.invalid }, { status: 400 }); }
-  const reply = await openIntelligenceStream(body);
+  const authorized=await authorizedConversationInput(body);
+  if("error" in authorized)return Response.json({error:authorized.error,text:"Esta conversa não está disponível para esta operação. Inicie uma nova conversa."},{status:authorized.error==="closed"?409:authorized.error==="invalid"?400:503,headers:{"Cache-Control":"no-store"}});
+  const reply = await openIntelligenceStream(authorized.input);
   if ("error" in reply) {
     const status = reply.error === "limit" ? 429 : reply.error === "invalid" ? 400 : reply.error === "provider" ? 502 : 503;
     return Response.json({ error: reply.error, text: errors[reply.error] }, { status });

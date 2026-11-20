@@ -57,7 +57,7 @@ export async function saveClinicalDraft(input: {
   });
   const saved = committed.data as { ok?: boolean; error?: string; id?: string } | null;
   if (committed.error || !saved?.ok || typeof saved.id !== "string" || !uuidPattern.test(saved.id)) return failure(saved?.error);
-  await client.rpc("clinical_draft_proposal_attach", { request_id: input.requestId, saved_id: saved.id });
+  // The guarded commit now links any conversational proposal in the same database transaction.
   return { ok: true, id: saved.id, href: `/atletas/${input.athleteId}/evolucao?registro=${saved.id}` };
 }
 
