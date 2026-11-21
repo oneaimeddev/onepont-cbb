@@ -11,10 +11,10 @@ Especificação completa: [specs/HANDOFF-007-10-6B-3.md](specs/HANDOFF-007-10-6B
 | A — Segurança conversacional | Concluído e validado neste checkpoint | Quatro P0 corrigidos; resultados abaixo |
 | B — Infraestrutura de capacidades | Concluído e validado | Catálogo, estado persistente e autorização segura; execução clínica desabilitada |
 | C — Criação/alterações | Concluído no escopo textual delimitado e validado | Criação com fonte explícita nos três tipos, edição CAS, revisão, salvamento humano e retomada |
-| D — Assinatura/entrega | Backend e HTTP concluídos/validados; UI em E | Recibo atômico, motor compartilhado, status, retentativa/reenvio e derivação |
-| E — UX/homologação | Não iniciado | Preview, voz, histórico, mobile, paridade e regressão final |
+| D — Assinatura/entrega | Concluído e validado | Recibo atômico, motor compartilhado, status, retentativa/reenvio e derivação |
+| E — UX/homologação | Concluído e validado para homologação do protótipo | Preview/resumo, voz com fallback textual de alto impacto, histórico, mobile, recuperação, matriz e 351 testes |
 
-**O handoff completo ainda não está concluído nem homologado.** A/B permanecem concluídos. C foi concluído para os comandos textuais delimitados descritos no fechamento abaixo; a homologação ampla de linguagem/voz/UX permanece em E. A nova jornada de assinatura/entrega pelo chat não está habilitada. O fluxo tradicional do B.2 foi preservado.
+**Implementação A–E concluída e validada tecnicamente no ambiente DEMO.** Assinatura e entrega são simuladas. A confirmação de alto impacto por voz mantém a operação pendente e oferece alternativa textual no próprio chat, conforme a seção 14 do handoff. Não se declara homologação acústica/ASR, assinatura criptográfica ou entrega real. O fluxo tradicional foi preservado e a main não recebeu merge.
 
 ## Corte A — implementação
 
@@ -249,7 +249,7 @@ Não reaplicar manualmente as migrations 005–010. Nenhum reset, merge, push ou
 
 Riscos residuais: formato de criação conservador pode pedir esclarecimento com frequência; integração com modelo real e voz ampla precisa de E; redundância visual de pendências e indicação da seleção ativa observadas no checkpoint anterior permanecem refinamentos de E. Assinatura/finalização/entrega integral pelo chat ainda não estão expostas.
 
-## Retomada — próximo passo exato
+## Retomada anterior ao fechamento D/E — registro histórico
 
 1. Conferir branch, status, commits e este fechamento. A/B/C estão concluídos nos limites documentados; não refazer nem reaplicar migrations locais registradas.
 2. Iniciar **corte D** pela seleção explícita de identidade e execução idempotente vinculada ao recibo B. Revalidar estado/epochs/acesso/versão/hash/identidade/destinatário/expiração na transação que invoca `document_review_command` e o motor B.2. Não expor uma operação clínica antes de concluir e testar esse vínculo.
@@ -266,3 +266,68 @@ Migration aditiva `20261120001100_chat_workflow_execution.sql` aplicada e regist
 Adaptador conversacional determinístico: escolha explícita de identidade, preparo de revisão/resumo, confirmação original autenticada, consulta de assinatura/entrega, retentativa/reenvio com justificativa e frase explícita, derivação após confirmação. Não há ferramenta de modelo para executar/confimar. Confirmação de alto impacto por voz permanece recusada com alternativa textual no chat. APIs verificam contexto e proposta antes de acessar o motor. Execução nova só ocorre após apresentação atestada do resumo.
 
 Validação: **17/17** testes de domínio (três documentos, consumo único/concorrente, invalidação, expiração, autoria, destinatário, modo, derivado sem sobrescrita e retry/resend sem nova assinatura); **3/3** testes HTTP reais dos três tipos, da escolha à finalização/consulta e replay. Lint, build e typecheck aprovados. Sem suíte integral neste corte. Próximo passo: E, apresentar o resumo real e registrar apresentação somente após render, integrar recuperação/estado/histórico/voz acessível, produzir matriz e evidências, executar suíte integral ao estabilizar.
+
+
+## Corte E — checkpoint antes da suíte integral
+
+D foi commitado em `42fff0c`. E integra o mesmo `DocumentPreview` expansível ao resumo real de autorização, escolha por nome/botão, apresentação atestada apenas após ação humana, confirmação no chat, estado/resultado/histórico, polling enquanto há processamento, recuperação após recarga, retomada de recibo sem repetição e indicação de documento selecionado. Pendente por voz de alto impacto mantém alternativa textual no próprio chat; edição/revisão compartilham o adaptador textual delimitado. Posologia permanece texto literal no campo nativo de instruções, sem inferir dose/frequência.
+
+Migration `20261120001200_chat_workflow_observation.sql` aplicada e registrada localmente; SHA-256 `14708986472ce7627b0df89202097fe943eadc5598ee374dc6d842665940f3f3`. Observação autenticada passa pelo escopo da proposta e preserva procedência em assinatura/finalização, e o worker correlaciona a entrega ao recibo de origem. Não reaplicar 005–012.
+
+Antes da suíte integral: **18/18** testes de execução/observação aprovados; **5/5** cenários UI novos aprovados (três documentos, derivação, mobile com destinatário de menor e entrega, transcrição até edição/revisão e confirmação de voz recusada). Ajustes posteriores de recuperação/expiração, esclarecimento de somente leitura e preservação da intenção de envio foram submetidos a lint/build/typecheck aprovados e entram na suíte integral. O teste inicial enviava conteúdo completo ao histórico, que corretamente aceita apenas referências; a fixture foi corrigida. Outra expectativa de teste confundia composer vazio/desabilitado com processamento; passou a aguardar a resposta efetiva. Nenhuma regra clínica foi flexibilizada.
+
+**Suíte em execução:** `npx playwright test --workers=1 --reporter=line`, 346 testes/49 arquivos; log `/tmp/cbb-handoff-final-suite.log`. Não iniciar outra execução concorrente nem build enquanto os servidores Playwright estiverem ativos. Esta é a primeira execução integral deste fechamento. Resultado final ainda não registrado neste checkpoint.
+
+Relatório com matriz, inventário fora do domínio, roteiro e limites: `docs/REPORT-007-10-6B-3.md`. Próximo passo exato: acompanhar a suíte, corrigir falhas pela causa e revalidar somente o impacto antes de decidir nova execução integral; revisar capturas, registrar resultados, commitar E e atualizar estado de Git. Não fazer merge/push/deploy.
+
+
+### Primeira execução integral e correções por causa
+
+Resultado: **341/346 aprovados**, 5 falhas. Causas identificadas:
+
+- `catalog.spec.mjs`: helper clicava criação/deduplicação seguinte sem aguardar fechamento do combobox e comparava espaços duplicados ao nome acessível normalizado. Helper passou a aguardar a conclusão e a seleção; não foi alterada a implementação cadastral.
+- `chat-operations-api.spec.mjs`: retorno da mesma confirmação após execução esbarrava na revisão anterior ao salvamento. Corrigido com `chat_operation_confirm_execute`, que vincula o input capturado ao recibo e retorna a execução existente após revalidar acesso/contexto. A entrada nova ainda passa pela validação B completa. O teste HTTP foi atualizado do contrato B “somente registrar prova” para o contrato D: executar uma vez e retornar replay sem nova tentativa.
+- `document-chat.spec.mjs`: consulta anterior ao salvamento podia devolver `proposal` depois do sucesso e regredir o cartão; documento no banco continuava salvo. Sincronização agora preserva salvamento/edição local, estados finalizados e sequência das consultas. Adicionada prova determinística com resposta atrasada. Cleanup histórico foi atualizado para as novas FKs, usando infraestrutura existente e somente fixtures próprias. A fixture deixada por essa falha foi identificada pelo UUID e pelo e-mail `doc-ui-…@example.com` antes da limpeza.
+- `voice-document-conversation.spec.mjs`: expectativa antiga ainda exigia versão 1 após uma edição por voz agora aceita. Atualizada para versão 2, mantendo a recusa para outro profissional.
+- `voice-documents.spec.mjs`: mock interceptava também a confirmação, impedindo atingir o adaptador único que substituiu a ação paralela legada. Agora só a resposta preparatória é simulada; confirmação percorre o servidor real com contexto explícito e CAS. Cleanup ajustado às FKs novas.
+
+Migration aditiva **013** aplicada e registrada localmente, SHA-256 `fbdb4b85be340d1bbd528624bab62823c4616b933a9950dc502bae36deb1020c`. Não reaplicar 005–013. Prova de execução/replay/observação: **19/19** aprovada. Lint, build e typecheck das correções aprovados. Lote direcionado das cinco falhas e UX nova em execução antes da segunda suíte integral, justificada pelas duas falhas funcionais de replay/sincronização, conforme adendo.
+
+
+### Revalidação antes da segunda suíte integral
+
+O primeiro lote direcionado teve **16/18** aprovados: além das correções já confirmadas, expôs contraste insuficiente no botão principal e uma expectativa de auditoria que ainda não era atendida pelo novo save do cartão. Contraste foi corrigido com o token navy CBB, preservando os demais azuis. Migration **014** preserva o evento real `document.confirmed`/`human_ui` depois do save idempotente do cartão, sem duplicar texto/voz. SHA-256 `ec65337609b802cf41fdfc971da35aa41adf103a7b3bc6ce63af46af5451ba6e`; aplicada e registrada localmente. Não reaplicar 005–014.
+
+Após as correções: **50/50** testes de adaptadores e save textual/voz; **17/17** testes UI/SDK, incluindo a regressão original dos dois cartões, três documentos finalizados, derivação, destinatário de menor/entrega mobile, transcrição real da fixture até o backend, resposta anterior ao save atrasada, dez cenários do SDK e negação de falsa criação para profissional sem autoria médica. Axe no cartão de autorização: **zero violações detectadas** nas tags WCAG 2 A/AA e 2.1 AA; isso não constitui certificação. Lint/build/typecheck aprovados. A seleção de “posologia” conserva o valor literal em instruções, sem converter dose ou frequência.
+
+O catálogo foi atualizado aos contratos implementados, com CAS/entrada humana e manutenção de `exposedToModel: false`; o teste verifica payload válido e recusa de campo clínico indevido sobre o mesmo escopo. Nenhuma operação de confirmação/executor foi exposta como ferramenta do modelo.
+
+**Segunda suíte integral em execução**, justificada pelas correções funcionais e de auditoria: `npx playwright test --workers=1 --reporter=line`, log `/tmp/cbb-handoff-final-suite-2.log`. Sem novos testes concorrentes ou builds durante essa execução. Registrar o resultado antes de declarar E/handoff concluídos.
+
+
+### Estabilização da recuperação e congelamento final
+
+A segunda execução foi interrompida deliberadamente para concluir um caso identificado na revisão de estados: tentativa de assinatura cancelada/falha precisa permitir nova revisão, sem reaproveitar a autorização anterior. Até a interrupção: **177 aprovados**, 1 interrompido e 172 não executados; não é resultado de suíte integral aprovada. A recuperação agora abre nova revisão e exige nova escolha/confirmação. Histórico e tentativa anterior permanecem intactos; o backend nativo continua a autoridade.
+
+Validação posterior: **7/7** cenários UI de E aprovados, incluindo cancelamento de tentativa → revisão nova → segunda assinatura somente após confirmação → uma finalização. O teste confere que a contagem de tentativas não muda antes da nova confirmação. Lint/build/typecheck da versão congelada aprovados. Nenhuma nova migração foi necessária para essa recuperação.
+
+**Execução integral congelada iniciada:** `npx playwright test --workers=1 --reporter=line`, **351 testes**; log `/tmp/cbb-handoff-final-suite-3.log`. Não alterar código nem iniciar outra suíte/build durante a execução. Próximo passo: registrar resultado, revisar capturas, preservar apenas artefatos desta entrega, commitar E e atualizar relatório/Git. Sem merge/push/deploy.
+
+
+## Fechamento final — A/B/C/D/E
+
+**Resultado da versão congelada: 351/351 testes aprovados em 10,2 minutos**, comando `npx playwright test --workers=1 --reporter=line`. Lint, build, typecheck e `git diff --check` aprovados. Nenhum código de produção foi alterado após esta suíte. A execução anterior interrompida foi substituída por esta validação completa, não somada ao resultado. As falhas da primeira execução foram corrigidas e revalidadas por impacto antes desta rodada.
+
+Commits deste restante:
+
+- `42fff0c` — integração do executor humano ao motor compartilhado (D), com 17 testes backend e 3 HTTP antes de E.
+- `96f6040` — integração completa do cartão, confirmação, observação/auditoria, recuperação, voz com fallback, regressões e evidências (E).
+- O commit documental subsequente registra este fechamento e o relatório.
+
+Novos testes D/E: execução/observação/replay (19), HTTP dos três documentos (3), UI da jornada/voz/mobile/race/cancelamento (7), criação por entrada de voz e recusa de narrativa falsa sem autoria no SDK (2 adicionais aos 8 de C) e auditoria idempotente do cartão (1 adicional aos 31 adaptadores de C). Casos parametrizados e fixtures existentes foram reutilizados. A suíte integral também cobre os módulos tradicionais, segurança A/B/C, motor B.2, documentos, cadastro, importação, perfil, anexos e voz anteriores. Não somar lotes direcionados repetidos como testes únicos.
+
+Axe no cartão de autorização: zero violações detectadas para WCAG 2 A/AA e 2.1 AA. Provas reais atualizadas em `docs/visual/handoff-007-10-6b-3/`. Foram restaurados ao conteúdo original 13 artefatos históricos regenerados apenas pelas regressões, sem tocar em alterações de usuário ou descartar implementação. Fixtures clínicas foram removidas somente pelos identificadores dos testes; nenhum registro do protótipo foi apagado ou resetado.
+
+Relatório final, roteiro, matriz de paridade, inventário fora do escopo e limites: **[REPORT-007-10-6B-3.md](REPORT-007-10-6B-3.md)**. Inclui os testes não executados: qualidade de áudio/ASR e modelo externos, assinatura criptográfica/provedor real e entrega WhatsApp real não foram homologados; os provedores usados nos testes são controlados, e a jornada de demonstração é explicitamente simulada. Confirmação de alto impacto por voz não é anunciada como disponível; a alternativa textual no chat é intencional.
+
+Branch `feat/handoff-007-10-6b-3-intelligence-journey`; `main` e `origin/main` preservadas em `51c1426`. Sem merge, push ou deploy. Migrations 005–014 registradas apenas localmente: não reaplicar manualmente. Próximo passo: homologação do protótipo com o roteiro do relatório; eventual integração na main exige uma solicitação própria. Não resta corte de implementação deste handoff pendente dentro dos limites demonstrativos descritos.

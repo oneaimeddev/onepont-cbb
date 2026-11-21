@@ -1,8 +1,10 @@
-# Contrato de operações conversacionais — corte B do 007.10.6B.3
+# Contrato de operações conversacionais — 007.10.6B.3
 
 ## Limite desta entrega
 
-Infraestrutura interna, sem ferramenta nova habilitada no modelo e sem interface clínica parcial. Registrar autorização **não assina, salva, finaliza ou envia** um documento. As respostas de estado, desafio e confirmação informam `executionEnabled: false`. A execução clínica é responsabilidade do corte D, após C.
+Este arquivo conserva o protocolo B e seus checkpoints históricos, seguidos pelos complementos C/D/E. As 21 capacidades novas permanecem fora das ferramentas do modelo. As ferramentas de criação já existentes passam por grounding da entrada humana original.
+
+Registrar uma autorização isoladamente **não equivale a executar ou assinar**: as provas B continuam com `executionEnabled: false`. Na fronteira HTTP final D, `chat_operation_confirm_execute` valida o input capturado e aciona o executor na mesma transação. A propriedade `execution` informa a invocação do orquestrador; o estado efetivo vem do motor nativo por `chat_document_status`, não da prova nem da narrativa do modelo.
 
 O catálogo explícito está em `src/features/chat/operations/capabilities.ts`: 21 capacidades com identificador, descrição, schema estrito, permissão, confirmação, auditoria, serviço e resultado. Estados `existing`, `infrastructure` e `reserved` descrevem implementação; não concedem acesso nem ativam ferramentas. Todas as entradas novas têm `exposedToModel: false`. Não há dispatcher de comandos livres ou SQL do modelo.
 
@@ -90,3 +92,16 @@ Este fechamento substitui os bloqueadores do checkpoint anterior. As migrations 
 `chat_document_save_message` recebe UUID/versão/hash exibidos, chave de mensagem e confirmação humana original; o banco verifica acesso e gramática explícita de salvamento de rascunho. Não trunca a confirmação nem aceita assinatura/envio combinados. Repetição idempotente conserva o documento; mesma chave com mensagem/modo diferente conflita. UI atual usa esse caminho sem confirmação médica legada paralela. Auditoria nativa e confirmação conservam `human_message` ou `human_voice`; os auxiliares clínicos permanecem privados. Voz está limitada ao salvamento de rascunho já existente; edição/revisão por voz continuam bloqueadas.
 
 Narrativa médica do modelo é retida até validar as ferramentas e projetar o estado documental verdadeiro. Oito testes com SDK real/provedor controlado validam o contrato, sem homologar qualidade de modelo externo. Formato conservador de criação, limites, testes e evidências estão no arquivo de progresso. C não habilita `operation.confirm` no modelo, assinatura, finalização nem entrega; D/E permanecem pendentes.
+
+
+## Contrato final D/E
+
+`chat_operation_executions` é um ledger privado de consumo por autorização, com FK, RLS e imutabilidade. `chat_operation_execute` revalida contexto/epochs, acesso/autoria, revisão/versão/hash/material, identidade/conexão, destinatário/digest, expiração e input aceito/pós-apresentação antes de chamar `document_review_command:sign`. Ledger e invocação são atômicos; concorrência e replay usam a mesma chave nativa. Repetição de confirmação com o mesmo input capturado passa por `chat_operation_confirm_execute` e recupera o resultado existente, em vez de exigir a revisão anterior ao salvamento. Um recibo ainda não executado não pula verificações de validade.
+
+`chat_document_workflow` exige a proposta própria, contexto atual e CAS para consultar, derivar ou pedir retry/resend. Derivação exige frase explícita e preserva a versão de origem; replay não sobrescreve edição posterior do derivado. Retry/resend exigem a justificativa original e confirmação textual determinística, usam o mesmo motor B.2 e nunca iniciam outra assinatura. O destinatário vem exclusivamente da política nativa; telefones livres do cliente não são aceitos.
+
+`chat_document_status` observa a operação nativa sob o mesmo escopo. O backend de E concilia a entrega apenas depois da autorização de leitura e consulta novamente. Eventos mantêm origem de chat; a observação usa método `system`, sem atribuir uma nova autorização humana ao worker. O cartão não deixa consulta anterior ao save regredir um estado salvo/finalizado; consultas têm sequência e descartam respostas ultrapassadas.
+
+O componente apresenta o `DocumentPreview` compartilhado e o resumo completo antes do reconhecimento humano. Só a ação “Li a versão e o resumo” chama o registro confiável de apresentação. Não existe ack automático ao receber JSON. Seleção, efeitos, identidade e destinatário ficam visíveis; mudanças invalidam confirmação. Voz usa edição/revisão compartilhadas, mas assinatura/envio por voz ficam pendentes com alternativa textual explícita no próprio chat. Um futuro provedor real continua sujeito à autenticação adicional obrigatória; esta entrega só usa demonstração.
+
+As migrations 011–014 são aditivas, aplicadas e registradas somente localmente. A 014 preserva `document.confirmed`/`human_ui` no save real pelo cartão, depois do ledger de idempotência, sem duplicar a confirmação própria de texto/voz da 010. Não reaplicar arquivos registrados. Relatório, matriz e limites: `REPORT-007-10-6B-3.md`; validação/commits: `PROGRESS-007-10-6B-3.md`.
