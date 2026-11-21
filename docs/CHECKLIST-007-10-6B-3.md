@@ -2,7 +2,7 @@
 
 Use o perfil médico e um atleta fictício do banco. Substitua os trechos entre colchetes pelo que aparece na sua plataforma. Reserve aproximadamente 15–20 minutos; esse tempo é uma sugestão para a validação manual, não uma medição automatizada.
 
-A implementação está na branch `feat/handoff-007-10-6b-3-intelligence-journey`, ainda sem merge na main. Confira se o ambiente aberto contém essa versão. Assinatura e entrega deste roteiro são **simuladas**.
+A implementação foi consolidada na `main`, com a tag `baseline/pre-paleta-2026-11-20` antes do experimento de cores. Confira se o ambiente aberto contém essa versão. Assinatura e entrega deste roteiro são **simuladas**.
 
 ## O que usar por voz
 

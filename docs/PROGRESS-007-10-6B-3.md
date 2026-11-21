@@ -1,5 +1,7 @@
 # Progresso — 007.10.6B.3
 
+**Estado atual após solicitação de consolidação:** entrega na `main`, marcada por `baseline/pre-paleta-2026-11-20`. Os registros abaixo preservam a cronologia anterior à integração.
+
 Atualizado em 20/11/2026. Baseline: main/origin/main `51c1426`, workspace inicialmente limpo. Branch: `feat/handoff-007-10-6b-3-intelligence-journey`.
 
 Especificação completa: [specs/HANDOFF-007-10-6B-3.md](specs/HANDOFF-007-10-6B-3.md). O adendo de execução com orçamento limitado (~19% informado pelo usuário) tem prioridade: concluir e testar um corte antes de abrir o próximo; commits verificáveis; nenhuma capacidade clínica parcial exposta; nenhum reset/descarte; manter retomada documentada; sem suíte integral a cada corte; preservar validações críticas.
@@ -336,3 +338,8 @@ Branch `feat/handoff-007-10-6b-3-intelligence-journey`; `main` e `origin/main` p
 ## Complemento documental — relatório consolidado e checklist manual
 
 A pedido do usuário, o relatório principal passou a reunir explicitamente os cortes A–E, os quatro P0, os commits anteriores e o mapeamento dos 19 itens exigidos na entrega. Criado `CHECKLIST-007-10-6B-3.md`, com sequência básica de validação, frases de demonstração, resultados esperados e distinção entre voz, texto e botões. Sem alterações na aplicação ou no banco; não foi repetida a suíte por uma mudança exclusivamente documental. A validação automatizada anterior continua sendo 351/351, sem substituir a validação manual de ASR/modelo reais.
+
+
+## Consolidação autorizada antes da paleta — 20/11/2026
+
+Workspace inicialmente limpo; fetch de origin concluído, sem avanço remoto da main. Todas as branches locais já estavam contidas na entrega `32bc100`. Main avançada por fast-forward, preservando as branches e exatamente o código validado. Tag anotada `baseline/pre-paleta-2026-11-20` registra o ponto antes das próximas mudanças de cor. Guia: `BASELINE-PRE-PALETA-2026-11-20.md`. Nenhum push, deploy, alteração clínica ou migração executados nesta consolidação. Não foi repetida a suíte integral sem mudança de código; a validação de referência permanece em 351/351, lint/typecheck/build aprovados. Próxima paleta deve usar uma branch própria para retorno simples à main.
