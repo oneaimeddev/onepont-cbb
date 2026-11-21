@@ -13,7 +13,7 @@ A `main` e a tag `baseline/pre-paleta-2026-11-20` permanecem em `126ed085797d113
 Somente três arquivos de produção alterados, todos CSS:
 
 - `src/app/globals.css`: tokens institucionais canônicos, navy institucional, navegação selecionada, links e botão de busca, foco e cores de interação/carregamento.
-- `src/features/chat/intelligence.css`: marca consistente, ações apropriadas em verde, hover/active, seleção e foco. Voz/informação continuam semânticas; a última palavra azul da saudação foi preservada por preferência explícita do usuário.
+- `src/features/chat/intelligence.css`: marca consistente, ações apropriadas em verde, hover/active, seleção e foco. Voz/informação continuam semânticas; a última palavra da saudação passou a usar o verde institucional por solicitação posterior do usuário, inclusive no estilo inline do texto animado e na versão de movimento reduzido.
 - `src/features/documents/documents.css`: cores anteriores fixadas exclusivamente na folha documental, por contexto, para impedir alteração silenciosa de sua apresentação.
 
 Sidebar continua clara; fundos existentes mantidos. Tipografia, escala, espaçamentos, larguras de borda, raios, grid, navegação e formulários preservados. Nenhum JSX, contrato, API, autorização, auditoria ou backend alterado. Ações destrutivas e secundárias mantêm sua hierarquia.
@@ -107,7 +107,7 @@ Sem pendência técnica conhecida no escopo. Falta homologação visual do usuá
 2. Conferir botões primários, hover, Tab/foco e ações secundárias.
 3. Abrir prescrição com vários itens e revisar: organização deve continuar igual.
 4. Conferir documento finalizado e estados simulados: apresentação documental preservada.
-5. Conferir chat, contexto e proposta pendente; a palavra final da saudação continua azul.
+5. Conferir chat, contexto e proposta pendente; a palavra final da saudação aparece em verde institucional (#3D7039).
 6. Conferir as duas amostras mobile e aprovar a paleta antes de integrar.
 
 ## Rollback e retomada

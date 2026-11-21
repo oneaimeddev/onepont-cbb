@@ -21,7 +21,7 @@ function GreetingText({ phrase, count = phrase.length }: {
   return (
     <>
       {visible.slice(0, lastWord)}
-      <span style={{ color: "var(--ia-blue)" }}>{visible.slice(lastWord)}</span>
+      <span style={{ color: "var(--cbb-green)" }}>{visible.slice(lastWord)}</span>
     </>
   );
 }

@@ -180,6 +180,12 @@ test("representative clinical and chat surfaces retain layout, template and auth
   page,
 }) => {
   await login(page);
+  if (phase === "after") {
+    // Verify the actual nested emphasis, including its inline style, in both modes.
+    for (const mode of [".ia-greeting-typed", ".ia-greeting-reduced"]) {
+      await expect(page.locator(`${mode} > span`).first()).toHaveCSS("color", "rgb(61, 112, 57)");
+    }
+  }
   await observe(page, "home");
   await page.setViewportSize({ width: 390, height: 844 });
   await observe(page, "home", 390);
