@@ -21,3 +21,9 @@ Baseline: 0da6779 (007.10.6D completo). Branch: fix/handoff-007-10-6d-1-direct-e
 - Nova chave de submissão é privada ao ator, independente do identificador de atendimento; recibos não armazenam título, corpo ou hash clínico.
 - Preservação do texto após falha e da chave durante retentativas comprovada com perda real de resposta simulada após commit.
 - Próximo passo: concluir relatório e homologar; não realizar merge/push/deploy.
+
+## Entrega concluída
+
+Implementação funcional commitada em e96cfbf. Relatório: docs/HANDOFF-007-10-6D-1-REPORT.md. Galeria: docs/visual/handoff-007-10-6d-1/index.html.
+39 cenários aprovados; migração 006 aplicada localmente; conteúdo preservado nas retentativas; contratos do 007.10.6D e chat revalidados.
+Próximo passo: homologação do usuário. Main não alterada; nenhum merge/push/deploy. Commit documental posterior registra o fechamento.
