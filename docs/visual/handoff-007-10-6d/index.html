@@ -1,0 +1,135 @@
+<!doctype html><html lang="pt-BR"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>007.10.6D — Evidências</title><style>body{font:16px/1.55 system-ui,sans-serif;background:#f4f6fa;color:#161d34;margin:0;padding:24px}main{max-width:1200px;margin:auto}section{margin:32px 0;background:white;padding:20px;border:1px solid #dde3ea;border-radius:12px}img{display:block;max-width:100%;height:auto}a{color:#3d7039}h1{font-size:28px}.mobile img{max-width:390px}pre{white-space:pre-wrap;overflow-wrap:anywhere;font:14px/1.6 system-ui}table{border-collapse:collapse}td{padding:8px;border-bottom:1px solid #dde3ea}</style><main><h1>007.10.6D — Sigilo, timeline e correções</h1><p>Implementado na branch fix/handoff-007-10-6d-evolution-confidentiality. Main preservada em 5f86dac. Sem merge, push ou deploy.</p><p>34 cenários distintos aprovados por execuções direcionadas. Lint, typecheck e build aprovados. Cinco estados axe sem violações.</p><p>Capturas reais, dados fictícios e Chromium headless. Trava de assinatura testada com fixture de backend; não representa integração de assinatura digital de evoluções.</p><section class="desktop"><h2>Rascunho de Psicologia: sigilo obrigatório</h2><p>1280 × 1269 px</p><a href="psychology-draft-1280.png"><img src="psychology-draft-1280.png" loading="lazy" alt="Rascunho de Psicologia: sigilo obrigatório"></a></section><section class="desktop"><h2>Timeline vista pelo médico sem acesso ao conteúdo</h2><p>1440 × 1000 px</p><a href="restricted-timeline-1440.png"><img src="restricted-timeline-1440.png" loading="lazy" alt="Timeline vista pelo médico sem acesso ao conteúdo"></a></section><section class="mobile"><h2>Timeline restrita no mobile</h2><p>390 × 1034 px</p><a href="restricted-timeline-390.png"><img src="restricted-timeline-390.png" loading="lazy" alt="Timeline restrita no mobile"></a></section><section class="desktop"><h2>Correção publicada e histórico preservado</h2><p>1280 × 1677 px</p><a href="correction-history-1280.png"><img src="correction-history-1280.png" loading="lazy" alt="Correção publicada e histórico preservado"></a></section><section class="mobile"><h2>Correção e histórico no mobile</h2><p>390 × 1753 px</p><a href="correction-history-390.png"><img src="correction-history-390.png" loading="lazy" alt="Correção e histórico no mobile"></a></section><section><h2>Relatório técnico</h2><details><summary>Abrir relatório completo</summary><pre># Handoff 007.10.6D — Relatório de implementação e homologação
+
+Data: 21/11/2026. Implementação concluída em branch dedicada; homologação do usuário pendente.
+
+## Resultado
+
+Evoluções restritas continuam representadas na timeline e no resumo do atleta, sem retornar seu conteúdo ao profissional sem permissão. A representação restrita contém somente identificador, data/hora, nome do profissional, título genérico “Conteúdo restrito” e indicadores de restrição/ação indisponível. Corpo, título clínico, especialidade, status, versão, quantidade de revisões, motivo, anexos e datas auxiliares não são incluídos nesse DTO.
+
+Psicologia passa a ter sigilo obrigatório no domínio, incluindo criação tradicional, aprovação/commit pelo CBB Intelligence e registros históricos. O autor mantém acesso mediante vínculo clínico ativo; outros profissionais precisam de concessão explícita por evolução, além do vínculo de leitura com o atleta. Profissão, autoria médica, acesso à auditoria e gestão geral de vínculos não concedem leitura privada implicitamente.
+
+Rascunhos continuam editáveis pelo autor autorizado. A ação “Editar evolução” permite também corrigir uma evolução publicada: exige motivo e confirmação humana, registra uma revisão append-only e preserva integralmente o registro publicado original. A leitura autorizada apresenta o conteúdo vigente. Não há retorno ao estado de rascunho nem novo atendimento por revisão.
+
+Versões com trava institucional de assinatura recebem somente adendo vinculado. O texto assinado permanece vigente e imutável; o adendo é apresentado separadamente, com autoria, data/hora e motivo.
+
+Interface, cores, sidebar branca, destaque verde, tipografia e composição existentes preservados. Não houve redesign, mudança nos documentos médicos, assinatura de documentos, entrega ou publicação externa.
+
+## Git e baseline
+
+- Baseline: `main`, commit `5f86dac`.
+- Branch: `fix/handoff-007-10-6d-evolution-confidentiality`.
+- `413857e`: sigilo de domínio, DTO redigido, leitura protegida, integração com a interface e seis primeiros testes de segurança.
+- `f550183`: correções versionadas, histórico, autorização específica, concorrência, jornada tradicional e regressões.
+- Commit documental posterior: relatório, manifesto, progresso e nomes das capturas ajustados às dimensões PNG reais.
+- `main` preservada em `5f86dac`. Nenhum merge, push ou deploy. Workspace limpo ao concluir.
+
+## Migrações
+
+As cinco migrações foram aplicadas somente no Supabase local, em transações com rastreamento em `supabase_migrations.schema_migrations`.
+
+| Migração | Alteração |
+|---|---|
+| `20261121000100_evolution_confidentiality.sql` | Bloqueio persistente de Psicologia, permissões específicas, política de domínio, DTO restrito, leitura auditada e filtros de fontes indiretas |
+| `20261121000200_evolution_versioned_corrections.sql` | Revisões append-only, histórico autorizado, conteúdo vigente, delegação de edição e adendo para versão com trava de assinatura |
+| `20261121000300_evolution_authorization_hardening.sql` | Qualificação de colunas dos gates, locks de autorização e invalidação de conversas após revogação específica |
+| `20261121000400_evolution_policy_context.sql` | Política do profissional disponível também na Home limpa, sem depender de atleta em contexto |
+| `20261121000500_evolution_delegated_edit_guard.sql` | Lock da concessão específica durante edição delegada de rascunho |
+
+Foram encontrados **dois registros históricos de Psicologia**, ambos com `visibility=care_team`. Eles receberam um bloqueio separado em `record_secrecy_locks`; título, corpo, versão, autoria e datas originais não foram reescritos. A permanência do valor legado de visibilidade não concede acesso: todos os caminhos clínicos passam pela nova regra de conteúdo.
+
+A aplicação da proteção histórica gerou eventos de auditoria sem conteúdo e invalidou contextos de conversas anteriormente derivados. As mensagens foram preservadas. O evento identifica a migração em `safe_metadata`; o autor do registro serve apenas como referência de sujeito, não como aprovação humana da migração.
+
+**Pendência operacional preexistente:** a CLI detectou ausência de `20261115000900_access_and_secrecy` no histórico local, apesar de suas estruturas estarem presentes. Não foi executado `--include-all`, reset ou replay desse arquivo. Somente as cinco novas migrações foram aplicadas e registradas, atomicamente. A lacuna anterior deve ser conciliada separadamente antes de automatizar migrações nesse ambiente; não adivinhar nem reaplicar alterações antigas.
+
+O Git não transporta o banco. Qualquer outro ambiente precisa aplicar as novas migrações antes de executar o código atualizado. Trocar apenas de branch não desfaz as proteções já aplicadas ao banco local.
+
+## Autorização e integridade
+
+- `record_content_allowed` centraliza o acesso ao conteúdo; existência do atendimento é tratada separadamente.
+- `evolution_read` e `evolution_history` negam conteúdo e registram a tentativa sem incluir dados clínicos na auditoria. Identificador inexistente e acesso negado usam resposta genérica.
+- A profissão autodeclarada pode tornar o tratamento mais restritivo, mas sua alteração não remove a política já estabelecida. Autoria, atleta, especialidade e atendimento da evolução são imutáveis.
+- O cliente não decide o sigilo efetivo. Mesmo payload `restricted=false` resulta em registro privado quando a regra exige.
+- `record_permissions` é protegido, sem escrita pelo usuário autenticado. `can_correct` exige `can_read`; edição também exige escrita no atleta e, para publicação/correção, permissão de finalização.
+- Permissão específica de conteúdo não altera a política própria dos anexos, que continua exigindo as verificações existentes.
+- Correções têm versão e chave de solicitação únicas, motivo obrigatório, autoria e timestamp. A tabela é protegida contra updates. Não há API de exclusão de versões.
+- Locks no registro e nas concessões evitam gravação concorrente e revogação durante o commit. A mesma solicitação pode ser repetida sem duplicar a revisão; conteúdo diferente com a mesma chave é recusado.
+- O histórico de correções respeita o mesmo sigilo da evolução original. O motivo não é copiado para logs/auditoria genérica.
+- Busca transversal, fontes longitudinais, contexto do agente e referências de anexos usam a regra de acesso. Quando autorizado, busca e fontes longitudinais usam o conteúdo vigente.
+- Revogar uma concessão específica invalida o contexto derivado das conversas do profissional.
+- RPCs antigas de workspace e helpers internos permanecem sem execução para usuários comuns; tabelas clínicas não recebem acesso direto. As quatro novas RPCs públicas são autenticadas, sem execução anônima.
+
+## Arquivos de produção
+
+| Arquivo | Responsabilidade |
+|---|---|
+| `src/features/athletes/data.ts` | DTO com metadados restritos e informações de versão/correção |
+| `src/features/athletes/profile-timeline.tsx` | Existência restrita, data/hora, ação autorizada e adendos vinculados |
+| `src/app/(workspace)/atletas/[id]/evolucao/page.tsx` | Leitura auditada, rascunho, correção, somente leitura e histórico |
+| `src/app/(workspace)/atletas/[id]/evolucao/actions.ts` | Comando de correção com validação e confirmação |
+| `src/app/(workspace)/page.tsx` | Carregamento da política do profissional |
+| `src/features/chat/intelligence-home.tsx` | Encaminhamento da política ao cartão de evolução |
+| `src/features/chat/clinical-draft-card.tsx` | Ausência de opção pública quando Psicologia exige sigilo |
+
+Também foram adicionados `playwright.evolution.config.ts`, dois arquivos de testes e uma fixture reutilizando as utilidades existentes. Os testes `athlete.spec.mjs`, `clinical-draft.spec.mjs` e `evolution.spec.mjs` foram atualizados para o novo contrato de metadados e para distinguir conteúdo vigente de versões históricas.
+
+## Testes e verificações
+
+**34 cenários distintos aprovados**, por execuções direcionadas; não se trata de uma única execução integral.
+
+| Grupo | Resultado |
+|---|---|
+| `playwright.evolution.config.ts` / `evolution-domain.spec.mjs` | 15 testes passaram, 29,9 s na validação final completa do domínio |
+| `evolution-ux.spec.mjs` | 2 testes passaram, 16,2 s na captura final; desktop e mobile |
+| Regressões existentes por impacto | 17 testes passaram entre execuções direcionadas |
+| Axe WCAG 2 A/AA e 2.1 AA | Cinco estados avaliados nos dois testes de UI, sem violações |
+| `npm run lint` | Aprovado, sem warnings |
+| `npm run typecheck` | Aprovado |
+| `npm run build` | Aprovado |
+| `git diff --check` | Aprovado |
+| Limpeza das fixtures | Zero contas `evolution-domain-*` remanescentes; contas DEMO existentes preservadas |
+| Migrações locais | Cinco novas versões presentes no histórico |
+| Gates de RPC | Anônimo sem execução; workspace legado sem execução autenticada |
+
+Novos testes cobrem evolução comum; metadados restritos; autor e terceiro; Psicologia; manipulação de payload/profissão; IA; busca e anexos; grants específicos; rascunho; correção publicada; original preservado; conflito; idempotência; motivo/autoria/auditoria; revisão restrita; compatibilidade histórica; assinatura com adendo e revogação de concessões.
+
+Regressões reutilizadas: acesso/concessão/revogação; workspace do atleta; upload, retenção, download e integração de anexos no chat; evolução assistida; busca transversal e escala de 3.000 atletas; diretório e evolução tradicional; análise longitudinal e confirmação falada de rascunho. A busca de escala passou sem regressão funcional; a medição transitória não substituiu o artefato histórico do outro handoff.
+
+A primeira regressão detectou expectativas antigas que exigiam ausência total dos registros restritos. Os testes foram atualizados para exigir metadados sem conteúdo. O novo histórico também exigiu escopar seletores do conteúdo vigente. A implementação capturou ainda uma ambiguidade de coluna SQL, corrigida pela migração de hardening antes da validação final.
+
+A fixture que altera profissão também gera cadastro profissional complementar: o cleanup foi ajustado e revalidado para remover esse dado e verificar falhas de exclusão das próprias contas temporárias. Nenhuma conta existente foi removida.
+
+A suíte integral não foi repetida, conforme a política de testes por impacto. Não foram acionados fornecedores reais de IA, transcrição, assinatura ou entrega. A regressão de voz reutiliza o fluxo mockado existente. Não foram realizados testes em Firefox, Safari ou dispositivos físicos.
+
+## Evidências visuais
+
+[Galeria com capturas reais](visual/handoff-007-10-6d/index.html). Todas com dados fictícios e Chromium headless; nenhuma janela visível de navegador foi aberta.
+
+- [Rascunho de Psicologia: sigilo obrigatório — 1280 px](visual/handoff-007-10-6d/psychology-draft-1280.png).
+- [Timeline vista pelo médico sem acesso ao conteúdo — 1440 px](visual/handoff-007-10-6d/restricted-timeline-1440.png).
+- [Timeline restrita no mobile — 390 px](visual/handoff-007-10-6d/restricted-timeline-390.png).
+- [Correção publicada e histórico preservado — 1280 px](visual/handoff-007-10-6d/correction-history-1280.png).
+- [Correção e histórico no mobile — 390 px](visual/handoff-007-10-6d/correction-history-390.png).
+
+As larguras refletem as dimensões reais dos PNGs: desktop de 1280/1440 px e mobile de 390 px. São amostras representativas da interface atual, sem mockups.
+
+## Checklist básico de homologação
+
+1. Entrar como psicólogo e iniciar evolução em atleta fictício autorizado. Conferir que não existe opção de torná-la pública. Salvar o rascunho e finalizar após revisão.
+2. Entrar como médico no mesmo atleta. A timeline deve mostrar “Conteúdo restrito”, data/hora e identificação profissional, sem título clínico ou corpo. O link direto para a evolução não deve liberar conteúdo.
+3. Voltar ao autor, abrir a evolução na timeline e usar “Editar evolução”. Alterar o texto, preencher motivo e confirmar o registro da correção.
+4. Conferir conteúdo vigente e “Histórico de versões”: texto anterior, autoria, horário e motivo devem permanecer recuperáveis. A timeline deve continuar com um atendimento.
+5. Repetir uma correção com duas abas abertas na mesma versão: uma pode concluir; a outra deve ser recusada por conflito, sem sobrescrever a primeira.
+6. Reabrir como médico: a evolução de Psicologia deve continuar restrita após a correção. Buscar/analisar esse histórico não deve revelar o texto protegido.
+
+Os acessos locais `medico.acesso@example.com` e `psicologo.acesso@example.com` foram preservados. Evoluções privadas de outro psicólogo não são liberadas apenas por compartilhar a profissão.
+
+## Pendências e limites
+
+- Homologação do usuário pendente. Sem pendência funcional conhecida nos cenários deste handoff.
+- A concessão específica usa cadastro institucional protegido; não foi criado um menu de autoatribuição de acesso privado nem ampliada a gestão geral de vínculos.
+- Não existe fluxo de assinatura digital de evoluções no baseline. A proteção de versão assinada usa trava institucional de backend e foi validada com fixture de assinatura; não é uma integração real com provedor nem uma assinatura válida criada neste handoff. Documentos médicos assinados existentes não foram alterados.
+- Não há merge automático de texto em conflito: o usuário precisa conferir a versão vigente antes de reaplicar a correção. Não foi implementada uma nova UX de recuperação de formulário.
+- A lacuna anterior do histórico local de migrações permanece uma pendência operacional separada. Não usar reset destrutivo para conciliá-la.
+
+Próximo passo: homologar o checklist e as evidências. Fazer merge, push ou deploy somente após nova autorização.
+</pre></details></section></main></html>

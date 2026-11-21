@@ -68,7 +68,7 @@ test("psychology draft has no public option; peer sees metadata without any prot
   await axe(page);
   await top(page);
   await page.screenshot({
-    path: `${shots}/psychology-draft-1440.png`,
+    path: `${shots}/psychology-draft-1280.png`,
     fullPage: true,
   });
   await page
@@ -187,7 +187,7 @@ test("published correction records a reason and keeps original history and a sin
   await axe(page);
   await top(page);
   await page.screenshot({
-    path: `${shots}/correction-history-1440.png`,
+    path: `${shots}/correction-history-1280.png`,
     fullPage: true,
   });
   await page.setViewportSize({ width: 390, height: 844 });
