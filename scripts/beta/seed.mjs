@@ -1,5 +1,5 @@
 import { randomBytes, createHash } from "node:crypto";
-import { mkdirSync, writeFileSync, existsSync, readFileSync } from "node:fs";
+import { mkdirSync, writeFileSync, existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { homedir } from "node:os";
 import assert from "node:assert/strict";
@@ -10,7 +10,8 @@ import { reconcileDeliveries } from "../../src/features/delivery/engine.ts";
 let password = (await new Response(process.stdin).text()).replace(/\r?\n$/, "");
 if (password.length < 6) throw new Error("Senha não informada ou abaixo do mínimo do Supabase.");
 const versions = query("select version from supabase_migrations.schema_migrations order by version", true).map(x => x.version);
-assert.equal(versions.length, 49, "Baseline remota deve conter 49 migrações.");
+const expectedVersions = readdirSync(new URL("../../supabase/migrations/", import.meta.url)).filter(f=>f.endsWith(".sql")).map(f=>f.split("_")[0]).sort();
+assert.deepEqual(versions, expectedVersions, "Migrações remotas devem corresponder à baseline atual.");
 const existing = query(`select count(*)::int n from clinical.athletes where qa_batch is distinct from ${q(batch)}`, true)[0].n;
 assert.equal(existing, 0, "Projeto contém atletas fora deste seed; não misturar massas.");
 const { service, publishable } = keys(), admin = client(service);

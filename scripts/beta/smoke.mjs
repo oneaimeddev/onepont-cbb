@@ -8,7 +8,7 @@ import { createServerClient } from "@supabase/ssr";
 import { users, keys, client, query, remoteUrl, authConfig, batch } from "./remote.mjs";
 const base = "https://prontuario-cbb-beta.vercel.app";
 const sessions = JSON.parse(readFileSync(join(homedir(), ".config/prontuario-cbb/beta-sessions.json"), "utf8"));
-const { publishable } = keys();
+const { publishable, service } = keys();
 const id = key => {
   const h = createHash("sha256").update(`${batch}:${key}`).digest("hex").slice(0,32).split("");
   h[12]="4";h[16]="8";const s=h.join("");return `${s.slice(0,8)}-${s.slice(8,12)}-${s.slice(12,16)}-${s.slice(16,20)}-${s.slice(20)}`;
@@ -23,6 +23,15 @@ assert.equal((await fetch(`${base}/login`)).status,200);
 checked("URL pública HTTPS e ausência de dados clínicos anônimos");
 assert.equal((await authConfig()).disable_signup,true);
 checked("Cadastro público desabilitado");
+try { process.loadEnvFile(".env.local"); } catch { /* Only needed to check the configured AI secret. */ }
+const loginHtml=await (await fetch(`${base}/login`)).text();
+const scripts=[...loginHtml.matchAll(/<script[^>]*src="([^"]+)"/g)].map(m=>m[1]);
+const privateValues=[service,process.env.CBB_INTELLIGENCE_API_KEY].filter(Boolean);
+for (const src of scripts) {
+  const js=await (await fetch(new URL(src,base))).text();
+  assert(!privateValues.some(value=>js.includes(value)),"Segredo privado encontrado no frontend");
+}
+checked("Segredos privados ausentes dos scripts públicos do login");
 for (const u of users) {
   const session=sessions.find(s=>s.email===u.email);
   assert(session);u.id=session.id;u.session=session.session;u.client=client(publishable);
@@ -31,16 +40,18 @@ for (const u of users) {
   const profile=(await u.client.from("profiles").select("*").single()).data;
   assert.equal(profile.profession,u.profession);assert.equal(profile.can_manage_access,!!u.admin);
   const workspace=(await u.client.rpc("athlete_workspace",{target:id("athlete:1"),view_name:"timeline"})).data;
-  assert.equal(workspace.can_read_records,u.clinical);
-  if (!u.clinical) assert(!workspace.records || workspace.records.length===0);
+  assert.equal(!!workspace?.can_read_records,u.clinical);
+  if (!u.clinical) assert(!workspace?.records || workspace.records.length===0);
   const medical=(await u.client.rpc("medical_profile")).data;
   assert.equal(medical.enabled,!!u.medical);
   const raw=await u.client.from("records").select("*");assert(raw.error || !raw.data?.length);
   checked(`Login/permissões backend: ${u.email}`);
 }
 const doctor=users[1], admin=users[6], athlete=id("athlete:1");
-const psych=(await doctor.client.rpc("evolution_read",{target:id("athlete:17"),record_id:id("record:17:0")})).data;
-assert(!psych?.body && !psych?.record?.body);
+const psychRead=await doctor.client.rpc("evolution_read",{target:id("athlete:17"),record_id:id("record:17:0")});
+if (psychRead.error) console.log("Psychology RPC error:",psychRead.error.code,psychRead.error.message);
+const psych=psychRead.data;
+assert.equal(psych?.error,"denied");
 checked("Conteúdo de Psicologia não exposto ao médico");
 const final=await doctor.client.rpc("evolution_submit",{target:athlete,request_id:id("smoke-evolution"),record_id:null,expected_version:0,
  entry_title:"Validação do Beta · DEMO",entry_body:"Registro fictício de smoke test do ambiente Beta, sem finalidade clínica.",restricted:false,intent:"finalize"});
@@ -79,6 +90,15 @@ try {
   await adminPage.goto(`${base}/atletas/${athlete}?aba=acesso`,{waitUntil:"networkidle"});
   assert((await adminPage.locator("body").innerText()).includes("Profissionais vinculados"));
   checked("Interface administrativa existente acessível ao OnePront");
+  await page.goto(base,{waitUntil:"networkidle"});
+  const aiResponse=page.waitForResponse(r=>r.url().endsWith("/api/inteligencia") && r.request().method()==="POST",{timeout:60000});
+  await page.getByRole("textbox",{name:"Mensagem",exact:true}).fill("Olá. Confirme que este é um ambiente de demonstração com dados fictícios, sem realizar ações clínicas.");
+  await page.getByRole("button",{name:"Enviar",exact:true}).click();
+  const reply=await aiResponse;
+  assert.equal(reply.status(),200,"CBB Intelligence indisponível");
+  const streamed=await reply.text();
+  assert(!streamed.includes('"type":"error"'),"Falha no stream do provedor");
+  checked("CBB Intelligence/Gemini respondeu pela aplicação publicada");
   await ctx.close();await adminCtx.close();
 } finally {await browser.close();}
 const counts=query("select (select count(*) from clinical.athletes)::int athletes,(select count(*) from clinical.records)::int evolutions,(select count(*) from clinical.documents)::int documents,(select count(*) from clinical.document_delivery_requests where state='delivered')::int deliveries,(select count(*) from clinical.audit_events where operation like 'delivery.%')::int delivery_audit_events",true)[0];
