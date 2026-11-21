@@ -38,7 +38,7 @@ function RecordRows({
               <time className="timeline-day" dateTime={record.occurred_at}>
                 {recordWhen(record.occurred_at).day}
               </time>
-              <details open={target === record.id}>
+              {record.content_restricted ? <p>Conteúdo restrito</p> : <details open={target === record.id}>
                 <summary>{record.title}</summary>
                 <p className="record-body">{record.body}</p>
                 {canWrite && record.is_author && record.status === "draft" && (
@@ -58,9 +58,9 @@ function RecordRows({
                       : "encerrado"}
                   </p>
                 )}
-              </details>
+              </details>}
               <p className="timeline-byline">
-                {record.author_name}, {record.specialty}
+                {record.author_name}{record.specialty ? `, ${record.specialty}` : ""}
                 {record.is_author && record.is_restricted && (
                   <span className="record-restriction">
                     {" "}
@@ -68,7 +68,7 @@ function RecordRows({
                   </span>
                 )}
               </p>
-              <span
+              {!record.content_restricted && <span
                 className={
                   record.status === "draft"
                     ? "pill pill-draft"
@@ -76,7 +76,7 @@ function RecordRows({
                 }
               >
                 {record.status === "draft" ? "Rascunho" : "Finalizado"}
-              </span>
+              </span>}
             </div>
           </li>
         ))}
@@ -97,7 +97,7 @@ export function ProfileTimeline({
   base: string;
 }) {
   const query = useSearchParams();
-  const specialties = [...new Set(records.map((r) => r.specialty))].sort(
+  const specialties = [...new Set(records.flatMap((r) => r.specialty ? [r.specialty] : []))].sort(
     (a, b) => a.localeCompare(b, "pt-BR"),
   );
   const from = profileFilterDate(query.get("de"));

@@ -191,6 +191,7 @@ export function IntelligenceHome({
   context,
   contextAthleteId = null,
   canFinalize = false,
+  evolutionRestricted = false,
   initialSessionId = null,
   initialSnapshot = conversationSnapshot([]),
   initialHistory = [],
@@ -205,6 +206,7 @@ export function IntelligenceHome({
   context?: ReactNode;
   contextAthleteId?: string | null;
   canFinalize?: boolean;
+  evolutionRestricted?: boolean;
   initialSessionId?: string | null;
   initialSnapshot?: string;
   initialHistory?: ConversationSummary[];
@@ -1040,7 +1042,7 @@ export function IntelligenceHome({
                     />
                   ) : null}
                   {turn.navigation && turn.athletes.length === 0 ? <Link className="ia-open" href={turn.navigation.href} prefetch={false}>Abrir prontuário de {turn.navigation.name}</Link> : null}
-                  {turn.draft ? <ClinicalDraftCard draft={turn.draft} canFinalize={canFinalize && turn.draft.athleteId === selectedId} onChange={(next) => updateDraft(turn.id, next)} /> : null}
+                  {turn.draft ? <ClinicalDraftCard draft={turn.draft} mandatoryRestriction={evolutionRestricted} canFinalize={canFinalize && turn.draft.athleteId === selectedId} onChange={(next) => updateDraft(turn.id, next)} /> : null}
                   {turn.document ? <DocumentDraftCard draft={turn.document} onChange={(next) => updateDocument(turn.id, next)} selected={selectedProposal === turn.document.requestId} sending={pending} onSend={(message) => { selectedProposalRef.current = turn.document!.requestId; setSelectedProposal(turn.document!.requestId); void send(message); }} onSelect={() => { selectedProposalRef.current = turn.document!.requestId; setSelectedProposal(turn.document!.requestId); }} /> : null}
                   {turn.clinicalSearch ? <ClinicalSearchCards board={turn.clinicalSearch} onSelect={selectAthlete}
                     onResults={(data:ActivityResult)=>{

@@ -21,9 +21,10 @@ const statusCopy: Record<ClinicalDraft["state"], string> = {
   discarded: "Proposta descartada. Nenhum registro foi gravado.",
 };
 
-export function ClinicalDraftCard({ draft, canFinalize, onChange }: {
+export function ClinicalDraftCard({ draft, canFinalize, mandatoryRestriction = false, onChange }: {
   draft: ClinicalDraft;
   canFinalize: boolean;
+  mandatoryRestriction?: boolean;
   onChange: (next: ClinicalDraft) => void;
 }) {
   const [editing, setEditing] = useState(false);
@@ -104,16 +105,16 @@ export function ClinicalDraftCard({ draft, canFinalize, onChange }: {
         <div className="ia-draft-fields">
           <label>Título<input value={draft.title} maxLength={160} onChange={(event) => onChange({ ...draft, title: event.target.value, state: "proposal", error: null })} /></label>
           <label>Conteúdo<textarea value={draft.body} maxLength={20000} rows={8} onChange={(event) => onChange({ ...draft, body: event.target.value, state: "proposal", error: null })} /></label>
-          <label className="check-label">
+          {mandatoryRestriction ? <p>Evoluções de Psicologia têm sigilo obrigatório de conteúdo.</p> : <label className="check-label">
             <input type="checkbox" checked={draft.restricted} onChange={(event) => onChange({ ...draft, restricted: event.target.checked, state: "proposal", error: null })} />
             <span>Restringir o registro ao autor</span>
-          </label>
+          </label>}
         </div>
       ) : (
         <div className="ia-draft-read">
           <p className="ia-draft-title">{draft.title}</p>
           {draft.body ? <p className="ia-draft-body">{draft.body}</p> : null}
-          {draft.restricted ? <p>Restrito ao autor</p> : <p>Visível para a equipe de cuidado depois da finalização</p>}
+          {mandatoryRestriction ? <p>Sigilo obrigatório de Psicologia</p> : draft.restricted ? <p>Restrito ao autor</p> : <p>Visível para a equipe de cuidado depois da finalização</p>}
         </div>
       )}
       {open && draft.missing.length > 0 ? (

@@ -5,6 +5,8 @@ import { getAthlete } from "../../../../../features/athletes/data";
 import { SubmitButton } from "../../../../../components/submit-button";
 import { ClinicalDraftWatch } from "../../../../../features/clinical/draft-watch";
 import { saveEvolution } from "./actions";
+import { supabaseServer } from "../../../../../lib/supabase";
+import { uuidPattern } from "../../../../../features/athletes/data";
 import { requireProfile } from "../../../../../lib/profile";
 
 export default async function EvolutionPage({ params, searchParams }: {
@@ -16,8 +18,15 @@ export default async function EvolutionPage({ params, searchParams }: {
   const context = await getAthlete(id, "timeline");
   const profile = await requireProfile();
   if (!context.can_write) notFound();
-  const record = context.records?.find((item) => item.id === registro);
-  if (registro && (!record || !record.is_author)) notFound();
+  let record = context.records?.find((item) => item.id === registro);
+  if (registro) {
+    if (!uuidPattern.test(registro)) notFound();
+    const client = await supabaseServer();
+    const result = await client.rpc("evolution_read", {target:id,record_id:registro});
+    if (result.error || !result.data || result.data.error) notFound();
+    record = result.data;
+  }
+  if (registro && (!record || record.content_restricted || !record.can_edit)) notFound();
   return (
     <main id="conteudo" tabIndex={-1} className="traditional-content clinical-page">
       <Link className="back-link" href={`/atletas/${id}`}>Voltar ao atleta</Link>
@@ -38,10 +47,10 @@ export default async function EvolutionPage({ params, searchParams }: {
             <input type="hidden" name="version" value={record?.version ?? 0} />
             <label>Tipo ou título da evolução<input name="title" maxLength={160} required defaultValue={record?.title} /></label>
             <label htmlFor="evolution-body">Conteúdo</label><textarea id="evolution-body" name="body" maxLength={20000} required defaultValue={record?.body} rows={8} />
-            {record?.is_restricted ? (
+            {record?.is_restricted || context.psychology_required ? (
               <>
                 <input type="hidden" name="restricted" value="yes" />
-                <p>Este registro permanece restrito ao autor.</p>
+                <p>{context.psychology_required ? "Evoluções de Psicologia têm sigilo obrigatório de conteúdo." : "Este registro permanece restrito ao autor."}</p>
               </>
             ) : (
               <label className="check-label"><input type="checkbox" name="restricted" value="yes" defaultChecked={record?.is_restricted ?? true} />Restringir o registro ao autor</label>

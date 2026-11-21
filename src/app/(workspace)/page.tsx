@@ -65,6 +65,7 @@ export default async function ChatPage({ searchParams }: {
       voiceEnabled={Boolean(voiceApiKey())}
       contextAthleteId={active?.id ?? null}
       canFinalize={Boolean(context?.can_finalize)}
+      evolutionRestricted={Boolean(context?.psychology_required)}
       initialSessionId={current.sessionId}
       initialSnapshot={current.snapshot}
       initialHistory={history}
