@@ -52,6 +52,15 @@ export async function workflowFixture() {
   const policy = workflowSql(
     "select fixture_policy_enabled from clinical.document_delivery_environment",
   );
+  const virtualRecipient = workflowSql(
+    "select virtual_recipient_enabled from clinical.document_delivery_environment",
+  );
+  // Traditional contact-policy tests must not inherit a locally enabled simulator.
+  // Simulation-specific suites explicitly opt in after creating their fixture.
+  const virtualConfigured = await workflowAdmin.rpc("configure_virtual_delivery_demo", {
+    enabled: false,
+  });
+  if (virtualConfigured.error) throw virtualConfigured.error;
   await workflowAdmin.rpc("configure_signing_demo", { enabled: true });
   await workflowAdmin.rpc("configure_document_delivery_demo", {
     enabled: true,
@@ -196,6 +205,10 @@ export async function workflowFixture() {
     await workflowAdmin.rpc("configure_document_delivery_demo", {
       enabled: policy === "t",
     });
+    const restored = await workflowAdmin.rpc("configure_virtual_delivery_demo", {
+      enabled: virtualRecipient === "t",
+    });
+    if (restored.error) throw restored.error;
   }
   return {
     owner,

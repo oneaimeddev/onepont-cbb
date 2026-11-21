@@ -190,7 +190,7 @@ test("jornada tradicional real, conversa desktop/mobile, PDF protegido e acessib
   const download=await page.request.get(`${href}&download=1`);
   expect(download.headers()["content-disposition"]).toContain("attachment;");
   const anon=await browser.newContext();
-  expect((await anon.request.get(`http://127.0.0.1:3104${href}`)).status()).toBe(401);
+  expect((await anon.request.get(new URL(href, page.url()).href)).status()).toBe(401);
   await anon.close();
   for(const width of [1440,390]){
     await page.setViewportSize({width,height:900});
