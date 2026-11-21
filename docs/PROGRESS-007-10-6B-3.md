@@ -331,3 +331,8 @@ Axe no cartão de autorização: zero violações detectadas para WCAG 2 A/AA e 
 Relatório final, roteiro, matriz de paridade, inventário fora do escopo e limites: **[REPORT-007-10-6B-3.md](REPORT-007-10-6B-3.md)**. Inclui os testes não executados: qualidade de áudio/ASR e modelo externos, assinatura criptográfica/provedor real e entrega WhatsApp real não foram homologados; os provedores usados nos testes são controlados, e a jornada de demonstração é explicitamente simulada. Confirmação de alto impacto por voz não é anunciada como disponível; a alternativa textual no chat é intencional.
 
 Branch `feat/handoff-007-10-6b-3-intelligence-journey`; `main` e `origin/main` preservadas em `51c1426`. Sem merge, push ou deploy. Migrations 005–014 registradas apenas localmente: não reaplicar manualmente. Próximo passo: homologação do protótipo com o roteiro do relatório; eventual integração na main exige uma solicitação própria. Não resta corte de implementação deste handoff pendente dentro dos limites demonstrativos descritos.
+
+
+## Complemento documental — relatório consolidado e checklist manual
+
+A pedido do usuário, o relatório principal passou a reunir explicitamente os cortes A–E, os quatro P0, os commits anteriores e o mapeamento dos 19 itens exigidos na entrega. Criado `CHECKLIST-007-10-6B-3.md`, com sequência básica de validação, frases de demonstração, resultados esperados e distinção entre voz, texto e botões. Sem alterações na aplicação ou no banco; não foi repetida a suíte por uma mudança exclusivamente documental. A validação automatizada anterior continua sendo 351/351, sem substituir a validação manual de ASR/modelo reais.
