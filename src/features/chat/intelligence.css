@@ -164,7 +164,7 @@ p.ia-product {
   letter-spacing: -0.045em;
   line-height: 1.08;
 }
-.ia-hero h1 span { color: var(--ia-blue); }
+.ia-hero h1 span { color: var(--cbb-green); }
 .ia-composer {
   flex-shrink: 0;
   width: min(760px, 100%);
