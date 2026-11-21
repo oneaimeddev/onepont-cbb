@@ -16,7 +16,7 @@ Somente três arquivos de produção alterados, todos CSS:
 - `src/features/chat/intelligence.css`: marca consistente, ações apropriadas em verde, hover/active, seleção e foco. Voz/informação continuam semânticas; a última palavra da saudação passou a usar o verde institucional por solicitação posterior do usuário, inclusive no estilo inline do texto animado e na versão de movimento reduzido.
 - `src/features/documents/documents.css`: cores anteriores fixadas exclusivamente na folha documental, por contexto, para impedir alteração silenciosa de sua apresentação.
 
-Sidebar continua clara; fundos existentes mantidos. Tipografia, escala, espaçamentos, larguras de borda, raios, grid, navegação e formulários preservados. Nenhum JSX, contrato, API, autorização, auditoria ou backend alterado. Ações destrutivas e secundárias mantêm sua hierarquia.
+Sidebar continua clara, agora com amarelo muito suave `#FBF8E6` no token compartilhado `--sidebar-surface`, aplicado à barra de navegação esquerda do workspace e do Intelligence por solicitação posterior do usuário. Lista de conversas, conteúdo e estados clínicos preservados. Demais fundos existentes mantidos. Tipografia, escala, espaçamentos, larguras de borda, raios, grid, navegação e formulários preservados. Nenhum JSX, contrato, API, autorização, auditoria ou backend alterado. Ações destrutivas e secundárias mantêm sua hierarquia.
 
 ## Tokens
 

@@ -5,6 +5,7 @@
   --cbb-navy: #161d34;
   --cbb-green: #3d7039;
   --cbb-yellow: #e0c42d;
+  --sidebar-surface: #fbf8e6;
   --navy-hover: #1a375f;
   --navy-active: #224270;
   --navy-line: rgb(255 255 255 / .12);
@@ -133,7 +134,7 @@ textarea::placeholder, input::placeholder { color: var(--muted); opacity: 1; }
 .workspace-shell h1 { font-family: var(--font-geist), sans-serif; font-weight: 600; font-size: 1.75rem; letter-spacing: -.02em; line-height: 1.15; color: var(--cbb-navy); }
 .workspace-shell h1.athlete-name { font-family: var(--font-geist-serif-regular), "Times New Roman", serif; font-weight: 400; font-synthesis: none; font-size: 2rem; letter-spacing: -.03em; line-height: 1.08; white-space: nowrap; text-wrap: nowrap; }
 .workspace-shell ::selection { background: var(--brand-soft); color: var(--cbb-navy); }
-.workspace-sidebar { position: sticky; top: 0; z-index: 2; height: 100svh; display: flex; flex-direction: column; align-items: center; gap: .35rem; width: 80px; padding: 1.15rem 0 1rem; background: #fff; border-right: 1px solid #e4e9f1; scrollbar-color: #c5d0de transparent; }
+.workspace-sidebar { position: sticky; top: 0; z-index: 2; height: 100svh; display: flex; flex-direction: column; align-items: center; gap: .35rem; width: 80px; padding: 1.15rem 0 1rem; background: var(--sidebar-surface); border-right: 1px solid #e4e9f1; scrollbar-color: #c5d0de transparent; }
 .workspace-shell.is-wide .workspace-sidebar { align-items: stretch; width: 232px; padding-inline: .75rem; }
 .sidebar-brand { display: grid; place-items: center; width: 42px; height: 42px; margin-bottom: .35rem; border-radius: 12px; }
 .sidebar-brand .brand-mark { width: 34px; height: auto; }
