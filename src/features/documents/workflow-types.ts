@@ -35,6 +35,7 @@ export type WorkflowSummary = {
     executionMode: ExecutionMode;
     provenance: Provenance;
     attempts: number;
+    hasDemoAttachment?: boolean;
     createdAt: string;
     updatedAt: string;
     recipient: null | {

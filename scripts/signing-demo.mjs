@@ -16,6 +16,10 @@ if (error)
   );
 const configured=await client.rpc("configure_document_delivery_demo",{enabled:mode==="enable"});
 if(configured.error)throw new Error("Aplique a migration do ciclo documental antes de habilitar a entrega fictícia.");
+const virtual = mode === "enable" && process.argv.includes("--virtual-recipient");
+const virtualConfigured = await client.rpc("configure_virtual_delivery_demo", { enabled: virtual });
+if (virtualConfigured.error)
+  throw new Error("Aplique a migration 007.10.7A antes de configurar o destinatário virtual.");
 let env = readFileSync(".env.local", "utf8")
   .replace(/^CBB_SIGNING_MODE=.*\n?/gm, "")
   .replace(/^CBB_DEPLOYMENT_ENV=.*\n?/gm, "");
@@ -24,3 +28,4 @@ writeFileSync(".env.local", env, { mode: 0o600 });
 console.log(
   `Simulação ${mode === "enable" ? "habilitada" : "desabilitada"} apenas na instância local. Nenhum conector real configurado.`,
 );
+if (virtual) console.log("Destinatário virtual habilitado para atletas fictícios, sem telefone.");

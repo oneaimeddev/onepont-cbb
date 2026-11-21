@@ -443,7 +443,7 @@ export function DocumentReviewPanel({
                         </dd>
                       </div>
                       <div>
-                        <dt>Telefone mascarado</dt>
+                        <dt>{deliveryEligibility?.policy === "virtual-demo-v1" ? "Contato demonstrativo" : "Telefone mascarado"}</dt>
                         <dd>
                           {review.recipient.phone_masked ?? "Não disponível"}
                         </dd>
@@ -452,7 +452,7 @@ export function DocumentReviewPanel({
                     <p>{review.recipient.reason}</p>
                     <p>
                       {deliveryEligibility?.eligible
-                        ? "Destinatário autorizado somente para simulação pela política fictícia fixture-demo-v1. Nenhuma autorização de produção foi concedida."
+                        ? "Destinatário autorizado somente para simulação. Nenhuma autorização de produção foi concedida."
                         : "Nenhuma autorização elegível de entrega está disponível. O documento pode ser finalizado sem envio."}
                     </p>
                   </div>
