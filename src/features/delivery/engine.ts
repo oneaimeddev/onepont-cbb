@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { prescriptionPdf } from "./prescription-pdf.ts";
+import { demoEnvironmentAllowed } from "../signing/environment.ts";
 import type {
   DeliveryAdapter,
   DeliveryJob,
@@ -8,13 +9,7 @@ import type {
 export function deliveryEnvironmentAllowed(
   env: Record<string, string | undefined>,
 ) {
-  return (
-    env.CBB_SIGNING_MODE === "demo" &&
-    ["local", "test", "controlled-demo"].includes(
-      env.CBB_DEPLOYMENT_ENV ?? "",
-    ) &&
-    !["production", "preview"].includes(env.VERCEL_ENV ?? "")
-  );
+  return demoEnvironmentAllowed(env);
 }
 export function simulatedDeliveryAdapter(): DeliveryAdapter {
   const observe = async (job: DeliveryJob): Promise<DeliveryObservation> => {
