@@ -128,3 +128,21 @@
 .document-workflow-history li {display:grid;grid-template-columns:180px 1fr;gap:20px;}
 .document-workflow-history time {color:var(--muted);font-size:.875rem;}
 @media(max-width:600px){.document-workflow-history li{grid-template-columns:1fr;gap:4px}}
+
+/* Document presentation is versioned separately from application branding.
+   Pin existing contextual colours so finalized representations stay unchanged. */
+.workspace-shell .document-sheet {
+  --cbb-navy: #0a1731;
+  --ink: #1a1a1a;
+  --muted: #3a4660;
+  --line: #e4e9f1;
+  color: #0a1731;
+}
+.ia .document-sheet {
+  --cbb-navy: #102849;
+  --navy: #0a1731;
+  --ink: #1a1a1a;
+  --muted: #536579;
+  --line: #dde3ea;
+  color: #0a1731;
+}

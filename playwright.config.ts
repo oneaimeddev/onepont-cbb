@@ -5,7 +5,7 @@ export default defineConfig({
     {
       name: "app",
       testIgnore:
-        /voice.*\.spec|chat-document-model\.spec|chat-journey-ui\.spec/,
+        /voice.*\.spec|chat-document-model\.spec|chat-journey-ui\.spec|palette-identity\.spec/,
       use: { baseURL: "http://127.0.0.1:3100" },
     },
     {

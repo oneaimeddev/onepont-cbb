@@ -1,0 +1,1687 @@
+[
+  {
+    "file": "src/app/globals.css",
+    "line": 5,
+    "value": "#102849"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 6,
+    "value": "#07803e"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 7,
+    "value": "#f3d115"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 8,
+    "value": "#1a375f"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 9,
+    "value": "#224270"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 10,
+    "value": "rgb(255 255 255 / .12)"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 11,
+    "value": "#d3deec"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 12,
+    "value": "#a9bbd3"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 13,
+    "value": "#4cc883"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 14,
+    "value": "#056732"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 15,
+    "value": "#e6f4ec"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 16,
+    "value": "#05652f"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 17,
+    "value": "#fdf5d3"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 18,
+    "value": "#6b5400"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 19,
+    "value": "#142c46"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 20,
+    "value": "#536579"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 21,
+    "value": "#dde3ea"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 22,
+    "value": "#b8c4d1"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 23,
+    "value": "#f4f6f9"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 24,
+    "value": "#e9eef4"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 25,
+    "value": "#fff"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 26,
+    "value": "#2366b2"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 27,
+    "value": "#a32631"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 28,
+    "value": "#fdeef0"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 31,
+    "value": "rgb(16 40 73 / .06)"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 32,
+    "value": "rgb(16 40 73 / .06)"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 32,
+    "value": "rgb(16 40 73 / .22)"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 38,
+    "value": "#dce6f3"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 68,
+    "value": "#8d9fb1"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 69,
+    "value": "rgb(35 102 178 / .18)"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 73,
+    "value": "#f1c5ca"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 78,
+    "value": "#ecd98a"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 99,
+    "value": "#f4f6fa"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 99,
+    "value": "#0a1731"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 104,
+    "value": "#0a1731"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 105,
+    "value": "#3a4660"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 106,
+    "value": "#3a4660"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 107,
+    "value": "#e4e9f1"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 107,
+    "value": "#fff"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 108,
+    "value": "#0a1731"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 115,
+    "value": "#fbeeb0"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 122,
+    "value": "#0a1731"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 122,
+    "value": "#1a1a1a"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 122,
+    "value": "#3a4660"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 122,
+    "value": "#e4e9f1"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 122,
+    "value": "#c5d0de"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 123,
+    "value": "#f4f6fa"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 123,
+    "value": "#fff"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 123,
+    "value": "#0079d5"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 123,
+    "value": "#007132"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 123,
+    "value": "#005c28"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 125,
+    "value": "#f4f6fa"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 125,
+    "value": "#0a1731"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 129,
+    "value": "#0a1731"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 131,
+    "value": "#d6e8f8"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 131,
+    "value": "#0a1731"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 132,
+    "value": "#fff"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 132,
+    "value": "#e4e9f1"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 132,
+    "value": "#c5d0de"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 136,
+    "value": "#e4e9f1"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 137,
+    "value": "#5c6b80"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 140,
+    "value": "#f3f6fa"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 140,
+    "value": "#0a1731"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 141,
+    "value": "#e7eef6"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 141,
+    "value": "#0a1731"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 143,
+    "value": "#0079d5"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 146,
+    "value": "#5c6b80"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 148,
+    "value": "#f3f6fa"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 148,
+    "value": "#0a1731"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 149,
+    "value": "#5c6b80"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 154,
+    "value": "#0a1731"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 155,
+    "value": "#3a4660"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 157,
+    "value": "#0a1731"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 158,
+    "value": "#0a1731"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 159,
+    "value": "rgb(255 255 255 / .7)"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 161,
+    "value": "#f4f6fa"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 162,
+    "value": "#f4f6fa"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 164,
+    "value": "#0a1731"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 165,
+    "value": "#3a4660"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 199,
+    "value": "rgb(35 102 178 / .18)"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 217,
+    "value": "#3a4660"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 219,
+    "value": "#0a1731"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 220,
+    "value": "#e4e9f1"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 220,
+    "value": "#fff"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 223,
+    "value": "#0079d5"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 223,
+    "value": "rgb(0 121 213 / .18)"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 224,
+    "value": "#0a1731"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 225,
+    "value": "#15284d"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 235,
+    "value": "#e4e9f1"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 236,
+    "value": "#f7f9fc"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 237,
+    "value": "#5c6b80"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 238,
+    "value": "#0079d5"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 239,
+    "value": "#3a4660"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 240,
+    "value": "#0a1731"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 242,
+    "value": "#0a1731"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 243,
+    "value": "#3a4660"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 252,
+    "value": "#8a1c1c"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 254,
+    "value": "#e4e9f1"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 254,
+    "value": "#fff"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 254,
+    "value": "#0a1731"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 255,
+    "value": "#e7eef6"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 259,
+    "value": "#5c6b80"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 261,
+    "value": "#e4e9f1"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 261,
+    "value": "#fff"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 262,
+    "value": "#0a1731"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 263,
+    "value": "#f3f6fa"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 264,
+    "value": "#0079d5"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 265,
+    "value": "#f4f6fa"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 266,
+    "value": "rgba(10, 23, 49, .48)"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 290,
+    "value": "#3a4660"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 291,
+    "value": "#e4e9f1"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 292,
+    "value": "#0a1731"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 293,
+    "value": "#0a1731"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 297,
+    "value": "#1a1a1a"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 298,
+    "value": "#3a4660"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 299,
+    "value": "#3a4660"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 300,
+    "value": "#6b5400"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 304,
+    "value": "#0a1731"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 306,
+    "value": "#e4e9f1"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 309,
+    "value": "#3a4660"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 310,
+    "value": "#3a4660"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 311,
+    "value": "#8b1e1e"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 334,
+    "value": "#0a1731"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 335,
+    "value": "#e4e9f1"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 375,
+    "value": "#0a1731"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 376,
+    "value": "#fff"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 394,
+    "value": "#0a1731"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 395,
+    "value": "#e7eef6"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 395,
+    "value": "#0a1731"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 396,
+    "value": "#3a4660"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 399,
+    "value": "#3a4660"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 400,
+    "value": "#c5d0de"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 400,
+    "value": "#fff"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 402,
+    "value": "#0079d5"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 405,
+    "value": "#e7eef6"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 406,
+    "value": "#e7eef6"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 415,
+    "value": "#e4e9f1"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 415,
+    "value": "#fff"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 416,
+    "value": "#3a4660"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 419,
+    "value": "#e4e9f1"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 425,
+    "value": "#3a4660"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 427,
+    "value": "#5c6b80"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 428,
+    "value": "#f3f6fa"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 428,
+    "value": "#0a1731"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 429,
+    "value": "#0079d5"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 430,
+    "value": "#e4e9f1"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 432,
+    "value": "#3a4660"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 433,
+    "value": "#0a1731"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 435,
+    "value": "#e4e9f1"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 437,
+    "value": "#3a4660"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 440,
+    "value": "#0a1731"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 443,
+    "value": "#e4e9f1"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 465,
+    "value": "#6b5400"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 468,
+    "value": "#3a4660"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 477,
+    "value": "#3a4660"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 478,
+    "value": "#0079d5"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 486,
+    "value": "#0069b5"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 488,
+    "value": "#e4e9f1"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 492,
+    "value": "#3a4660"
+  },
+  {
+    "file": "src/app/globals.css",
+    "line": 500,
+    "value": "#0069b5"
+  },
+  {
+    "file": "src/components/account-menu.css",
+    "line": 11,
+    "value": "#0a1731"
+  },
+  {
+    "file": "src/components/account-menu.css",
+    "line": 14,
+    "value": "rgb(255 255 255 / .7)"
+  },
+  {
+    "file": "src/components/account-menu.css",
+    "line": 21,
+    "value": "#0a1731"
+  },
+  {
+    "file": "src/components/account-menu.css",
+    "line": 30,
+    "value": "#3a4660"
+  },
+  {
+    "file": "src/components/account-menu.css",
+    "line": 39,
+    "value": "#0a1731"
+  },
+  {
+    "file": "src/components/account-menu.css",
+    "line": 53,
+    "value": "#e4e9f1"
+  },
+  {
+    "file": "src/components/account-menu.css",
+    "line": 55,
+    "value": "#fff"
+  },
+  {
+    "file": "src/components/account-menu.css",
+    "line": 56,
+    "value": "rgb(10 23 49 / .28)"
+  },
+  {
+    "file": "src/components/account-menu.css",
+    "line": 69,
+    "value": "#0a1731"
+  },
+  {
+    "file": "src/components/account-menu.css",
+    "line": 77,
+    "value": "#f4f6fa"
+  },
+  {
+    "file": "src/features/attachments/attachments.css",
+    "line": 3,
+    "value": "#102849"
+  },
+  {
+    "file": "src/features/attachments/attachments.css",
+    "line": 40,
+    "value": "#bac7d4"
+  },
+  {
+    "file": "src/features/attachments/attachments.css",
+    "line": 42,
+    "value": "#fff"
+  },
+  {
+    "file": "src/features/attachments/attachments.css",
+    "line": 43,
+    "value": "#142c46"
+  },
+  {
+    "file": "src/features/attachments/attachments.css",
+    "line": 80,
+    "value": "#dce2e8"
+  },
+  {
+    "file": "src/features/attachments/attachments.css",
+    "line": 92,
+    "value": "#536579"
+  },
+  {
+    "file": "src/features/attachments/attachments.css",
+    "line": 111,
+    "value": "#142c46"
+  },
+  {
+    "file": "src/features/attachments/attachments.css",
+    "line": 112,
+    "value": "#f5f7fa"
+  },
+  {
+    "file": "src/features/attachments/attachments.css",
+    "line": 127,
+    "value": "rgb(16 40 73 / 0.5)"
+  },
+  {
+    "file": "src/features/attachments/attachments.css",
+    "line": 130,
+    "value": "#07803e"
+  },
+  {
+    "file": "src/features/attachments/attachments.css",
+    "line": 155,
+    "value": "#536579"
+  },
+  {
+    "file": "src/features/attachments/attachments.css",
+    "line": 170,
+    "value": "#dce2e8"
+  },
+  {
+    "file": "src/features/attachments/attachments.css",
+    "line": 184,
+    "value": "#07803e"
+  },
+  {
+    "file": "src/features/attachments/attachments.css",
+    "line": 187,
+    "value": "#142c46"
+  },
+  {
+    "file": "src/features/attachments/attachments.css",
+    "line": 188,
+    "value": "#bac7d4"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 2,
+    "value": "#f4f6fa"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 3,
+    "value": "#e4e9f1"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 4,
+    "value": "#0079d5"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 5,
+    "value": "#0a1731"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 6,
+    "value": "#3a4660"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 7,
+    "value": "#1a1a1a"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 8,
+    "value": "#007132"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 41,
+    "value": "#fff"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 71,
+    "value": "#5c6b80"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 75,
+    "value": "#f3f6fa"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 76,
+    "value": "#e7eef6"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 78,
+    "value": "#8b98ab"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 115,
+    "value": "#f3f6fa"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 116,
+    "value": "#8b98ab"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 150,
+    "value": "#3a4660"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 173,
+    "value": "#e3e8f0"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 175,
+    "value": "#fff"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 176,
+    "value": "rgb(10 23 49 / .04)"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 176,
+    "value": "rgb(10 23 49 / .28)"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 200,
+    "value": "#0079d5"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 201,
+    "value": "rgb(0 121 213 / .18)"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 201,
+    "value": "rgb(10 23 49 / .28)"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 203,
+    "value": "#4e5d73"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 204,
+    "value": "#4e5d73"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 214,
+    "value": "#e1e7f0"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 216,
+    "value": "#fff"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 217,
+    "value": "#3a4660"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 225,
+    "value": "#e1e7f0"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 225,
+    "value": "#6d7c90"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 225,
+    "value": "#fff"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 240,
+    "value": "#8b98ab"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 266,
+    "value": "#d5dde8"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 276,
+    "value": "#fff"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 284,
+    "value": "#eef2f7"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 288,
+    "value": "#fff"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 300,
+    "value": "#fff"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 305,
+    "value": "#f4f6fa"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 310,
+    "value": "#fff"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 316,
+    "value": "#fff"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 323,
+    "value": "#fff"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 331,
+    "value": "#fff"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 332,
+    "value": "#fff"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 349,
+    "value": "#fff"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 353,
+    "value": "#fff"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 354,
+    "value": "#fff"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 373,
+    "value": "#fff"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 387,
+    "value": "#fff"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 393,
+    "value": "#f4f6fa"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 417,
+    "value": "#f3f6fa"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 418,
+    "value": "#e7eef6"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 428,
+    "value": "#fff"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 448,
+    "value": "#5c6b82"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 480,
+    "value": "#fff"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 487,
+    "value": "#f4f6fa"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 489,
+    "value": "#e7eef6"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 489,
+    "value": "#d3deea"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 524,
+    "value": "rgb(10 23 49 / .32)"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 534,
+    "value": "#fff"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 546,
+    "value": "#fff"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 568,
+    "value": "rgb(10 23 49 / .32)"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 577,
+    "value": "#fff"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 589,
+    "value": "#fff"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 626,
+    "value": "#f7f9fc"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 633,
+    "value": "#4e5d73"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 634,
+    "value": "#6d7c90"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 635,
+    "value": "#e4e9f1"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 637,
+    "value": "#8b98ab"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 648,
+    "value": "#dfe5ee"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 650,
+    "value": "#fff"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 655,
+    "value": "#c9d3e1"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 657,
+    "value": "#fff"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 660,
+    "value": "#4e5d73"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 664,
+    "value": "#8a4b00"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 667,
+    "value": "#e7f1fb"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 678,
+    "value": "rgb(0 121 213 / .35)"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 679,
+    "value": "rgb(0 121 213 / 0)"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 697,
+    "value": "#e7f1fb"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 698,
+    "value": "#a32631"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 698,
+    "value": "#fbeff0"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 699,
+    "value": "#e4e9f1"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 706,
+    "value": "#dbe4ef"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 709,
+    "value": "#0057a8"
+  },
+  {
+    "file": "src/features/chat/intelligence.css",
+    "line": 711,
+    "value": "#0057a8"
+  },
+  {
+    "file": "src/features/documents/documents.css",
+    "line": 94,
+    "value": "#fff"
+  },
+  {
+    "file": "src/features/documents/documents.css",
+    "line": 94,
+    "value": "#dce3ec"
+  },
+  {
+    "file": "src/features/documents/documents.css",
+    "line": 102,
+    "value": "#dce3ec"
+  },
+  {
+    "file": "src/features/documents/documents.css",
+    "line": 105,
+    "value": "#dce3ec"
+  },
+  {
+    "file": "src/features/documents/documents.css",
+    "line": 106,
+    "value": "#f5f7fa"
+  },
+  {
+    "file": "src/features/documents/documents.css",
+    "line": 107,
+    "value": "#536579"
+  },
+  {
+    "file": "src/features/documents/documents.css",
+    "line": 109,
+    "value": "#9b7c18"
+  },
+  {
+    "file": "src/features/documents/documents.css",
+    "line": 110,
+    "value": "#a32631"
+  },
+  {
+    "file": "src/features/clinical-search/search.css",
+    "line": 2,
+    "value": "#142c46"
+  },
+  {
+    "file": "src/features/clinical-search/search.css",
+    "line": 10,
+    "value": "#536579"
+  },
+  {
+    "file": "src/features/clinical-search/search.css",
+    "line": 32,
+    "value": "#dce2e8"
+  },
+  {
+    "file": "src/features/clinical-search/search.css",
+    "line": 34,
+    "value": "#fff"
+  },
+  {
+    "file": "src/features/clinical-search/search.css",
+    "line": 41,
+    "value": "#536579"
+  },
+  {
+    "file": "src/features/clinical-search/search.css",
+    "line": 60,
+    "value": "#e5eaf0"
+  },
+  {
+    "file": "src/features/clinical-search/search.css",
+    "line": 80,
+    "value": "#dce2e8"
+  },
+  {
+    "file": "src/features/clinical-search/search.css",
+    "line": 88,
+    "value": "#dce2e8"
+  },
+  {
+    "file": "src/features/athletes/csv-import.css",
+    "line": 3,
+    "value": "#536579"
+  },
+  {
+    "file": "src/features/athletes/csv-import.css",
+    "line": 3,
+    "value": "#dce2e8"
+  },
+  {
+    "file": "src/features/athletes/csv-import.css",
+    "line": 4,
+    "value": "#102849"
+  },
+  {
+    "file": "src/features/athletes/csv-import.css",
+    "line": 4,
+    "value": "#07803e"
+  },
+  {
+    "file": "src/features/athletes/csv-import.css",
+    "line": 11,
+    "value": "#bcc8d4"
+  },
+  {
+    "file": "src/features/athletes/csv-import.css",
+    "line": 12,
+    "value": "#96a7b9"
+  },
+  {
+    "file": "src/features/athletes/csv-import.css",
+    "line": 12,
+    "value": "#f5f7fa"
+  },
+  {
+    "file": "src/features/athletes/csv-import.css",
+    "line": 14,
+    "value": "#dce2e8"
+  },
+  {
+    "file": "src/features/athletes/csv-import.css",
+    "line": 17,
+    "value": "#dce2e8"
+  },
+  {
+    "file": "src/features/athletes/csv-import.css",
+    "line": 19,
+    "value": "#f5f7fa"
+  },
+  {
+    "file": "src/features/athletes/csv-import.css",
+    "line": 20,
+    "value": "#dce2e8"
+  },
+  {
+    "file": "src/features/athletes/csv-import.css",
+    "line": 27,
+    "value": "#07803e"
+  },
+  {
+    "file": "src/features/athletes/csv-import.css",
+    "line": 30,
+    "value": "#2366b2"
+  },
+  {
+    "file": "src/features/signing/signing.css",
+    "line": 6,
+    "value": "#102849"
+  },
+  {
+    "file": "src/features/signing/signing.css",
+    "line": 41,
+    "value": "#dce3ec"
+  },
+  {
+    "file": "src/features/signing/signing.css",
+    "line": 49,
+    "value": "#9b7c18"
+  },
+  {
+    "file": "src/features/signing/signing.css",
+    "line": 50,
+    "value": "#9b7c18"
+  },
+  {
+    "file": "src/features/signing/signing.css",
+    "line": 52,
+    "value": "#fff9e7"
+  },
+  {
+    "file": "src/features/signing/signing.css",
+    "line": 53,
+    "value": "#57420a"
+  },
+  {
+    "file": "src/features/signing/signing.css",
+    "line": 66,
+    "value": "#536579"
+  },
+  {
+    "file": "src/features/signing/signing.css",
+    "line": 70,
+    "value": "#102849"
+  },
+  {
+    "file": "src/features/signing/signing.css",
+    "line": 79,
+    "value": "#536579"
+  },
+  {
+    "file": "src/app/design-lab/clinical-north-star/north-star.css",
+    "line": 2,
+    "value": "#f4f6fa"
+  },
+  {
+    "file": "src/app/design-lab/clinical-north-star/north-star.css",
+    "line": 3,
+    "value": "#e4e9f1"
+  },
+  {
+    "file": "src/app/design-lab/clinical-north-star/north-star.css",
+    "line": 4,
+    "value": "#0079d5"
+  },
+  {
+    "file": "src/app/design-lab/clinical-north-star/north-star.css",
+    "line": 5,
+    "value": "#0a1731"
+  },
+  {
+    "file": "src/app/design-lab/clinical-north-star/north-star.css",
+    "line": 6,
+    "value": "#3a4660"
+  },
+  {
+    "file": "src/app/design-lab/clinical-north-star/north-star.css",
+    "line": 7,
+    "value": "#1a1a1a"
+  },
+  {
+    "file": "src/app/design-lab/clinical-north-star/north-star.css",
+    "line": 8,
+    "value": "#007132"
+  },
+  {
+    "file": "src/app/design-lab/clinical-north-star/north-star.css",
+    "line": 9,
+    "value": "#005c28"
+  },
+  {
+    "file": "src/app/design-lab/clinical-north-star/north-star.css",
+    "line": 10,
+    "value": "#6b5400"
+  },
+  {
+    "file": "src/app/design-lab/clinical-north-star/north-star.css",
+    "line": 19,
+    "value": "#c5d0de"
+  },
+  {
+    "file": "src/app/design-lab/clinical-north-star/north-star.css",
+    "line": 37,
+    "value": "#d6e8f8"
+  },
+  {
+    "file": "src/app/design-lab/clinical-north-star/north-star.css",
+    "line": 56,
+    "value": "#fff"
+  },
+  {
+    "file": "src/app/design-lab/clinical-north-star/north-star.css",
+    "line": 81,
+    "value": "#5c6b80"
+  },
+  {
+    "file": "src/app/design-lab/clinical-north-star/north-star.css",
+    "line": 86,
+    "value": "#f3f6fa"
+  },
+  {
+    "file": "src/app/design-lab/clinical-north-star/north-star.css",
+    "line": 87,
+    "value": "#e7eef6"
+  },
+  {
+    "file": "src/app/design-lab/clinical-north-star/north-star.css",
+    "line": 148,
+    "value": "#dfe6ef"
+  },
+  {
+    "file": "src/app/design-lab/clinical-north-star/north-star.css",
+    "line": 192,
+    "value": "#fff"
+  },
+  {
+    "file": "src/app/design-lab/clinical-north-star/north-star.css",
+    "line": 199,
+    "value": "#fff"
+  },
+  {
+    "file": "src/app/design-lab/clinical-north-star/north-star.css",
+    "line": 203,
+    "value": "#f7f9fc"
+  },
+  {
+    "file": "src/app/design-lab/clinical-north-star/north-star.css",
+    "line": 285,
+    "value": "#fff"
+  },
+  {
+    "file": "src/app/design-lab/clinical-north-star/north-star.css",
+    "line": 316,
+    "value": "#c5d0de"
+  },
+  {
+    "file": "src/app/design-lab/clinical-north-star/north-star.css",
+    "line": 341,
+    "value": "#7d8da3"
+  },
+  {
+    "file": "src/app/design-lab/clinical-north-star/north-star.css",
+    "line": 357,
+    "value": "rgb(255 255 255 / .66)"
+  },
+  {
+    "file": "src/app/design-lab/clinical-north-star/north-star.css",
+    "line": 523,
+    "value": "#fff"
+  },
+  {
+    "file": "src/app/design-lab/clinical-north-star/north-star.css",
+    "line": 550,
+    "value": "#c5d0de"
+  },
+  {
+    "file": "src/app/design-lab/clinical-north-star/north-star.css",
+    "line": 552,
+    "value": "#fff"
+  },
+  {
+    "file": "src/app/design-lab/clinical-north-star/north-star.css",
+    "line": 561,
+    "value": "#8aa0b8"
+  },
+  {
+    "file": "src/app/design-lab/clinical-north-star/north-star.css",
+    "line": 584,
+    "value": "#fff"
+  },
+  {
+    "file": "src/app/design-lab/clinical-north-star/north-star.css",
+    "line": 588,
+    "value": "#15284d"
+  },
+  {
+    "file": "src/app/design-lab/clinical-north-star/north-star.css",
+    "line": 603,
+    "value": "#8d1d28"
+  },
+  {
+    "file": "src/app/(workspace)/perfil/profile.css",
+    "line": 2,
+    "value": "#e4e9f1"
+  }
+]

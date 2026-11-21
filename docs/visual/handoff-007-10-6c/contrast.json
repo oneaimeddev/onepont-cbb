@@ -1,0 +1,90 @@
+{
+  "declarations": 2549,
+  "contrast": [
+    {
+      "label": "Navy / branco",
+      "foreground": "#161d34",
+      "background": "#ffffff",
+      "ratio": 16.67,
+      "minimum": 4.5
+    },
+    {
+      "label": "Primário / branco",
+      "foreground": "#3d7039",
+      "background": "#ffffff",
+      "ratio": 5.87,
+      "minimum": 4.5
+    },
+    {
+      "label": "Hover / branco",
+      "foreground": "#325d2f",
+      "background": "#ffffff",
+      "ratio": 7.66,
+      "minimum": 4.5
+    },
+    {
+      "label": "Active / branco",
+      "foreground": "#294d26",
+      "background": "#ffffff",
+      "ratio": 9.62,
+      "minimum": 4.5
+    },
+    {
+      "label": "Link / superfície",
+      "foreground": "#3d7039",
+      "background": "#f4f6fa",
+      "ratio": 5.43,
+      "minimum": 4.5
+    },
+    {
+      "label": "Selecionado / fundo suave",
+      "foreground": "#3d7039",
+      "background": "#edf3ec",
+      "ratio": 5.21,
+      "minimum": 4.5
+    },
+    {
+      "label": "Navy / amarelo",
+      "foreground": "#161d34",
+      "background": "#e0c42d",
+      "ratio": 9.61,
+      "minimum": 4.5
+    },
+    {
+      "label": "Foco / branco",
+      "foreground": "#2366b2",
+      "background": "#ffffff",
+      "ratio": 5.81,
+      "minimum": 3
+    },
+    {
+      "label": "Foco / superfície",
+      "foreground": "#2366b2",
+      "background": "#f4f6fa",
+      "ratio": 5.37,
+      "minimum": 3
+    },
+    {
+      "label": "Sucesso / fundo semântico",
+      "foreground": "#05652f",
+      "background": "#e6f4ec",
+      "ratio": 6.37,
+      "minimum": 4.5
+    },
+    {
+      "label": "Rascunho / fundo semântico",
+      "foreground": "#6b5400",
+      "background": "#fdf5d3",
+      "ratio": 6.63,
+      "minimum": 4.5
+    },
+    {
+      "label": "Branco / amarelo: proibido para texto",
+      "foreground": "#ffffff",
+      "background": "#e0c42d",
+      "ratio": 1.74,
+      "minimum": 4.5,
+      "used": false
+    }
+  ]
+}
