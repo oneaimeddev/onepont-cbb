@@ -20,6 +20,30 @@ const migration =
         ),
         "utf8",
       );
+const observationMigration =
+  sql(
+    "select to_regprocedure('public.chat_document_status(uuid,integer,text,boolean)') is not null",
+  ) === "t"
+    ? ""
+    : readFileSync(
+        new URL(
+          "../supabase/migrations/20261120001200_chat_workflow_observation.sql",
+          import.meta.url,
+        ),
+        "utf8",
+      );
+const replayMigration =
+  sql(
+    "select to_regprocedure('public.chat_operation_confirm_execute(uuid,uuid,uuid,uuid)') is not null",
+  ) === "t"
+    ? ""
+    : readFileSync(
+        new URL(
+          "../supabase/migrations/20261120001300_chat_confirmation_execution_replay.sql",
+          import.meta.url,
+        ),
+        "utf8",
+      );
 const q = (v) => "'" + String(v).replaceAll("'", "''") + "'";
 const out = (v) => `select 'RESULT:'||(${v})::text;`;
 const req = "(select (data->'document'->>'requestId')::uuid from created)";
@@ -40,7 +64,7 @@ create temp table a as select public.chat_operation_confirm('${session}',${cid},
 }
 function run(body) {
   return sql(
-    `begin;${migration}select set_config('request.jwt.claim.sub','${f.owner.id}',true);${body}rollback;`,
+    `begin;${migration}${observationMigration}${replayMigration}select set_config('request.jwt.claim.sub','${f.owner.id}',true);${body}rollback;`,
   )
     .split("\n")
     .filter((s) => s.startsWith("RESULT:"))
@@ -297,4 +321,36 @@ test("two concurrent consumers of one human receipt produce one native attempt",
       `select count(*) from clinical.signature_attempts where professional_id='${f.owner.id}'`,
     ),
   ).toBe("1");
+});
+
+test("scoped polling finalizes the native operation with chat audit provenance", () => {
+  const [view, channels] = run(
+    setup() +
+      `select ${execute};` +
+      out(
+        `public.chat_document_status(${req},1,(select data->'document'->>'contentHash' from created),true)`,
+      ) +
+      out(
+        `(select jsonb_agg(distinct origin_channel) from clinical.audit_events where actor_user_id=auth.uid() and operation in('signature.simulated_success','document.finalized','document.workflow_read'))`,
+      ),
+  );
+  expect(view.error, JSON.stringify(view)).toBeUndefined();
+  expect(view.workflow.lifecycle).toBe("finalized");
+  expect(channels).toEqual(["ai_chat"]);
+});
+
+test("same captured confirmation replays its execution after the review was saved", () => {
+  const confirm = `public.chat_operation_confirm_execute('${session}',${cid},(select (data->>'nonce')::uuid from c),(select (data->>'inputId')::uuid from human))`;
+  const [first, again, count] = run(
+    setup() +
+      out(confirm) +
+      out(confirm) +
+      out(
+        `(select to_jsonb(count(*)) from clinical.chat_operation_executions where document_id=${req})`,
+      ),
+  );
+  expect(first.error, JSON.stringify(first)).toBeUndefined();
+  expect(again.authorizationId).toBe(first.authorizationId);
+  expect(again.execution.duplicate).toBe(true);
+  expect(count).toBe(1);
 });

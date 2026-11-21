@@ -160,7 +160,7 @@ test("HTTP ambiguous item, dirty editor and foreign references do not mutate", a
         inputMode: "voice",
       })
     ).text,
-  ).toContain("por texto");
+  ).toContain("Atualizei a proposta");
   await login(page, f.other);
   await f.rpc("conversation_start", {}, f.other);
   await f.rpc(
@@ -176,7 +176,7 @@ test("HTTP ambiguous item, dirty editor and foreign references do not mutate", a
     sql(
       `select version from clinical.document_proposals where request_id='${x.document.requestId}'`,
     ),
-  ).toBe("1");
+  ).toBe("2");
 });
 test("desktop: one card updates, shared review saves, reload recovers exact persisted source", async ({
   page,

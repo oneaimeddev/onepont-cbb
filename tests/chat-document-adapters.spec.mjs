@@ -28,6 +28,18 @@ const migration =
         ),
         "utf8",
       );
+const auditMigration =
+  sql(
+    "select exists(select 1 from supabase_migrations.schema_migrations where version='20261120001400')",
+  ) === "t"
+    ? ""
+    : readFileSync(
+        new URL(
+          "../supabase/migrations/20261120001400_chat_card_confirmation_audit.sql",
+          import.meta.url,
+        ),
+        "utf8",
+      );
 const quote = (v) => `'${String(v).replaceAll("'", "''")}'`;
 const json = (v) => `${quote(JSON.stringify(v))}::jsonb`;
 const result = (v) => `select 'RESULT:'||(${v})::text;`;
@@ -35,7 +47,7 @@ let f, session;
 const docs = {};
 function run(body, user = f.owner.id) {
   return sql(
-    `begin;${migration}select set_config('request.jwt.claim.sub','${user}',true);${body}rollback;`,
+    `begin;${migration}${auditMigration}select set_config('request.jwt.claim.sub','${user}',true);${body}rollback;`,
   )
     .split("\n")
     .filter((s) => s.startsWith("RESULT:"))
@@ -381,6 +393,28 @@ test("general prescription guidance uses notes and item observations use instruc
       field: "instructions",
       itemId: d.content.items[1].id,
       value: "Texto EXATO DEMO",
+    },
+  ]);
+});
+
+test("card save preserves one real human confirmation event across retries", () => {
+  const p = docs.prescription,
+    key = randomUUID();
+  const [first, again, events] = run(
+    result(card(p, p.content, "save", key)) +
+      result(card(p, p.content, "save", key)) +
+      result(
+        `(select jsonb_agg(jsonb_build_object('actor',actor_user_id,'approved',approved_by_user_id,'channel',origin_channel,'method',execution_method)) from clinical.audit_events where resource_id='${p.id}' and operation='document.confirmed')`,
+      ),
+  );
+  expect(first.error, JSON.stringify(first)).toBeUndefined();
+  expect(again.error).toBeUndefined();
+  expect(events).toEqual([
+    {
+      actor: f.owner.id,
+      approved: f.owner.id,
+      channel: "ai_chat",
+      method: "human_ui",
     },
   ]);
 });

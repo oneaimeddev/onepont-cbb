@@ -90,3 +90,15 @@ export function signatureLabel(
         : "Validação pendente";
   return `${prefix} ${({ authorizing: "aguardando autorização", processing: "em andamento", denied: "negada", expired: "expirada", failed: "com falha", cancelled: "cancelada", stale: "desatualizada" } as Record<string, string>)[signature.state] ?? "pendente"}`;
 }
+
+/** Terminal attempts require a fresh review and human authorization, never replay. */
+export function signatureNeedsNewReview(
+  signature: WorkflowSummary["signature"] | undefined,
+) {
+  return (
+    !!signature &&
+    ["denied", "expired", "failed", "cancelled", "stale"].includes(
+      signature.state,
+    )
+  );
+}

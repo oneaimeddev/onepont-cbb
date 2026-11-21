@@ -55,7 +55,9 @@ async function addOption(scope, label, name) {
   const combo = scope.getByRole("combobox", { name: label });
   await combo.click();
   await combo.fill(name);
-  await scope.getByRole("button", { name: `Adicionar “${name}”` }).click();
+  await scope.getByRole("button", { name: `Adicionar “${name.trim().replace(/\s+/g, " ")}”` }).click();
+  await expect(combo).toHaveAttribute("aria-expanded", "false");
+  await expect(combo).toHaveValue(name.trim().replace(/\s+/g, " "));
 }
 
 test.afterAll(async () => {

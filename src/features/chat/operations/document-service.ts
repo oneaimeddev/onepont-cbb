@@ -25,10 +25,6 @@ export async function documentConversation(input: {
     text: string,
     document: ReturnType<typeof presentedDocument> = null,
   ) => ({ text, document });
-  if (input.inputMode === "voice" && !save)
-    return answer(
-      "Revise a transcrição e envie a solicitação por texto para revisar ou alterar este documento.",
-    );
   if (intent.mixed)
     return answer(
       "Qual documento deseja alterar: prescrição, solicitação de exames ou pedido cirúrgico?",
@@ -66,7 +62,9 @@ export async function documentConversation(input: {
     return answer("Confirme o atleta em contexto antes de continuar.");
   if (document.readOnlyReason)
     return answer(
-      "Este documento está somente para consulta. Abra o prontuário para acompanhar seu estado.",
+      document.readOnlyReason === "finalized"
+        ? "Esta versão foi finalizada e não pode ser alterada. Para criar um novo rascunho vinculado à origem, diga “Confirmo criar um documento derivado” neste chat. O original será preservado."
+        : "Este documento está somente para consulta. Acompanhe o processamento e o histórico no cartão desta conversa.",
       document,
     );
   if (

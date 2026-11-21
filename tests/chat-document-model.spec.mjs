@@ -72,6 +72,7 @@ async function send(
   message,
   key = randomUUID(),
   displayedProposals = [],
+  inputMode = "text",
 ) {
   const response = await page.request.post("/api/inteligencia", {
     headers: { Origin: "http://127.0.0.1:3102" },
@@ -79,7 +80,7 @@ async function send(
       messages: [{ role: "user", content: message }],
       messageId: key,
       contextAthleteId: f.athlete,
-      inputMode: "text",
+      inputMode,
       displayedProposals,
     },
   });
@@ -322,6 +323,58 @@ test("SDK creation then edit and exact save use shared authority without another
   expect(
     sql(
       `select count(*) from clinical.document_signature_operations where professional_id='${f.owner.id}'`,
+    ),
+  ).toBe("0");
+});
+
+test("controlled SDK voice creation uses the same literal source authority", async ({
+  page,
+}) => {
+  choose("preparePrescription", {
+    athleteId: f.athlete,
+    items: [{ name: "Medicamento DEMO" }],
+  });
+  const result = await send(
+    page,
+    "Crie uma prescrição para o atleta em contexto; Medicamento: Medicamento DEMO",
+    randomUUID(),
+    [],
+    "voice",
+  );
+  expect(result.body.document.state).toBe("proposal");
+  expect(result.body.document.content.items[0].name).toBe("Medicamento DEMO");
+  expect(result.body.text).toContain("não foi gravada");
+});
+
+test("controlled SDK cannot stream a false creation claim for a professional without medical authorship", async ({
+  page,
+}) => {
+  sql(
+    `update clinical.medical_authors set enabled=false where professional_id='${f.other.id}'`,
+  );
+  await f.rpc("conversation_start", {}, f.other);
+  await f.rpc(
+    "conversation_set_context",
+    { context_athlete: f.athlete },
+    f.other,
+  );
+  await page.context().clearCookies();
+  await page.goto("/login");
+  await page.getByLabel("E-mail", { exact: true }).fill(f.other.email);
+  await page.getByLabel("Senha", { exact: true }).fill(f.other.password);
+  await page.getByRole("button", { name: "Entrar", exact: true }).click();
+  await page.waitForURL("/");
+  choose("preparePrescription", {});
+  script.noTool = true;
+  const result = await send(
+    page,
+    "Crie uma prescrição para o atleta em contexto; Medicamento: Medicamento DEMO",
+  );
+  expect(result.body.document).toBeNull();
+  expect(result.body.text).toContain("não tem autorização");
+  expect(
+    sql(
+      `select count(*) from clinical.document_proposals where actor_id='${f.other.id}'`,
     ),
   ).toBe("0");
 });

@@ -350,9 +350,9 @@ button.ia-attach:disabled:hover { border-color: #e1e7f0; color: #6d7c90; backgro
 .ia-draft-finalize button:disabled { opacity: .45; }
 .ia-draft-missing { margin: .25rem 0 0; padding-left: 1.1rem; color: var(--quiet); }
 .ia-draft-actions { display: flex; flex-wrap: wrap; gap: .5rem; }
-.ia-draft-actions button, .ia-draft-actions a { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 .9rem; border: 1px solid var(--ia-line); border-radius: 12px; background: #fff; color: var(--navy); font-weight: 500; }
-.ia-draft-actions .ia-draft-save { border-color: var(--ia-blue); background: var(--ia-blue); color: #fff; }
-.ia-draft-actions button:disabled { opacity: .6; }
+.ia-draft-actions button, .ia-draft-actions a, .ia-document-journey button { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 .9rem; border: 1px solid var(--ia-line); border-radius: 12px; background: #fff; color: var(--navy); font-weight: 500; }
+.ia-draft-actions .ia-draft-save, .ia-document-journey .ia-draft-save { border-color: var(--navy); background: var(--navy); color: #fff; }
+.ia-draft-actions button:disabled, .ia-document-journey button:disabled { opacity: .6; }
 p.ia-status {
   margin: 0.45rem 0.55rem 0.2rem;
   color: var(--quiet);
@@ -702,3 +702,11 @@ p.ia-status {
   .ia-greeting-typed { display: none; }
   .ia-greeting-reduced { display: block; align-self: center; }
 }
+
+.ia-document-journey { margin-block: 1rem; border-top: 1px solid var(--border, #dbe4ef); padding-top: 1rem; overflow-wrap: anywhere; min-width: 0; }
+.ia-document-journey h4 { margin-block: .5rem; }
+.ia-document-journey button { white-space: normal; min-height: 44px; max-width: 100%; }
+.ia-document-journey :is(button,summary):focus-visible,.ia-document-preview>summary:focus-visible { outline: 2px solid var(--cbb-blue, #0057a8); outline-offset: 3px; }
+.ia-document-journey ol { padding-inline-start: 1.25rem; }
+.ia-draft-actions button[aria-pressed=true] { border-color: var(--cbb-blue, #0057a8); font-weight: 600; }
+.ia-document-preview>summary { cursor: pointer; padding-block: .75rem; }

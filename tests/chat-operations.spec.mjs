@@ -461,11 +461,25 @@ test("catálogo é explícito, schemas estritos e nenhuma ferramenta nova anunci
     ),
   ).toBe(true);
   expect(validateClinicalCapability("__proto__", {}).success).toBe(false);
+  const source = {
+    requestId: randomUUID(),
+    athleteId: f.athlete,
+    kind: "prescription",
+    version: 1,
+    contentHash: "a".repeat(32),
+    messageId: randomUUID(),
+  };
   expect(
     validateClinicalCapability("document.proposal.patch", {
-      workspaceId: randomUUID(),
-      revision: 1,
-      kind: "prescription",
+      ...source,
+      changes: [
+        { operation: "set_field", field: "notes", value: "Orientação DEMO" },
+      ],
+    }).success,
+  ).toBe(true);
+  expect(
+    validateClinicalCapability("document.proposal.patch", {
+      ...source,
       changes: [
         { operation: "set_field", field: "status", value: "finalized" },
       ],

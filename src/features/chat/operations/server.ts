@@ -95,21 +95,12 @@ export async function operationGateway(input: OperationGatewayInput) {
       });
       if (captured.error || captured.data?.error)
         return captured.data ?? { error: "unavailable" };
-      const authorized = await rpc("chat_operation_confirm", {
+      return rpc("chat_operation_confirm_execute", {
         session_id: input.sessionId,
         challenge_id: input.challengeId,
         nonce: input.nonce,
         input_id: captured.data.inputId,
       });
-      if (authorized?.error || !authorized?.authorizationId) return authorized;
-      const execution = await rpc("chat_operation_execute", {
-        authorization_id: authorized.authorizationId,
-      });
-      return {
-        ...authorized,
-        execution,
-        ...(execution?.error ? { error: execution.error } : {}),
-      };
     }
   }
 }

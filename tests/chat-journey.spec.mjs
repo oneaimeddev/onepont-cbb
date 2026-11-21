@@ -68,7 +68,11 @@ for (const kind of ["prescription", "exam_request", "surgical_order"])
     page,
   }) => {
     const x = await seed(kind);
-    const prompt = await say(page, x, "Assine este documento");
+    const prompt = await say(
+      page,
+      x,
+      kind === "exam_request" ? "Assine e envie" : "Assine este documento",
+    );
     expect(prompt.text).toContain("Escolha a identidade");
     const identity = f.inventory.identities[0];
     await say(page, x, `Use a identidade ${identity.label}`);
@@ -80,6 +84,7 @@ for (const kind of ["prescription", "exam_request", "surgical_order"])
     });
     expect(view.error, JSON.stringify(view)).toBeUndefined();
     const c = view.state.challenge;
+    expect(c.summary.delivery.requested).toBe(kind === "exam_request");
     expect(
       (
         await command(page, {

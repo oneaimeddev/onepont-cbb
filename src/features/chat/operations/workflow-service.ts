@@ -1,8 +1,13 @@
 import "server-only";
 import { supabaseServer } from "../../../lib/supabase";
 import { signingCommand, signingDemoEnabled } from "../../signing/server";
-import { getDocumentWorkflow } from "../../documents/workflow-server";
-import { signatureLabel, deliveryLabel } from "../../documents/workflow-types";
+import type { WorkflowDetail } from "../../documents/workflow-types";
+import { reconcileDocumentDelivery } from "../../delivery/server";
+import {
+  signatureLabel,
+  deliveryLabel,
+  signatureNeedsNewReview,
+} from "../../documents/workflow-types";
 import { presentedDocument } from "../document-draft";
 import { creationPatientMatches } from "./document-creation";
 import { foldName } from "../athlete-resolution";
@@ -44,11 +49,30 @@ export async function inspectDocumentJourney(scope: DisplayedProposal) {
   const inventory: SigningInventory | null = signingDemoEnabled()
     ? await signingCommand("list")
     : null;
-  const workflow = document.documentId
-    ? await getDocumentWorkflow(document.documentId)
-    : null;
+  let workflow: WorkflowDetail | null = null;
+  let effectiveDocument = document;
+  if (document.documentId) {
+    const args = {
+      request_id: scope.requestId,
+      expected_version: scope.version,
+      expected_hash: scope.contentHash,
+    };
+    const before = await client.rpc("chat_document_status", {
+      ...args,
+      advance: signingDemoEnabled(),
+    });
+    if (before.error || before.data?.error) return { error: "denied" };
+    await reconcileDocumentDelivery(document.documentId);
+    const after = await client.rpc("chat_document_status", {
+      ...args,
+      advance: false,
+    });
+    if (after.error || after.data?.error) return { error: "denied" };
+    workflow = after.data as WorkflowDetail;
+    effectiveDocument = presentedDocument(after.data.document) ?? document;
+  }
   return {
-    document,
+    document: effectiveDocument,
     sessionId: current.data.session.id,
     state,
     inventory,
@@ -56,9 +80,7 @@ export async function inspectDocumentJourney(scope: DisplayedProposal) {
     demoEnabled: signingDemoEnabled(),
   };
 }
-function statusText(
-  detail: Awaited<ReturnType<typeof getDocumentWorkflow>> | null,
-) {
+function statusText(detail: WorkflowDetail | null) {
   if (!detail) return "O documento ainda não foi salvo nem assinado.";
   const w = detail.workflow;
   return [
@@ -78,7 +100,7 @@ export function workflowIntent(message: string) {
     /\b(confirmar e salvar|salvar)\b/.test(header)
   )
     return false;
-  return /\b(assine|assinar|assinatura|identidade|certificado|envie|enviar|whatsapp|entrega|derivado|reenviar|reenvie|confirmo|confirmar|conectar assinatura|tente novamente|sim|cancelar operacao|cancele a operacao)\b/.test(
+  return /\b(assine|assinar|assinatura|identidade|certificado|envie|enviar|enviado|whatsapp|entrega|derivado|reenviar|reenvie|confirmo|confirmar|conectar assinatura|tente novamente|sim|cancelar operacao|cancele a operacao|retome|retomar)\b/.test(
     header,
   );
 }
@@ -90,6 +112,13 @@ export async function workflowConversation(input: {
   inputMode?: "text" | "voice";
 }) {
   if (!workflowIntent(input.message)) return null;
+  if (
+    !input.proposals.length &&
+    !/\b(assine|assinar|assinatura|identidade|certificado|documento|prescricao|receita|exames|cirurgico|whatsapp|entrega|derivado)\b/.test(
+      foldName(input.message),
+    )
+  )
+    return null;
   const reply = (
     text: string,
     document: ReturnType<typeof presentedDocument> = null,
@@ -140,10 +169,11 @@ export async function workflowConversation(input: {
   if (
     /^(consult|mostre|ver|qual|como|acompanhe|atualize|status|historico)/.test(
       text,
-    )
+    ) ||
+    /\b(ja foi|foi enviado)\b/.test(text)
   )
     return reply(statusText(view.workflow), document);
-  if (input.inputMode === "voice")
+  if (input.inputMode === "voice" && /^(sim|confirmo)\b/.test(text))
     return reply(
       "Confira a versão e o resumo no cartão. Para autorizar assinatura, entrega, reenvio ou derivação, envie a confirmação por texto neste chat.",
       document,
@@ -169,7 +199,13 @@ export async function workflowConversation(input: {
       presentedDocument(r.data?.document) ?? document,
     );
   }
-  if (/\b(tentar novamente|tente novamente|reenviar|reenvie)\b/.test(text)) {
+  const retryingSignature =
+    /\bassinatura\b/.test(text) &&
+    /\b(tentar novamente|tente novamente)\b/.test(text);
+  if (
+    !retryingSignature &&
+    /\b(tentar novamente|tente novamente|reenviar|reenvie)\b/.test(text)
+  ) {
     const action = /\b(reenviar|reenvie)\b/.test(text) ? "resend" : "retry";
     if (!text.startsWith("confirmo "))
       return reply(
@@ -191,7 +227,10 @@ export async function workflowConversation(input: {
       document,
     );
   }
-  if (view.workflow?.workflow.signature)
+  const requiresNewReview = signatureNeedsNewReview(
+    view.workflow?.workflow.signature,
+  );
+  if (view.workflow?.workflow.signature && !requiresNewReview)
     return reply(statusText(view.workflow), document);
   if (!signingDemoEnabled())
     return reply(
@@ -211,6 +250,26 @@ export async function workflowConversation(input: {
       document,
     );
   let state = view.state;
+  if (requiresNewReview && state?.authorization) state = null;
+  if (/^retom(?:e|ar) a operacao autorizada$/.test(text)) {
+    const authorization = state?.authorization;
+    if (!authorization)
+      return reply(
+        "Não há uma autorização válida para retomar. Prepare uma nova revisão.",
+        document,
+      );
+    const r = await operationGateway({
+      action: "execute",
+      sessionId,
+      authorizationId: authorization.authorizationId,
+    });
+    return reply(
+      r?.error
+        ? "Esta autorização não pôde ser retomada. Confira se o contexto e o resumo ainda são válidos."
+        : "Consultei a autorização e o motor existente. Acompanhe o resultado no cartão, sem repetir assinatura ou envio.",
+      document,
+    );
+  }
   const confirming = /^(sim|confirmo)(?:\b|$)/.test(text);
   if (confirming) {
     const c = state?.challenge;
@@ -284,9 +343,9 @@ export async function workflowConversation(input: {
       );
     state = r;
   }
-  if (!state?.workspace.identityId)
+  if (!state?.workspace)
     return reply(
-      `Escolha a identidade antes de preparar a assinatura: ${identities.map((i) => i.label).join("; ")}. Diga “Use a identidade NOME COMPLETO”.`,
+      "Não foi possível recuperar a revisão atual. Peça uma nova revisão.",
       document,
     );
   if (/\b(envie|enviar|whatsapp|sem envio|nao envie|nao enviar)\b/.test(text)) {
@@ -324,6 +383,11 @@ export async function workflowConversation(input: {
       );
     state = r;
   }
+  if (!state?.workspace.identityId)
+    return reply(
+      `Escolha a identidade antes de preparar a assinatura: ${identities.map((i) => i.label).join("; ")}. Diga “Use a identidade NOME COMPLETO”.`,
+      document,
+    );
   const prepared = await operationGateway({
     action: "prepare",
     workspaceId: state!.workspace.id,

@@ -10,7 +10,7 @@ const label = {
   schedule: "frequ[êe]ncia|hor[áa]rio",
   duration: "dura[çc][ãa]o",
   quantity: "quantidade",
-  instructions: "instru[çc][õo]es|orienta[çc][õo]es de uso",
+  instructions: "instru[çc][õo]es|orienta[çc][õo]es de uso|posologia",
   notes: "observa[çc][õo]es|notas",
   exam_type: "tipo(?: de exame)?",
   region: "regi[ãa]o(?: anat[ôo]mica)?",

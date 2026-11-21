@@ -59,7 +59,7 @@ async function prepare(page) {
     challenge: (await challenge.json()).challenge,
   };
 }
-test("HTTP captura autoria real, exige apresentação, repete sem duplicar e não executa assinatura", async ({
+test("HTTP captura autoria real, exige apresentação e executa o motor sem duplicar", async ({
   page,
 }) => {
   await login(page);
@@ -98,7 +98,9 @@ test("HTTP captura autoria real, exige apresentação, repete sem duplicar e nã
   expect(receipt.executionEnabled).toBe(false);
   expect(receipt.effect).toBe("authorization_recorded");
   const retry = await send(page, final);
-  expect((await retry.json()).authorizationId).toBe(receipt.authorizationId);
+  const replay = await retry.json();
+  expect(replay.authorizationId).toBe(receipt.authorizationId);
+  expect(replay.execution.duplicate).toBe(true);
   expect(
     sql(
       `select professional_id from clinical.chat_operation_authorizations where id='${receipt.authorizationId}'`,
@@ -108,7 +110,12 @@ test("HTTP captura autoria real, exige apresentação, repete sem duplicar e nã
     sql(
       `select count(*) from clinical.documents where id='${x.review.document_id}'`,
     ),
-  ).toBe("0");
+  ).toBe("1");
+  expect(
+    sql(
+      `select count(*) from clinical.signature_attempts where professional_id='${f.owner.id}'`,
+    ),
+  ).toBe("1");
   expect(
     sql(
       `select count(*) from clinical.audit_events where resource_id='${c.id}' and operation='chat_operation.confirmed' and origin_channel='ai_chat' and execution_method='human_message'`,

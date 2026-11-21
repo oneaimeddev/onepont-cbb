@@ -225,6 +225,7 @@ export function IntelligenceHome({
   const epochRef = useRef(0);
   const sessionRef = useRef<string | null>(initialSessionId);
   const selectedProposalRef = useRef<string | null>(null);
+  const [selectedProposal, setSelectedProposal] = useState<string | null>(null);
   const stickRef = useRef(true);
   const pinRef = useRef(false);
   const scrollRestoredRef = useRef(false);
@@ -423,6 +424,7 @@ export function IntelligenceHome({
         return;
       }
       const id = sessionIdFrom(payload);
+      selectedProposalRef.current = null; setSelectedProposal(null);
       sessionRef.current = id;
       setOpenSessionId(id);
       setHistoryOpen(false);
@@ -472,6 +474,7 @@ export function IntelligenceHome({
         setFailure("Não foi possível abrir essa conversa.");
         return;
       }
+      selectedProposalRef.current = null; setSelectedProposal(null);
       sessionRef.current = view.sessionId;
       setOpenSessionId(view.sessionId);
       setHistoryOpen(false);
@@ -520,7 +523,7 @@ export function IntelligenceHome({
   }
 
   function finishTurn(id: string, text: string, athletes: PresentedAthlete[], navigation: ChatTurn["navigation"], search: PresentedSearch | null, draft: ChatTurn["draft"] = null, document: ChatTurn["document"] = null, readings: ReadingBoard | null = null, analysis: HistoryAnalysis | null = null) {
-    if (document) selectedProposalRef.current = document.requestId;
+    if (document) { selectedProposalRef.current = document.requestId; setSelectedProposal(document.requestId); }
     patchTurns((current) => {
       return current.map((turn) => turn.id === id
         ? { ...turn, text, athletes, navigation, search, draft, document, readings, analysis }
@@ -529,7 +532,9 @@ export function IntelligenceHome({
   }
 
   function updateDocument(turnId: string, document: DocumentDraft) {
-    const text = document.state === "saved"
+    const text = document.readOnlyReason
+      ? "O estado do documento foi atualizado. Consulte a assinatura e a entrega no cartão."
+      : document.state === "saved"
       ? "A proposta foi gravada como rascunho. Ela não foi emitida nem assinada."
       : document.state === "discarded"
         ? "A proposta foi descartada. Nenhum documento foi gravado."
@@ -1036,7 +1041,7 @@ export function IntelligenceHome({
                   ) : null}
                   {turn.navigation && turn.athletes.length === 0 ? <Link className="ia-open" href={turn.navigation.href} prefetch={false}>Abrir prontuário de {turn.navigation.name}</Link> : null}
                   {turn.draft ? <ClinicalDraftCard draft={turn.draft} canFinalize={canFinalize && turn.draft.athleteId === selectedId} onChange={(next) => updateDraft(turn.id, next)} /> : null}
-                  {turn.document ? <DocumentDraftCard draft={turn.document} onChange={(next) => updateDocument(turn.id, next)} onSelect={() => { selectedProposalRef.current = turn.document!.requestId; }} /> : null}
+                  {turn.document ? <DocumentDraftCard draft={turn.document} onChange={(next) => updateDocument(turn.id, next)} selected={selectedProposal === turn.document.requestId} sending={pending} onSend={(message) => { selectedProposalRef.current = turn.document!.requestId; setSelectedProposal(turn.document!.requestId); void send(message); }} onSelect={() => { selectedProposalRef.current = turn.document!.requestId; setSelectedProposal(turn.document!.requestId); }} /> : null}
                   {turn.clinicalSearch ? <ClinicalSearchCards board={turn.clinicalSearch} onSelect={selectAthlete}
                     onResults={(data:ActivityResult)=>{
                       const athletes=presentedAthletes(data.items.map(item=>({id:item.athlete_id,name:item.name,category:item.category,club:item.club,division:item.division,facts:[item.category,item.club,item.division,item.modality].filter(Boolean)})));

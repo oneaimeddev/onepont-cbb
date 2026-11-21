@@ -221,6 +221,7 @@ async function prepareConversation(input: unknown) {
   const utterance = parsed.data.messages.at(-1)?.content ?? "";
   const creationTurnKey = parsed.data.messageId ?? crypto.randomUUID();
   const documentPreparation = { attempted: false, requested: (["prescription", "exam_request", "surgical_order"] as const).some((kind) => documentCreationRequested(kind, utterance)), notice: "" };
+  if (documentPreparation.requested && !canAuthorDocuments) documentPreparation.notice = "Seu perfil não tem autorização para preparar documentos médicos. Não preparei nem salvei um documento.";
   const command = athleteCommand(utterance);
   const speech = documentRequest(utterance);
   const published: { reading: ReadingBoard | null; analysis: HistoryAnalysis | null } = { reading: null, analysis: null };
@@ -855,7 +856,7 @@ async function prepareConversation(input: unknown) {
   return {
     published,
     documentView: () => documentPreparation,
-    holdClinicalNarrative: canAuthorDocuments,
+    holdClinicalNarrative: canAuthorDocuments || documentPreparation.requested,
     attachmentView: () => attachmentPublished,
     clinicalView: () => clinicalPublished,
     request: {

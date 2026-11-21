@@ -122,7 +122,10 @@ const fields: [RegExp, string][] = [
   [/\b(frequencia|horario)\b/, "schedule"],
   [/\bduracao\b/, "duration"],
   [/\bquantidade\b/, "quantity"],
-  [/\b(instrucao|instrucoes|orientacao|orientacoes)\b/, "instructions"],
+  [
+    /\b(instrucao|instrucoes|orientacao|orientacoes|posologia)\b/,
+    "instructions",
+  ],
   [/\bjustificativa\b/, "justification"],
   [/\bindicacao\b/, "indication"],
   [/\bdiagnostico\b/, "diagnosis"],

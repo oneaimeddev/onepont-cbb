@@ -1,3 +1,4 @@
+import { cleanupWorkflow } from "./helpers/workflow-fixtures.mjs";
 import { randomUUID } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { mkdirSync } from "node:fs";
@@ -86,8 +87,9 @@ function card(kind, requestId, content, hash, version) {
 }
 
 test.afterAll(async () => {
+  cleanupWorkflow(sql, users);
   const ids = users.map((id) => `'${id}'`).join(",");
-  sql(`delete from clinical.document_proposals where athlete_id = '${athlete}';
+  sql(`delete from clinical.document_reviews where professional_id in (${ids || 'null'});delete from clinical.document_proposals where athlete_id = '${athlete}';
     delete from clinical.document_revisions where document_id in (select id from clinical.documents where athlete_id = '${athlete}');
     delete from clinical.documents where athlete_id = '${athlete}';
     ${ids ? `delete from clinical.conversation_messages where session_id in (select id from clinical.conversation_sessions where professional_id in (${ids}));

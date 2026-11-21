@@ -1,3 +1,4 @@
+import { cleanupWorkflow } from "./helpers/workflow-fixtures.mjs";
 import { randomUUID } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { mkdirSync } from "node:fs";
@@ -29,8 +30,9 @@ function sql(input) {
 }
 
 test.afterAll(async () => {
+  cleanupWorkflow(sql, users);
   const ids = users.map((id) => `'${id}'`).join(",");
-  sql(`delete from clinical.document_proposals where athlete_id = '${athlete}';
+  sql(`delete from clinical.document_reviews where professional_id in (${ids || 'null'});delete from clinical.document_proposals where athlete_id = '${athlete}';
     delete from clinical.document_revisions where document_id in (select id from clinical.documents where athlete_id = '${athlete}');
     delete from clinical.documents where athlete_id = '${athlete}';
     ${ids ? `delete from clinical.conversation_messages where session_id in (select id from clinical.conversation_sessions where professional_id in (${ids}));
@@ -61,6 +63,7 @@ test("uma frase explícita grava só o rascunho da prescrição", async ({ page 
     values('${id}', 'CRM fictício', true, '${id}');`);
   const requestId = randomUUID();
   await page.route("**/api/inteligencia", async (route) => {
+    if (route.request().postDataJSON().messages.at(-1)?.content === "Pode confirmar e salvar.") return route.continue();
     const payload = { text: "A confirmação fica com o sistema.", athletes: [], navigation: null, search: null, draft: null, document: null, context: null, contextCleared: false };
     await route.fulfill({
       status: 200,
@@ -82,6 +85,8 @@ test("uma frase explícita grava só o rascunho da prescrição", async ({ page 
     target: athlete, request_id: requestId, kind: "prescription", payload: prescription,
   });
   expect(registered.data.ok).toBe(true);
+  await client.rpc("conversation_set_context",{context_athlete:athlete});
+  await page.goto(`/?atleta=${athlete}`);
 
   await page.evaluate((value) => {
     sessionStorage.setItem("cbb-intelligence-turns:v1", JSON.stringify({ v: 1, turns: value }));
