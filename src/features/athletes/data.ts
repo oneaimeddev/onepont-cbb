@@ -63,6 +63,9 @@ type ClinicalRecord = {
   content_restricted?: boolean;
   can_edit?: boolean;
   version_count?: number;
+  has_signature?: boolean;
+  signed_version?: number | null;
+  linked_corrections?: {version:number;title:string;body:string;reason:string;actor_name:string;created_at:string}[];
   is_restricted: boolean;
   is_author: boolean;
   encounter_id: string | null;

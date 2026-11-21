@@ -92,7 +92,7 @@ test("foto privada, edição, rascunho, revisão, finalização e bloqueios",asy
  const record=new URL(page.url()).searchParams.get("registro");
  await page.getByLabel("Conteúdo",{exact:true}).fill("Conteúdo sintético revisado.");
  await page.getByRole("button",{name:"Salvar rascunho",exact:true}).click();
- await expect(page.locator("p.record-body").filter({hasText:"Conteúdo sintético revisado."})).toBeVisible();
+ await expect(page.locator("form.evolution-review p.record-body").filter({hasText:"Conteúdo sintético revisado."})).toBeVisible();
  const stale={target:athlete,request_id:randomUUID(),record_id:record,expected_version:1,entry_title:"Stale",entry_body:"Do not save",restricted:true,finalize:false};
  expect((await full.client.rpc("clinical_save",stale)).data.error).toBe("conflict");
  expect((await full.client.rpc("clinical_save",{...stale,target:otherAthlete})).data.error).toBe("denied");
@@ -101,7 +101,7 @@ test("foto privada, edição, rascunho, revisão, finalização e bloqueios",asy
  sql(`update clinical.athlete_access set can_finalize=true where athlete_id='${athlete}' and professional_id='${full.id}';`);
  await page.getByLabel("Revisei esta versão e confirmo a finalização para este atleta.").check();
  await page.getByRole("button",{name:"Confirmar finalização",exact:true}).click();
- await expect(page.getByText("Evolução sintética QA",{exact:true})).toBeVisible();
+ await expect(page.locator(".timeline summary").filter({hasText:"Evolução sintética QA"})).toBeVisible();
  await expect(page.locator(".timeline .pill").filter({hasText:"Finalizado"})).toBeVisible();
  expect((await full.client.rpc("clinical_save",{...stale,expected_version:2,finalize:true})).data.version).toBe(3);
  await page.screenshot({path:testInfo.outputPath("evolution-desktop.png"),fullPage:true});
@@ -113,11 +113,14 @@ test("foto privada, edição, rascunho, revisão, finalização e bloqueios",asy
  expect((await limited.client.rpc("clinical_save",{...args,record_id:null})).data.error).toBe("denied");
  expect((await limited.client.rpc("athlete_photo_store",{target:athlete,actor:limited.id,content:null,remove:true})).error).toBeTruthy();
  const hidden=await limited.client.rpc("athlete_workspace",{target:athlete,view_name:"timeline"});
- expect(hidden.data.records).toEqual([]);
- expect(hidden.data.counts.evolutions).toBe(0);
+ expect(hidden.data.records).toEqual([expect.objectContaining({id:record,title:"Conteúdo restrito",content_restricted:true})]);
+ expect(hidden.data.records[0]).not.toHaveProperty("body");
+ expect(hidden.data.records[0]).not.toHaveProperty("version");
+ expect(hidden.data.counts.evolutions).toBe(1);
  expect(hidden.data.records).not.toContainEqual(expect.objectContaining({encounter_status:"closed"}));
  const summary=await limited.client.rpc("athlete_workspace",{target:athlete,view_name:"profile"});
- expect(summary.data.recent_records).toEqual([]);
+ expect(summary.data.recent_records).toEqual([expect.objectContaining({id:record,title:"Conteúdo restrito",content_restricted:true})]);
+ expect(JSON.stringify(summary.data)).not.toContain("Conteúdo sintético");
  const fullSummary=await full.client.rpc("athlete_workspace",{target:athlete,view_name:"profile"});
  expect(fullSummary.data.recent_records).toEqual([expect.objectContaining({id:record})]);
  expect(fullSummary.data.recent_records[0]).not.toHaveProperty("body");
