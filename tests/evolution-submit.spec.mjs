@@ -259,3 +259,38 @@ test("retry of a prior draft receipt does not overwrite later edits", async () =
     "Edição posterior",
   );
 });
+
+test("submission keys are scoped by actor and do not disclose another professional's encounter", async () => {
+  const input = args(),
+    doctor = await submit(f.doctor, input),
+    psych = await submit(f.psych, input);
+  expect(doctor.status).toBe("finalized");
+  expect(psych.status).toBe("finalized");
+  expect(doctor.id).not.toBe(psych.id);
+  expect(count()).toBe(2);
+  expect(
+    await f.rpc(f.doctor, "evolution_read", {
+      target: f.athlete,
+      record_id: psych.id,
+    }),
+  ).toEqual({ error: "denied" });
+});
+
+test("revoked delegated permission denies receipt replay and audits the attempt", async () => {
+  const draft = await f.save(f.psych);
+  sql(
+    `insert into clinical.record_permissions(record_id,professional_id,can_read,can_correct) values('${draft.id}','${f.doctor.id}',true,true);`,
+  );
+  const input = args({ record_id: draft.id, expected_version: draft.version });
+  expect((await submit(f.doctor, input)).status).toBe("finalized");
+  sql(
+    `delete from clinical.record_permissions where record_id='${draft.id}' and professional_id='${f.doctor.id}'`,
+  );
+  expect(await submit(f.doctor, input)).toEqual({ error: "denied" });
+  expect(
+    sql(
+      `select count(*) from clinical.audit_events where actor_user_id='${f.doctor.id}' and operation='clinical_record.traditional_submit' and outcome='denied'`,
+    ),
+  ).toBe("1");
+  expect(count()).toBe(1);
+});

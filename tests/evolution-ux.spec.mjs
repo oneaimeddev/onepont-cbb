@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures.mjs";
 import { mkdirSync } from "node:fs";
 import { createRequire } from "node:module";
 import { evolutionFixture, sql } from "./helpers/evolution-fixture.mjs";
@@ -19,9 +19,13 @@ async function login(page, user) {
   await page.getByRole("button", { name: "Entrar", exact: true }).click();
   await page.waitForURL("/");
 }
-async function top(page){
-  await page.evaluate(()=>{if(document.activeElement instanceof HTMLElement)document.activeElement.blur();window.scrollTo(0,0);});
-  await expect.poll(()=>page.evaluate(()=>window.scrollY)).toBe(0);
+async function top(page) {
+  await page.evaluate(() => {
+    if (document.activeElement instanceof HTMLElement)
+      document.activeElement.blur();
+    window.scrollTo(0, 0);
+  });
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
 }
 async function axe(page) {
   await page.addScriptTag({ path: require.resolve("axe-core/axe.min.js") });
@@ -72,12 +76,7 @@ test("psychology draft has no public option; peer sees metadata without any prot
     fullPage: true,
   });
   await page
-    .getByLabel(
-      "Revisei esta versão e confirmo a finalização para este atleta.",
-    )
-    .check();
-  await page
-    .getByRole("button", { name: "Confirmar finalização", exact: true })
+    .getByRole("button", { name: "Finalizar evolução", exact: true })
     .click();
   const ctx = await browser.newContext({
     baseURL: "http://127.0.0.1:3100",
@@ -103,10 +102,11 @@ test("psychology draft has no public option; peer sees metadata without any prot
     ).toBeVisible();
     await axe(other);
     await top(other);
-    await other.screenshot({
-      path: `${shots}/restricted-timeline-1440.png`,
-      fullPage: true,
-    });
+    if (process.env.CBB_REGENERATE_HISTORICAL_EVIDENCE === "1")
+      await other.screenshot({
+        path: `${shots}/restricted-timeline-1440.png`,
+        fullPage: true,
+      });
     await other.setViewportSize({ width: 390, height: 844 });
     await expect
       .poll(() =>
@@ -117,10 +117,11 @@ test("psychology draft has no public option; peer sees metadata without any prot
       .toBe(true);
     await axe(other);
     await top(other);
-    await other.screenshot({
-      path: `${shots}/restricted-timeline-390.png`,
-      fullPage: true,
-    });
+    if (process.env.CBB_REGENERATE_HISTORICAL_EVIDENCE === "1")
+      await other.screenshot({
+        path: `${shots}/restricted-timeline-390.png`,
+        fullPage: true,
+      });
     const denied = await other.goto(
       `/atletas/${f.athlete}/evolucao?registro=${record}`,
     );

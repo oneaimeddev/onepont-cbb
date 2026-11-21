@@ -25,7 +25,9 @@ begin
    or (receipt.safe_metadata->>'source_record_id')::uuid is distinct from record_id
    or (receipt.safe_metadata->>'expected_version')::integer is distinct from expected_version then return '{"error":"reused"}';end if;
   select * into r from clinical.records where id=receipt.resource_id and athlete_id=target for update;
-  if r.id is null or not clinical.record_edit_allowed(actor,r) then return '{"error":"denied"}';end if;
+  if r.id is null or not clinical.record_edit_allowed(actor,r) then
+   insert into clinical.audit_events(actor_user_id,resource_type,operation,outcome) values(actor,'clinical_record','clinical_record.traditional_submit','denied');
+   return '{"error":"denied"}';end if;
   result_version:=(receipt.safe_metadata->>'version')::integer;
   if r.version=result_version then receipt_title:=r.title;receipt_body:=r.body;
   else select v.title,v.body into receipt_title,receipt_body from clinical.record_revisions v where v.record_id=r.id and v.version=result_version;end if;
@@ -41,13 +43,12 @@ begin
   if r.status<>'draft' or r.version<>expected_version then return '{"error":"conflict"}';end if;
  else
   if expected_version<>0 then return '{"error":"invalid"}';end if;
-  if exists(select 1 from clinical.encounters where id=request_id) then return '{"error":"reused"}';end if;
  end if;
  -- A subtransaction rolls back the draft, revisions, encounter and their audits on any failure.
  begin
   effective_visibility:=case when restricted or clinical.record_confidential(r) or clinical.psychology_required(r.author_id) then 'author_only' else 'care_team' end;
   if r.id is null or intent='draft' or r.title is distinct from trim(entry_title) or r.body is distinct from entry_body or r.visibility is distinct from effective_visibility then
-   saved:=public.clinical_save(target,request_id,record_id,expected_version,entry_title,entry_body,restricted,false);
+   saved:=public.clinical_save(target,case when record_id is null then gen_random_uuid() else request_id end,record_id,expected_version,entry_title,entry_body,restricted,false);
    if saved is null or saved ? 'error' then failure:=coalesce(saved->>'error','unavailable');raise exception using errcode='P0001',message='Submit failed';end if;
    select * into r from clinical.records where id=(saved->>'id')::uuid;
    if r.status<>'draft' or r.title is distinct from trim(entry_title) or r.body is distinct from entry_body then failure:='reused';raise exception using errcode='P0001',message='Submit mismatch';end if;

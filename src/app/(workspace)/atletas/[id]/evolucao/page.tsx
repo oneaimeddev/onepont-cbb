@@ -8,7 +8,8 @@ import {
 } from "../../../../../features/athletes/data";
 import { SubmitButton } from "../../../../../components/submit-button";
 import { ClinicalDraftWatch } from "../../../../../features/clinical/draft-watch";
-import { saveEvolution, correctEvolution } from "./actions";
+import { correctEvolution } from "./actions";
+import { EvolutionForm } from "../../../../../features/clinical/evolution-form";
 import { requireProfile } from "../../../../../lib/profile";
 import { supabaseServer } from "../../../../../lib/supabase";
 
@@ -66,9 +67,11 @@ export default async function EvolutionPage({
       <h1>
         {record
           ? published
-            ? !editable ? "Evolução registrada" : record.has_signature
-              ? "Correção vinculada à evolução"
-              : "Corrigir evolução"
+            ? !editable
+              ? "Evolução registrada"
+              : record.has_signature
+                ? "Correção vinculada à evolução"
+                : "Corrigir evolução"
             : "Revisar evolução"
           : "Iniciar atendimento"}
       </h1>
@@ -182,85 +185,18 @@ export default async function EvolutionPage({
           </ClinicalDraftWatch>
         )
       ) : editable ? (
-        <ClinicalDraftWatch>
-          <form
-            action={saveEvolution}
-            className="athlete-form composer-panel"
-            key={record?.version ?? "new"}
-          >
-            <input type="hidden" name="athlete" value={id} />
-            <input type="hidden" name="request" value={randomUUID()} />
-            <input type="hidden" name="record" value={record?.id ?? ""} />
-            <input type="hidden" name="version" value={record?.version ?? 0} />
-            <label>
-              Tipo ou título da evolução
-              <input
-                name="title"
-                maxLength={160}
-                required
-                defaultValue={record?.title}
-              />
-            </label>
-            <label htmlFor="evolution-body">Conteúdo</label>
-            <textarea
-              id="evolution-body"
-              name="body"
-              maxLength={20000}
-              required
-              defaultValue={record?.body}
-              rows={8}
-            />
-            {record?.is_restricted || context.psychology_required ? (
-              <>
-                <input type="hidden" name="restricted" value="yes" />
-                <p>
-                  {context.psychology_required
-                    ? "Evoluções de Psicologia têm sigilo obrigatório de conteúdo."
-                    : "Este registro permanece restrito ao autor."}
-                </p>
-              </>
-            ) : (
-              <label className="check-label">
-                <input
-                  type="checkbox"
-                  name="restricted"
-                  value="yes"
-                  defaultChecked={true}
-                />
-                Restringir o registro ao autor
-              </label>
-            )}
-            <SubmitButton pendingLabel="Salvando…">
-              Salvar rascunho
-            </SubmitButton>
-          </form>
-          {record && context.can_finalize && (
-            <form
-              action={saveEvolution}
-              className="athlete-form evolution-review"
-            >
-              <h2>Finalizar versão salva</h2>
-              <p>
-                Confira o conteúdo salvo abaixo. Alterações no formulário acima
-                precisam ser salvas antes da confirmação.
-              </p>
-              <strong>{record.title}</strong>
-              <p className="record-body">{record.body}</p>
-              <input type="hidden" name="athlete" value={id} />
-              <input type="hidden" name="request" value={randomUUID()} />
-              <input type="hidden" name="record" value={record.id} />
-              <input type="hidden" name="version" value={record.version} />
-              <input type="hidden" name="action" value="finalize" />
-              <label className="check-label">
-                <input type="checkbox" name="confirm" value="yes" required />
-                Revisei esta versão e confirmo a finalização para este atleta.
-              </label>
-              <SubmitButton pendingLabel="Finalizando…">
-                Confirmar finalização
-              </SubmitButton>
-            </form>
-          )}
-        </ClinicalDraftWatch>
+        <EvolutionForm
+          key={`${record?.id ?? "new"}:${record?.version ?? 0}`}
+          athleteId={id}
+          requestId={randomUUID()}
+          recordId={record?.id ?? null}
+          version={record?.version ?? 0}
+          title={record?.title ?? ""}
+          body={record?.body ?? ""}
+          restricted={Boolean(record?.is_restricted)}
+          mandatoryRestriction={Boolean(context.psychology_required)}
+          canFinalize={context.can_finalize}
+        />
       ) : (
         record && (
           <section aria-label="Conteúdo vigente">
