@@ -100,7 +100,29 @@ const enums: Partial<Record<Field, Record<string, string>>> = {
 const normalized = (s: string) => s.trim().toLowerCase().replace(/\s+/gu, " ");
 const escaped = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
+// Keep the full wording of a single dictated exam, including qualifiers.
+export function dictatedExam(message: string) {
+  const match = message.trim().match(
+    /^(?:(?:por favor[,\s]+)?(?:solicite|peça|quero (?:pedir|solicitar)|(?:faça|crie|prepare) (?:um pedido|uma solicitação) de exames?(?: com)?|prepare uma solicitação de)\s+)(?:(?:um|uma)\s+)?([^.!?;:\n,]+)\.?$/iu,
+  );
+  const name = match?.[1].trim();
+  if (!name || name.length > 160) return null;
+  const folded = foldName(name);
+  if (!/^(ressonancia|hemograma|radiografia|raio x|ultrassom|ultrassonografia|tomografia|eletrocardiograma|exame de)\b/.test(folded))
+    return null;
+  if (/\b(para|e|ou|mas|nao|talvez|se|depois|salve|assine|envie|prescricao|cirurgia)\b/.test(folded))
+    return null;
+  // A possessive may identify another athlete. Only accept known anatomy
+  // after these prepositions in the shortcut for the athlete in context.
+  const possessives = [...folded.matchAll(/\b(?:do|da|dos|das)\s+(\w+)/g)];
+  if (possessives.some(([, word]) =>
+    !/^(joelho|joelhos|ombro|ombros|tornozelo|tornozelos|quadril|coluna|mao|pe|punho|cotovelo|abdome|cranio|torax)$/.test(word),
+  )) return null;
+  return name;
+}
+
 export function documentCreationRequested(kind: DocumentKind, message: string) {
+  if (kind === "exam_request" && dictatedExam(message)) return true;
   const header = foldName(
     message.split(/(?:^|[;\n])\s*(?:medicamento|exame|procedimento)\s*:/iu)[0],
   );
@@ -118,11 +140,11 @@ export function documentCreationRequested(kind: DocumentKind, message: string) {
     kind === "prescription"
       ? /\b(prescricao|receita)\b/.test(header)
       : kind === "exam_request"
-        ? /\b(solicitacao|pedido) de exames\b/.test(header)
+        ? /\b(solicitacao|pedido) de exames?\b/.test(header)
         : /\bpedido cirurgico\b/.test(header);
   const types = [
     /\b(prescricao|receita)\b/,
-    /\b(solicitacao|pedido) de exames\b/,
+    /\b(solicitacao|pedido) de exames?\b/,
     /\bpedido cirurgico\b/,
   ].filter((pattern) => pattern.test(header));
   return wants && mentions && types.length === 1;
@@ -240,6 +262,20 @@ export function groundDocumentCreation(
 ): Grounded {
   if (!documentCreationRequested(kind, message))
     return { ok: false, fields: ["creation_request"] };
+  const dictated = kind === "exam_request" ? dictatedExam(message) : null;
+  if (dictated && "occurred_at" in content && "items" in content) {
+    return {
+      ok: true,
+      content: {
+        occurred_at: "", indication: "", justification: "", diagnosis: "",
+        priority: "", additional: "",
+        items: [{
+          id: itemId(0), name: dictated, exam_type: "", region: "",
+          laterality: "", technical_details: "", notes: "",
+        }],
+      },
+    };
+  }
   const errors: string[] = [];
   const output = structuredClone(content) as unknown as Record<string, unknown>;
   const put = (

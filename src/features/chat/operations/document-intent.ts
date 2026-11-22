@@ -226,15 +226,21 @@ export function resolveProposalEdit(
     const add = part.match(
       /^(?:adicione|inclua|acrescente)\s+(?:(?:um|o)\s+)?(?:medicamento|exame)\s+(?:chamado\s+|com o nome\s+|:\s*)(.+)$/iu,
     );
-    if (add && items) {
-      if (!add[1].trim() || add[1].length > 160)
+    const naturalExam = document.kind === "exam_request"
+      ? part.match(/^(?:adicione|inclua|acrescente)\s+também\s+(?:um|uma)\s+([^.!?;:,\n]+)\.?$/iu)
+      : null;
+    const name = add?.[1] ?? naturalExam?.[1];
+    if (naturalExam && /\b(para|e|ou|mas|nao|se)\b/.test(foldName(name ?? "")))
+      return { clarification: "Informe um único exame para acrescentar à proposta em contexto." };
+    if (name && items) {
+      if (!name.trim() || name.length > 160)
         return {
           clarification:
             "Informe somente o nome do novo item, com até 160 caracteres. Os demais campos serão pedidos separadamente.",
         };
       changes.push({
         operation: "add_item",
-        item: { id: newId(), name: add[1].trim() },
+        item: { id: newId(), name: name.trim() },
       });
       continue;
     }

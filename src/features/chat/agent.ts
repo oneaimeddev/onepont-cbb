@@ -2,7 +2,7 @@ import "server-only";
 import { displayedProposalSchema } from "./operations/document-intent";
 import { workflowConversation } from "./operations/workflow-service";
 import { documentConversation } from "./operations/document-service";
-import { creationPatientMatches, documentCreationRequested, groundDocumentCreation, stableCreationItemId } from "./operations/document-creation";
+import { creationPatientMatches, dictatedExam, documentCreationRequested, groundDocumentCreation, stableCreationItemId } from "./operations/document-creation";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createOpenAI } from "@ai-sdk/openai";
 import { APICallError, streamText, stepCountIs, tool } from "ai";
@@ -514,7 +514,7 @@ async function prepareConversation(input: unknown) {
     if (!grounded.ok) return blocked(grounded.fields);
     const roster = await client.rpc("agent_presented_athletes", { ids: [athleteId] });
     const intended = athletesFromDirectory(roster.error ? [] : roster.data).find((p) => p.id === athleteId);
-    if (!intended || !creationPatientMatches(utterance, intended.name)) return blocked(["athlete_context"]);
+    if (!intended || (!(kind === "exam_request" && dictatedExam(utterance)) && !creationPatientMatches(utterance, intended.name))) return blocked(["athlete_context"]);
     const registered = await client.rpc("chat_document_proposal_create", {
       target: athleteId,
       kind,
@@ -897,7 +897,7 @@ async function prepareConversation(input: unknown) {
           ? "Quando o médico pedir um pedido cirúrgico, use prepareSurgicalOrder. Informe procedimento, lateralidade, indicação, justificativa e complementos somente se ele os disse. Não invente indicação nem diagnóstico."
           : "",
         canAuthorDocuments
-          ? "preparePrescription, prepareSurgicalOrder e prepareExamRequest criam propostas novas somente quando o profissional pede criação explícita. Não use prepare* para alterar ou complementar uma proposta. Esses pedidos usam o cartão e operações com versão. Valores precisam de fonte na mensagem atual; não copie histórico nem respostas do assistente. Não converta grafia ou unidades. Para vários itens, peça Medicamento: NOME; Dose: VALOR; Unidade: VALOR; ou Exame: NOME; Tipo: VALOR, em linhas separadas. Se houver needs_source, peça esclarecimento e não afirme que preparou, alterou, salvou ou assinou."
+          ? "Para pedidos diretos como Peça uma ressonância do joelho direito ou Solicite um hemograma, use prepareExamRequest para o atleta em contexto e preserve o nome completo ditado, sem separar região ou lateralidade. preparePrescription, prepareSurgicalOrder e prepareExamRequest criam propostas novas somente quando o profissional pede criação explícita. Não use prepare* para alterar ou complementar uma proposta. Esses pedidos usam o cartão e operações com versão. Valores precisam de fonte na mensagem atual; não copie histórico nem respostas do assistente. Não converta grafia ou unidades. Para vários itens, peça Medicamento: NOME; Dose: VALOR; Unidade: VALOR; ou Exame: NOME; Tipo: VALOR, em linhas separadas. Se houver needs_source, peça esclarecimento e não afirme que preparou, alterou, salvou ou assinou."
           : "",
         canAuthorDocuments
           ? "Para consultar prescrições, pedidos cirúrgicos ou solicitações de exames já gravados, use browseClinicalDocuments ou readClinicalDocument. O cartão mostra o original. Não descreva dose, exame, indicação ou justificativa. Não diga que o documento foi emitido ou assinado. Se houver mais de um, peça para o profissional escolher."

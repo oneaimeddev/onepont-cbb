@@ -16,7 +16,7 @@ import {
   creationPatientMatches,
   documentCreationRequested,
 } from "../src/features/chat/operations/document-creation.ts";
-import { displayedProposalSchema } from "../src/features/chat/operations/document-intent.ts";
+import { displayedProposalSchema, resolveProposalEdit } from "../src/features/chat/operations/document-intent.ts";
 
 const id = () => randomUUID();
 function prescription(names = ["Medicamento DEMO"], fields = {}) {
@@ -384,3 +384,44 @@ for (const directive of ["Não crie", "Por favor não crie", "Eu não quero"])
     expect(documentCreationRequested("prescription", message)).toBe(false);
     expect(ground("prescription", prescription(), message, id).ok).toBe(false);
   });
+
+test("natural exam preserves the dictated name, side and contrast", () => {
+  const content = examPayload({
+    items: [{ name: "Ressonância", region: "joelho", laterality: "left" }],
+  });
+  const result = ground(
+    "exam_request",
+    content,
+    "Solicite uma ressonância do joelho direito sem contraste.",
+    id,
+  );
+  expect(result.ok).toBe(true);
+  expect(result.content.items).toMatchObject([
+    { name: "ressonância do joelho direito sem contraste", laterality: "" },
+  ]);
+});
+
+for (const message of [
+  "Não peça hemograma.",
+  "Abra o último pedido de exames.",
+  "Peça um hemograma para outra atleta.",
+  "Peça um hemograma da Alice.",
+  "Peça um hemograma e uma radiografia.",
+]) {
+  test("natural exam refuses " + message, () => {
+    const content = examPayload({ items: [{ name: "hemograma" }] });
+    expect(ground("exam_request", content, message, id).ok).toBe(false);
+  });
+}
+
+test("natural follow-up adds a single item to the current exam proposal", () => {
+  const document = {
+    kind: "exam_request",
+    content: examPayload({ items: [{ name: "ressonância do joelho direito" }] }),
+  };
+  expect(resolveProposalEdit("Inclua também um hemograma.", document, id)).toMatchObject({
+    changes: [{ operation: "add_item", item: { name: "hemograma" } }],
+  });
+  expect(resolveProposalEdit("Inclua também um hemograma para outra atleta.", document, id))
+    .toHaveProperty("clarification");
+});
