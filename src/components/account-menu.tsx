@@ -26,7 +26,10 @@ export function AccountMenu({ profile, signOut }: {
   }, [open]);
   const initials = profile.initials ?? profile.displayName.trim().split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toLocaleUpperCase("pt-BR");
   return <div className="ia-user" ref={root} onBlur={(event) => {
-    if (!(event.relatedTarget instanceof Node) || !event.currentTarget.contains(event.relatedTarget)) setOpen(false);
+    // Safari (iOS/macOS) does not focus links or buttons on tap/click, so a tap on a menu item
+    // blurs the focused item with relatedTarget = null. Closing here would unmount the menu
+    // before the click lands; outside taps are handled by the pointerdown listener instead.
+    if (event.relatedTarget instanceof Node && !event.currentTarget.contains(event.relatedTarget)) setOpen(false);
   }} onKeyDown={(event) => {
     if (event.key === "Escape" && open) { event.preventDefault(); event.stopPropagation(); close(); return; }
     if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) return;

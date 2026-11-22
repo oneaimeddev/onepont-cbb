@@ -107,3 +107,21 @@ test("perfil é do usuário autenticado e query string não seleciona outro prof
   await expect(page.getByRole("menuitem", { name: "Auditoria", exact: true })).toHaveCount(0);
   await expect(page.getByRole("menuitem", { name: "Meu perfil", exact: true })).toBeVisible();
 });
+
+test("menu da conta sobrevive ao toque do Safari, que não foca links e botões", async ({ page }) => {
+  await login(page, limited);
+  const trigger = page.getByRole("button", { name: `Conta de PP ${limited.name} Psicologia`, exact: true });
+  const openAndTapLikeSafari = async () => {
+    await trigger.click();
+    await expect(page.getByRole("menuitem", { name: "Meu perfil", exact: true })).toBeFocused();
+    // Safari moves focus to <body> on tap, firing focusout with relatedTarget = null.
+    await page.evaluate(() => document.activeElement.blur());
+    await expect(trigger).toHaveAttribute("aria-expanded", "true");
+  };
+  await openAndTapLikeSafari();
+  await page.getByRole("menuitem", { name: "Meu perfil", exact: true }).click();
+  await page.waitForURL("/perfil");
+  await openAndTapLikeSafari();
+  await page.getByRole("menuitem", { name: "Sair", exact: true }).click();
+  await page.waitForURL(/\/login$/);
+});
