@@ -8,10 +8,13 @@ import type { ReviewMaterial } from "../documents/review-types";
 import "../documents/documents.css";
 import { PrescriptionSheet } from "../documents/prescription-sheet";
 import { LetterSheet } from "../documents/letter-sheet";
-import { certificateLetter, referralLetter } from "../documents/letter-format";
+import { DocumentPaper } from "../documents/document-paper";
+import { ExamSheet, SurgicalSheet } from "../documents/request-sheets";
+import { paperTitle } from "../documents/request-format";
+import { certificateLetter, referralLetter, type Letter } from "../documents/letter-format";
 import { setUnsavedClinicalDraft } from "../clinical/unsaved";
 import {
-  certificateTypeLabels, documentKinds, emptyMedication, fitnessLabels, isCertificate, isExamRequest, isPrescription, isReferral, examTypeLabels, lateralityLabels, priorityLabels,
+  certificateTypeLabels, documentKinds, emptyMedication, fitnessLabels, isCertificate, isExamRequest, isPrescription, isReferral, lateralityLabels, priorityLabels,
   type CertificateContent, type CertificateType, type DocumentKind, type ExamContent, type Fitness, type ReferralContent, type Laterality, type MedicationItem, type PrescriptionContent, type Priority, type SurgicalContent,
 } from "../documents/content";
 import { discardDocumentDraft, saveDocumentDraft, reviewDocumentDraft } from "./document-draft-actions";
@@ -121,47 +124,42 @@ function ReferralFields({ content, onChange }: { content: ReferralContent; onCha
   );
 }
 
-function PrescriptionRead({ content }: { content: PrescriptionContent }) {
+function PrescriptionRead({ content, patient }: { content: PrescriptionContent; patient: string }) {
   return (
     <div className="ia-draft-read">
-      <PrescriptionSheet items={content.items} notes={content.notes} />
+      <DocumentPaper compact title={paperTitle("prescription")} patient={patient}>
+        <PrescriptionSheet items={content.items} notes={content.notes} />
+      </DocumentPaper>
     </div>
   );
 }
 
-function ExamRead({ content }: { content: ExamContent }) {
+function ExamRead({ content, patient }: { content: ExamContent; patient: string }) {
   return (
     <div className="ia-draft-read">
-      {content.items.map((item, index) => (
-        <section key={item.id} aria-label={`Exame ${index + 1}`}>
-          <p className="ia-draft-title">{item.name.trim() || `Exame ${index + 1}`}</p>
-          {item.exam_type ? <p>Tipo: {examTypeLabels[item.exam_type]}</p> : null}
-          {item.region.trim() ? <p>Região: {item.region}</p> : null}
-          {item.laterality ? <p>Lateralidade: {lateralityLabels[item.laterality]}</p> : null}
-          {item.technical_details.trim() ? <p>Detalhes técnicos: {item.technical_details}</p> : null}
-          {item.notes.trim() ? <p>Observações: {item.notes}</p> : null}
-        </section>
-      ))}
-      {content.justification.trim() ? <p>Justificativa: {content.justification}</p> : null}
-      {content.indication.trim() ? <p>Indicação: {content.indication}</p> : null}
-      {content.diagnosis.trim() ? <p>Hipótese diagnóstica: {content.diagnosis}</p> : null}
-      {content.additional.trim() ? <p>Orientações: {content.additional}</p> : null}
+      <DocumentPaper compact title={paperTitle("exam_request")} patient={patient}>
+        <ExamSheet content={content} />
+      </DocumentPaper>
     </div>
   );
 }
 
-function SurgicalRead({ content }: { content: SurgicalContent }) {
+function SurgicalRead({ content, patient }: { content: SurgicalContent; patient: string }) {
   return (
     <div className="ia-draft-read">
-      <p className="ia-draft-title">{content.procedure.trim() || "Procedimento não informado"}</p>
-      {content.region.trim() ? <p>Região: {content.region}</p> : null}
-      {content.laterality ? <p>Lateralidade: {lateralityLabels[content.laterality]}</p> : null}
-      {content.indication.trim() ? <p>Indicação: {content.indication}</p> : null}
-      {content.diagnosis.trim() ? <p>Diagnóstico ou hipótese: {content.diagnosis}</p> : null}
-      {content.justification.trim() ? <p>Justificativa: {content.justification}</p> : null}
-      {content.priority ? <p>Prioridade: {priorityLabels[content.priority]}</p> : null}
-      {content.materials.trim() ? <p>Materiais: {content.materials}</p> : null}
-      {content.additional.trim() ? <p>Informações complementares: {content.additional}</p> : null}
+      <DocumentPaper compact title={paperTitle("surgical_order")} patient={patient}>
+        <SurgicalSheet content={content} />
+      </DocumentPaper>
+    </div>
+  );
+}
+
+function LetterRead({ letter, patient }: { letter: Letter; patient: string }) {
+  return (
+    <div className="ia-draft-read">
+      <DocumentPaper compact title={letter.title} patient={patient}>
+        <LetterSheet letter={letter} />
+      </DocumentPaper>
     </div>
   );
 }
@@ -299,15 +297,15 @@ export function DocumentDraftCard({ draft, onChange, onSelect, onSend, selected 
           <label>Informações complementares<textarea value={draft.content.additional} maxLength={2000} rows={3} onChange={(event) => replace({ ...(draft.content as SurgicalContent), additional: event.target.value })} /></label>
         </div>
       ) : draft.kind === "exam_request" && draft.content && isExamRequest(draft.content) ? (
-        <ExamRead content={draft.content} />
+        <ExamRead content={draft.content} patient={draft.athleteName} />
       ) : draft.kind === "certificate" && draft.content && isCertificate(draft.content) ? (
-        <div className="ia-draft-read"><LetterSheet letter={certificateLetter(draft.content, draft.athleteName)} /></div>
+        <LetterRead letter={certificateLetter(draft.content, draft.athleteName)} patient={draft.athleteName} />
       ) : draft.kind === "referral" && draft.content && isReferral(draft.content) ? (
-        <div className="ia-draft-read"><LetterSheet letter={referralLetter(draft.content, draft.athleteName)} /></div>
+        <LetterRead letter={referralLetter(draft.content, draft.athleteName)} patient={draft.athleteName} />
       ) : draft.kind === "prescription" && draft.content && isPrescription(draft.content) ? (
-        <PrescriptionRead content={draft.content} />
+        <PrescriptionRead content={draft.content} patient={draft.athleteName} />
       ) : draft.content && "procedure" in draft.content ? (
-        <SurgicalRead content={draft.content} />
+        <SurgicalRead content={draft.content} patient={draft.athleteName} />
       ) : (
         <p className="ia-draft-title">{draft.title}</p>
       )}

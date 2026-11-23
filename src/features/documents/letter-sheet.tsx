@@ -1,11 +1,10 @@
 import "./documents.css";
 import type { Letter } from "./letter-format";
 
-/** Certificate or referral in letter form: title, recipient, text, labelled sections and closing. */
+/** Certificate or referral in letter form: recipient, text, labelled sections and closing. The title is shown by the paper. */
 export function LetterSheet({ letter }: { letter: Letter }) {
   return (
     <div className="letter">
-      <p className="letter-title">{letter.title}</p>
       {letter.recipient ? <p className="letter-recipient">{letter.recipient}</p> : null}
       {letter.paragraphs.map((paragraph) => <p key={paragraph} className="letter-text">{paragraph}</p>)}
       {letter.sections.length ? (

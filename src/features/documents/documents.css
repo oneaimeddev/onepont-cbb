@@ -169,3 +169,64 @@
 .letter-sections dt { font-size: .8125rem; font-weight: 600; }
 .letter-sections dd { margin: 0; line-height: 1.5; white-space: pre-wrap; }
 .letter-closing { margin: .25rem 0 0; }
+
+/* Letterhead paper shared by every medical document (see document-paper.tsx). */
+.document-meta { margin: 0; color: var(--muted); font-size: .875rem; }
+.paper {
+  display: grid; gap: 1.1rem; padding: 2rem 2.25rem 1.75rem;
+  border: 1px solid var(--line); border-radius: 4px; background: var(--paper);
+  color: var(--ink); line-height: 1.55;
+  box-shadow: 0 1px 2px rgb(16 40 73 / .05), 0 12px 32px -20px rgb(16 40 73 / .28);
+}
+.paper.is-compact { gap: .75rem; padding: 1rem 1.1rem; border-radius: 10px; box-shadow: none; }
+.paper p { margin: 0; color: var(--ink); }
+.paper :is(.paper-department, .paper-credential, .request-note, .request-detail) { color: var(--muted); }
+.paper :is(.paper-institution, .paper-title) { color: var(--cbb-navy); }
+.paper-head {
+  display: flex; align-items: center; gap: .85rem; padding-bottom: .9rem;
+  border-bottom: 2px solid var(--cbb-navy);
+}
+.paper-shield { flex: none; width: 34px; height: auto; }
+.paper-institution { color: var(--cbb-navy); font-weight: 700; font-size: .9375rem; letter-spacing: .04em; text-transform: uppercase; line-height: 1.25; }
+.paper-department { color: var(--muted); font-size: .8125rem; letter-spacing: .02em; }
+.paper-title {
+  font-family: var(--font-geist-serif-regular), "Times New Roman", serif; font-weight: 400;
+  font-size: 1.35rem; letter-spacing: .08em; text-align: center; color: var(--cbb-navy);
+}
+.paper.is-compact .paper-title { font-size: 1.05rem; letter-spacing: .06em; text-align: left; }
+.paper-patient { padding: .55rem 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); font-size: .9375rem; }
+.paper-patient span { color: var(--muted); font-size: .8125rem; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; margin-right: .35rem; }
+.paper-body { display: grid; gap: 1rem; font-size: .9375rem; }
+.paper-sign { display: grid; justify-items: end; gap: 2.25rem; margin-top: 1.25rem; }
+.paper-date { color: var(--ink); }
+.paper-signature { display: grid; justify-items: center; gap: .1rem; width: min(100%, 18rem); text-align: center; }
+.paper-line { display: block; width: 100%; margin-bottom: .35rem; border-top: 1px solid var(--ink); }
+.paper-author { font-weight: 600; }
+.paper-credential { color: var(--muted); font-size: .8125rem; }
+
+/* Exam and surgical requests (see request-format.ts). */
+.request { display: grid; gap: .6rem; }
+.request-lead { font-weight: 600; }
+.request-note { color: var(--muted); font-size: .875rem; }
+.request-group { display: grid; gap: .45rem; }
+.request-heading { font-size: .8125rem; font-weight: 700; letter-spacing: .06em; text-decoration: underline; text-underline-offset: 3px; }
+.request-items { display: grid; gap: .55rem; margin: 0; padding: 0; list-style: none; }
+.request-title { font-weight: 600; overflow-wrap: anywhere; }
+.request-detail { margin-left: 1.25rem !important; color: var(--muted); font-size: .875rem; }
+.request-procedure { font-size: 1.0625rem; font-weight: 600; overflow-wrap: anywhere; }
+.request-sections { display: grid; gap: .7rem; margin: 0; padding-top: .85rem; border-top: 1px dashed var(--line); }
+.request-sections div { display: grid; gap: .1rem; }
+.request-sections dt { color: var(--muted); font-size: .75rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.request-sections dd { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.request-mark { display: inline-block; padding: .05rem .55rem; border: 1px solid currentColor; border-radius: 999px; font-size: .8125rem; font-weight: 600; }
+.request-mark.is-urgent { color: var(--danger); }
+.request-mark.is-priority { color: var(--yellow-ink); }
+.request-mark.is-elective { color: var(--green-ink); }
+.paper .letter-sections dt { color: var(--muted); font-size: .75rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+
+@media (max-width: 600px) {
+  .paper { padding: 1.25rem 1rem; }
+  .paper-title { font-size: 1.15rem; letter-spacing: .05em; }
+  .paper-sign { justify-items: stretch; }
+  .paper-signature { width: 100%; }
+}
