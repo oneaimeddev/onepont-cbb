@@ -11,7 +11,7 @@ import {
 } from "./types";
 import "./attachments.css";
 
-export function AttachmentModule({ athleteId }: { athleteId: string }) {
+export function AttachmentModule({ athleteId, initialView = null }: { athleteId: string; initialView?: string | null }) {
   const [notice, setNotice] = useState("");
   const [page, setPage] = useState(1);
   const [category, setCategory] = useState("");
@@ -21,7 +21,7 @@ export function AttachmentModule({ athleteId }: { athleteId: string }) {
   const [data, setData] = useState<AttachmentPage>();
   const [error, setError] = useState("");
   const [upload, setUpload] = useState(false);
-  const [view, setView] = useState<string | null>(null);
+  const [view, setView] = useState<string | null>(initialView);
   const [revision, setRevision] = useState(0);
   const refresh = () => setRevision((v) => v + 1);
   useEffect(() => {

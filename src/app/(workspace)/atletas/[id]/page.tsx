@@ -14,10 +14,11 @@ import { CreateDocumentMenu } from "../../../../features/documents/create-menu";
 import { ProfileDocumentList } from "../../../../features/documents/profile-list";
 import { requireProfile } from "../../../../lib/profile";
 import { AttachmentModule } from "../../../../features/attachments/module";
+import { timelineAttachments } from "../../../../features/attachments/timeline";
 
 export default async function AthletePage({ params, searchParams }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ aba?: string | string[]; registro?: string | string[]; retorno?: string; erro?: string; salvo?: string; aviso?: string; q?: string | string[] }>;
+  searchParams: Promise<{ aba?: string | string[]; registro?: string | string[]; anexo?: string | string[]; retorno?: string; erro?: string; salvo?: string; aviso?: string; q?: string | string[] }>;
 }) {
   const { id } = await params;
   const query = await searchParams;
@@ -101,6 +102,10 @@ export default async function AthletePage({ params, searchParams }: {
         occurred_at: document.created_at,
       }))
     : [];
+  // Clinical attachments the professional can open also appear, at their clinical date.
+  const attachmentEntries = aba === "timeline" && can_read_records ? await timelineAttachments(athlete.id) : [];
+  const requestedAttachment = Array.isArray(query.anexo) ? query.anexo[0] : query.anexo;
+  const openAttachment = requestedAttachment && uuidPattern.test(requestedAttachment) ? requestedAttachment : null;
   if (aba === "documentos" && !documents) notFound();
 
   function tabHref(value: string) {
@@ -187,7 +192,7 @@ export default async function AthletePage({ params, searchParams }: {
           </div>
         )}
 
-        {aba === "timeline" && <ProfileTimeline key={athlete.id} records={records ?? []} documents={timelineDocuments} recordId={registro} canWrite={can_write} base={base} />}
+        {aba === "timeline" && <ProfileTimeline key={athlete.id} records={records ?? []} documents={timelineDocuments} attachments={attachmentEntries} recordId={registro} canWrite={can_write} base={base} />}
 
         {aba === "documentos" && documents && (
           <section aria-labelledby="documentos-clinicos">
@@ -200,7 +205,7 @@ export default async function AthletePage({ params, searchParams }: {
           </section>
         )}
 
-        {aba === "anexos" && can_read_records && <AttachmentModule key={athlete.id} athleteId={athlete.id} />}
+        {aba === "anexos" && can_read_records && <AttachmentModule key={`${athlete.id}:${openAttachment ?? ""}`} athleteId={athlete.id} initialView={openAttachment} />}
 
         {aba === "cadastro" && <ProfileRegistration athlete={athlete} canEdit={can_edit} registration={registration} catalog={registrationCatalog} sports={sports} />}
 

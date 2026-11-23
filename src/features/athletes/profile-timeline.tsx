@@ -24,7 +24,37 @@ export type TimelineDocument = {
   occurred_at: string;
 };
 
-type TimelineEntry = { kind: "record"; occurred_at: string; record: RecordEntry } | { kind: "document"; occurred_at: string; document: TimelineDocument };
+/** Clinical attachment shown in the timeline at its clinical date, opened in the attachments tab. */
+export type TimelineAttachment = {
+  id: string;
+  title: string;
+  category: string;
+  author: string;
+  occurred_at: string;
+};
+
+type TimelineEntry = { kind: "record"; occurred_at: string; record: RecordEntry }
+  | { kind: "document"; occurred_at: string; document: TimelineDocument }
+  | { kind: "attachment"; occurred_at: string; attachment: TimelineAttachment };
+
+function AttachmentRow({ attachment, base }: { attachment: TimelineAttachment; base: string }) {
+  return (
+    <li id={`anexo-${attachment.id}`} className="timeline-document timeline-attachment">
+      <div className="timeline-head">
+        <time className="timeline-day" dateTime={attachment.occurred_at}>
+          {recordWhen(attachment.occurred_at).day}
+        </time>
+        <p className="timeline-document-title"><span className="timeline-document-kind">Anexo clínico · {attachment.category}</span> {attachment.title}</p>
+        <p className="timeline-byline">
+          {attachment.author ? <>{attachment.author}{" · "}</> : null}
+          <Link className="clinical-link" prefetch={false} href={`${base}?aba=anexos&anexo=${attachment.id}`}>
+            Ver anexo
+          </Link>
+        </p>
+      </div>
+    </li>
+  );
+}
 
 function DocumentRow({ document, base }: { document: TimelineDocument; base: string }) {
   return (
@@ -50,12 +80,14 @@ function DocumentRow({ document, base }: { document: TimelineDocument; base: str
 function RecordRows({
   records,
   documents = [],
+  attachments = [],
   target,
   canWrite,
   base,
 }: {
   records: RecordEntry[];
   documents?: TimelineDocument[];
+  attachments?: TimelineAttachment[];
   target: string | null;
   canWrite: boolean;
   base: string;
@@ -63,6 +95,7 @@ function RecordRows({
   const entries: TimelineEntry[] = [
     ...records.map((record) => ({ kind: "record" as const, occurred_at: record.occurred_at, record })),
     ...documents.map((document) => ({ kind: "document" as const, occurred_at: document.occurred_at, document })),
+    ...attachments.map((attachment) => ({ kind: "attachment" as const, occurred_at: attachment.occurred_at, attachment })),
   ].sort((a, b) => b.occurred_at.localeCompare(a.occurred_at));
   return groupsOf(entries).map((group) => (
     <section key={group.id} aria-label={group.label}>
@@ -70,6 +103,8 @@ function RecordRows({
       <ol className="clinical-list timeline">
         {group.records.map((entry) => entry.kind === "document"
           ? <DocumentRow key={`documento-${entry.document.id}`} document={entry.document} base={base} />
+          : entry.kind === "attachment"
+          ? <AttachmentRow key={`anexo-${entry.attachment.id}`} attachment={entry.attachment} base={base} />
           : <RecordRow key={entry.record.id} record={entry.record} target={target} canWrite={canWrite} base={base} />)}
       </ol>
     </section>
@@ -133,12 +168,14 @@ function RecordRow({ record, target, canWrite, base }: { record: RecordEntry; ta
 export function ProfileTimeline({
   records,
   documents = [],
+  attachments = [],
   recordId,
   canWrite,
   base,
 }: {
   records: RecordEntry[];
   documents?: TimelineDocument[];
+  attachments?: TimelineAttachment[];
   recordId: string | null;
   canWrite: boolean;
   base: string;
@@ -155,7 +192,7 @@ export function ProfileTimeline({
   const status = ["draft", "finalized"].includes(query.get("estado") ?? "")
     ? query.get("estado")!
     : "";
-  const scope = ["evolucoes", "documentos"].includes(query.get("registros") ?? "") ? query.get("registros")! : "";
+  const scope = ["evolucoes", "documentos", "anexos"].includes(query.get("registros") ?? "") ? query.get("registros")! : "";
   const [fragment, setFragment] = useState<string | null>(null);
   useEffect(() => {
     const read = () =>
@@ -174,14 +211,15 @@ export function ProfileTimeline({
   const limit = pagination.key === key ? pagination.count : 20;
   const invalidRange = Boolean(from && to && from > to);
   // Specialty and evolution state apply to evolutions only, so they leave documents out.
-  const showDocuments = scope !== "evolucoes" && !specialty && !status;
-  const shownDocuments = invalidRange || !showDocuments
-    ? []
-    : documents.filter((d) => {
-        const date = recordWhen(d.occurred_at).date;
-        return (!from || date >= from) && (!to || date <= to);
-      });
-  const filtered = invalidRange || scope === "documentos"
+  const inRange = (at: string) => {
+    const date = recordWhen(at).date;
+    return (!from || date >= from) && (!to || date <= to);
+  };
+  const showDocuments = (scope === "" || scope === "documentos") && !specialty && !status;
+  const shownDocuments = invalidRange || !showDocuments ? [] : documents.filter((d) => inRange(d.occurred_at));
+  const showAttachments = (scope === "" || scope === "anexos") && !specialty && !status;
+  const shownAttachments = invalidRange || !showAttachments ? [] : attachments.filter((a) => inRange(a.occurred_at));
+  const filtered = invalidRange || scope === "documentos" || scope === "anexos"
     ? []
     : records.filter((r) => {
         const date = recordWhen(r.occurred_at).date;
@@ -193,12 +231,14 @@ export function ProfileTimeline({
         );
       });
   const merged = [
-    ...filtered.map((record) => ({ at: record.occurred_at, record, document: null })),
-    ...shownDocuments.map((document) => ({ at: document.occurred_at, record: null, document })),
+    ...filtered.map((record) => ({ at: record.occurred_at, record, document: null, attachment: null })),
+    ...shownDocuments.map((document) => ({ at: document.occurred_at, record: null, document, attachment: null })),
+    ...shownAttachments.map((attachment) => ({ at: attachment.occurred_at, record: null, document: null, attachment })),
   ].sort((a, b) => b.at.localeCompare(a.at)).slice(0, limit);
   const visible = merged.flatMap((entry) => entry.record ? [entry.record] : []);
   const visibleDocuments = merged.flatMap((entry) => entry.document ? [entry.document] : []);
-  const total = filtered.length + shownDocuments.length;
+  const visibleAttachments = merged.flatMap((entry) => entry.attachment ? [entry.attachment] : []);
+  const total = filtered.length + shownDocuments.length + shownAttachments.length;
   const selected = records.find((r) => r.id === target);
   const separate = selected && !visible.some((r) => r.id === selected.id);
   const active = [
@@ -206,7 +246,7 @@ export function ProfileTimeline({
     to && `até ${to}`,
     specialty,
     status && (status === "draft" ? "Rascunho" : "Finalizado"),
-    scope && (scope === "evolucoes" ? "Somente evoluções" : "Somente documentos médicos"),
+    scope && ({ evolucoes: "Somente evoluções", documentos: "Somente documentos médicos", anexos: "Somente anexos clínicos" } as Record<string, string>)[scope],
   ].filter(Boolean);
   const clear = () =>
     updateProfileQuery({ de: "", ate: "", especialidade: "", estado: "", registros: "" });
@@ -267,7 +307,7 @@ export function ProfileTimeline({
             <option value="finalized">Finalizado</option>
           </select>
         </label>
-        {documents.length ? (
+        {documents.length || attachments.length ? (
           <label>
             Registros
             <select
@@ -276,9 +316,10 @@ export function ProfileTimeline({
               value={scope}
               onChange={(e) => updateProfileQuery({ registros: e.target.value })}
             >
-              <option value="">Evoluções e documentos médicos</option>
+              <option value="">Todos os registros</option>
               <option value="evolucoes">Somente evoluções</option>
-              <option value="documentos">Somente documentos médicos</option>
+              {documents.length ? <option value="documentos">Somente documentos médicos</option> : null}
+              {attachments.length ? <option value="anexos">Somente anexos clínicos</option> : null}
             </select>
           </label>
         ) : null}
@@ -299,7 +340,9 @@ export function ProfileTimeline({
       <p className="profile-filter-summary" role="status">
         Filtros ativos: {active.length ? active.join(" · ") : "nenhum"}.
         Mostrando {merged.length} de {total} registros correspondentes
-        {documents.length ? ` (${filtered.length} evoluções e ${shownDocuments.length} documentos médicos)` : ""}
+        {documents.length || attachments.length
+          ? ` (${[`${filtered.length} evoluções`, documents.length ? `${shownDocuments.length} documentos médicos` : "", attachments.length ? `${shownAttachments.length} anexos clínicos` : ""].filter(Boolean).join(", ")})`
+          : ""}
         {" "}· {records.length} atendimentos representados neste perfil.
       </p>
       {separate && (
@@ -321,6 +364,7 @@ export function ProfileTimeline({
         <RecordRows
           records={visible}
           documents={visibleDocuments}
+          attachments={visibleAttachments}
           target={target}
           canWrite={canWrite}
           base={base}
