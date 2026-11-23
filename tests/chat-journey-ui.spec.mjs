@@ -272,7 +272,7 @@ test("voice transcription reaches same edit/review authority; high impact stays 
   );
   const card = page.locator(".ia-draft");
   await expect(
-    card.getByText("Instruções: uma vez ao dia DEMO", { exact: true }),
+    card.locator(".rx-directions", { hasText: /uma vez ao dia DEMO/i }).first(),
   ).toBeVisible();
   await spoken("Revise a prescrição");
   await expect(

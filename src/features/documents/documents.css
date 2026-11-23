@@ -146,3 +146,15 @@
   --line: #dde3ea;
   color: #0a1731;
 }
+
+/* Prescription in the usual Brazilian layout (see prescription-format.ts). */
+.rx { display: grid; gap: 1rem; }
+.rx-group { display: grid; gap: .6rem; }
+.rx-use { margin: 0; font-size: .8125rem; font-weight: 700; letter-spacing: .06em; text-decoration: underline; text-underline-offset: 3px; }
+.rx-items { display: grid; gap: .75rem; margin: 0; padding: 0; list-style: none; }
+.rx-line { display: flex; align-items: baseline; gap: .4rem; margin: 0; font-weight: 600; }
+.rx-title { flex: 0 1 auto; min-width: 0; overflow-wrap: break-word; }
+.rx-leader { flex: 1 0 1rem; border-bottom: 1px dotted currentColor; opacity: .45; }
+.rx-quantity { flex: 0 0 auto; white-space: nowrap; }
+.rx-directions { margin: .2rem 0 0 1.25rem; line-height: 1.5; }
+.rx-notes { margin: 0; }

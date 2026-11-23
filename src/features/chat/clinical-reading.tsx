@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { documentKinds, examTypeLabels, lateralityLabels, priorityLabels, type ExamType, type Laterality, type Priority } from "../documents/content";
+import { PrescriptionSheet } from "../documents/prescription-sheet";
 import type { ReadingBoard, ReadingKind } from "./document-resolution";
 
 type MedicationView = {
@@ -154,9 +155,6 @@ function Field({ label, value }: { label: string; value: string }) {
   return <div><dt>{label}</dt><dd>{value}</dd></div>;
 }
 
-function doseText(item: MedicationView) {
-  return [item.dose, item.doseUnit].filter(Boolean).join(" ");
-}
 
 export function ClinicalReadings({ board, onMore, morePending }: {
   board: ReadingBoard;
@@ -235,22 +233,10 @@ export function ClinicalReadings({ board, onMore, morePending }: {
                 <div id={panelId} className="ia-reading-body">
                   {item.kind === "prescription" ? (
                     <>
-                      {view.medications.map((medicationItem, index) => (
-                        <section key={`${medicationItem.name}-${index}`}>
-                          <h4>{view.medications.length > 1 ? `Medicamento ${index + 1}` : "Medicamento"}</h4>
-                          <dl>
-                            <Field label="Nome" value={medicationItem.name} />
-                            <Field label="Apresentação" value={medicationItem.presentation} />
-                            <Field label="Dose" value={doseText(medicationItem)} />
-                            <Field label="Via" value={medicationItem.route} />
-                            <Field label="Frequência" value={medicationItem.schedule} />
-                            <Field label="Duração" value={medicationItem.duration} />
-                            <Field label="Quantidade" value={medicationItem.quantity} />
-                            <Field label="Orientações" value={medicationItem.instructions} />
-                          </dl>
-                        </section>
-                      ))}
-                      <dl><Field label="Observações" value={view.notes} /></dl>
+                      <PrescriptionSheet
+                        items={view.medications.map((medicationItem) => ({ ...medicationItem, dose_unit: medicationItem.doseUnit }))}
+                        notes={view.notes}
+                      />
                     </>
                   ) : null}
                   {item.kind === "exam_request" ? (

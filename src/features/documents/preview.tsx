@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { PrescriptionSheet } from "./prescription-sheet";
 const eventDate = new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short", timeZone: "America/Sao_Paulo" });
 import {
   documentKinds, examTypeLabels, isExamRequest, isPrescription, lateralityLabels, prescriptionPending, priorityLabels, statusLabels, surgicalPending, examPending,
@@ -46,27 +47,9 @@ export function DocumentPreview({ document, athleteName, review = false, finaliz
       </dl>
       {isPrescription(document.content) ? (
         <div>
-          {document.content.items.map((item, index) => {
-            const dose = [item.dose, item.dose_unit].filter((part) => part.trim()).join(" ");
-            return (
-              <section className="document-medication" key={item.id} aria-label={`Medicamento ${index + 1}`}>
-                <h2>{item.name.trim() || `Medicamento ${index + 1}`}</h2>
-                {item.presentation.trim() && <p>Apresentação: {item.presentation}</p>}
-                {dose && <p>Dose: {dose}</p>}
-                {item.route.trim() && <p>Via: {item.route}</p>}
-                {item.schedule.trim() && <p>Frequência: {item.schedule}</p>}
-                {item.duration.trim() && <p>Duração: {item.duration}</p>}
-                {item.quantity.trim() && <p>Quantidade: {item.quantity}</p>}
-                {item.instructions.trim() && <p>Instruções: {item.instructions}</p>}
-              </section>
-            );
-          })}
-          {document.content.notes.trim() && (
-            <section className="document-medication">
-              <h2>Observações</h2>
-              <p>{document.content.notes}</p>
-            </section>
-          )}
+          <section className="document-medication" aria-label="Prescrição">
+            <PrescriptionSheet items={document.content.items} notes={document.content.notes} />
+          </section>
           <Pending groups={prescriptionPending(document.content).groups} />
         </div>
       ) : isExamRequest(document.content) ? (

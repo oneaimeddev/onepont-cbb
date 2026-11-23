@@ -357,7 +357,7 @@ test("desktop: one card updates, shared review saves, reload recovers exact pers
     .fill("Altere a dose do segundo medicamento para Grafia EXATA DEMO µg/mL");
   await page.getByRole("button", { name: "Enviar", exact: true }).click();
   await expect(
-    card.getByText("Dose: Grafia EXATA DEMO µg/mL", { exact: true }),
+    card.locator(".rx-directions", { hasText: "Grafia EXATA DEMO µg/mL" }).first(),
   ).toBeVisible();
   await expect(card).toHaveCount(1);
   await expect(
@@ -365,10 +365,11 @@ test("desktop: one card updates, shared review saves, reload recovers exact pers
   ).toBeVisible();
   mkdirSync("docs/visual/handoff-007-10-6b-3", { recursive: true });
   await card
-    .getByText("Dose: Grafia EXATA DEMO µg/mL", { exact: true })
+    .locator(".rx-directions", { hasText: "Grafia EXATA DEMO µg/mL" })
+    .first()
     .scrollIntoViewIfNeeded();
   await expect(
-    card.getByText("Dose: Grafia EXATA DEMO µg/mL", { exact: true }),
+    card.locator(".rx-directions", { hasText: "Grafia EXATA DEMO µg/mL" }).first(),
   ).toBeInViewport();
   await page.screenshot({
     path: "docs/visual/handoff-007-10-6b-3/document-chat-desktop.png",
@@ -386,7 +387,7 @@ test("desktop: one card updates, shared review saves, reload recovers exact pers
   await page.reload();
   await expect(page.locator(".ia-draft")).toHaveCount(1);
   await expect(
-    card.getByText("Dose: Grafia EXATA DEMO µg/mL", { exact: true }),
+    card.locator(".rx-directions", { hasText: "Grafia EXATA DEMO µg/mL" }).first(),
   ).toBeVisible();
   await expect(card.getByText("Rascunho salvo", { exact: true })).toBeVisible();
   const thin = JSON.parse(

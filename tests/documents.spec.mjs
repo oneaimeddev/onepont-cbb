@@ -103,8 +103,9 @@ test("rascunhos médicos, revisão e bloqueios", async ({ page }) => {
   await page.screenshot({ path: `${shots}/prescricao-editor-1440x900.png` });
   await page.getByRole("link", { name: "Pré-visualizar", exact: true }).click();
   await expect(page.getByText("RASCUNHO — NÃO ASSINADO / NÃO EMITIDO")).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Dipirona fictícia 1 g" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Soro fictício" })).toBeVisible();
+  // Items follow the usual prescription layout: "1. Name presentation", directions below.
+  await expect(page.locator(".rx-title", { hasText: "Dipirona fictícia 1 g" })).toBeVisible();
+  await expect(page.locator(".rx-title", { hasText: "Soro fictício" })).toBeVisible();
   await expect(page.getByRole("button", { name: /emitir|assinar/i })).toHaveCount(0);
   await page.screenshot({ path: `${shots}/prescricao-previa-1440x900.png`, fullPage: true });
   await page.setViewportSize({ width: 390, height: 844 });

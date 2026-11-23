@@ -6,6 +6,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { DocumentPreview } from "../documents/preview";
 import type { ReviewMaterial } from "../documents/review-types";
 import "../documents/documents.css";
+import { PrescriptionSheet } from "../documents/prescription-sheet";
 import { setUnsavedClinicalDraft } from "../clinical/unsaved";
 import {
   documentKinds, emptyMedication, examTypeLabels, lateralityLabels, priorityLabels,
@@ -50,22 +51,7 @@ function MedicationFields({ item, onChange }: { item: MedicationItem; onChange: 
 function PrescriptionRead({ content }: { content: PrescriptionContent }) {
   return (
     <div className="ia-draft-read">
-      {content.items.map((item, index) => {
-        const dose = [item.dose, item.dose_unit].filter((part) => part.trim()).join(" ");
-        return (
-          <section key={item.id} aria-label={`Medicamento ${index + 1}`}>
-            <p className="ia-draft-title">{item.name.trim() || `Medicamento ${index + 1}`}</p>
-            {item.presentation.trim() ? <p>Apresentação: {item.presentation}</p> : null}
-            {dose ? <p>Dose: {dose}</p> : null}
-            {item.route.trim() ? <p>Via: {item.route}</p> : null}
-            {item.schedule.trim() ? <p>Frequência: {item.schedule}</p> : null}
-            {item.duration.trim() ? <p>Duração: {item.duration}</p> : null}
-            {item.quantity.trim() ? <p>Quantidade: {item.quantity}</p> : null}
-            {item.instructions.trim() ? <p>Instruções: {item.instructions}</p> : null}
-          </section>
-        );
-      })}
-      {content.notes.trim() ? <p>Observações: {content.notes}</p> : null}
+      <PrescriptionSheet items={content.items} notes={content.notes} />
     </div>
   );
 }
