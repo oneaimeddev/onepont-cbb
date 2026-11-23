@@ -13,7 +13,7 @@ import { activityFilterSchema, clinicalSearchBoard } from "../clinical-search/co
 import { clinicalSearchIntent } from "../clinical-search/intent";
 import { clinicalSearchConversation, runClinicalSearch } from "../clinical-search/service";
 import { attachmentConversation } from "../attachments/chat-service";
-import { listAthletesRequest, platformGuide, presentedReplies } from "./platform-guide";
+import { helpQuestion, listAthletesRequest, platformGuide, presentedReplies } from "./platform-guide";
 import type { AttachmentBoard } from "../attachments/types";
 import { supabaseServer } from "../../lib/supabase";
 import { intelligenceModel } from "./config";
@@ -1178,12 +1178,12 @@ async function prepareConversation(input: unknown) {
         offerReplies, searchClinicalActivity, listClinicalAttachments, searchAthletes, recallAthlete, getAthleteSummary, navigateToAthlete, openConsultationVoice, selectAthleteContext, clearAthleteContext, prepareClinicalDraft, offerConsultationReport, saveClinicalDraft, readClinicalEvolutions, analyzeAthleteHistory,
         ...(canAuthorDocuments ? { editDocumentProposal: editProposal, resumeDocumentProposal: resumeProposal, preparePrescription, prepareSurgicalOrder, prepareExamRequest, prepareCertificate, prepareReferral, listDocumentDrafts, openClinicalDocument, saveClinicalDocument, browseClinicalDocuments, readClinicalDocument } : {}),
       },
-      stopWhen: [stepCountIs(6), hasToolCall("resumeDocumentProposal", "editDocumentProposal", "offerConsultationReport")],
+      stopWhen: [stepCountIs(6), hasToolCall("resumeDocumentProposal", "editDocumentProposal", "offerConsultationReport", "offerReplies")],
       maxRetries: 1,
       timeout: 60_000,
       // The chat answers routing and tool calls; a low thinking level keeps the reply fast.
       providerOptions: (model.provider === "openai"
-        ? { openai: { store: false } }
+        ? model.baseURL ? {} : { openai: { store: false } }
         : { google: { thinkingConfig: { thinkingLevel: chatThinkingLevel() } } }) satisfies ProviderOptions as ProviderOptions,
     },
   };
@@ -1194,8 +1194,11 @@ function failureCode(error: unknown) {
 }
 
 export async function openIntelligenceStream(input: unknown): Promise<{ stream: ReadableStream<Uint8Array> } | { error: "unavailable" | "invalid" | "limit" | "provider" }> {
-  const documentInput = requestSchema.safeParse(input);
-  if (documentInput.success && documentInput.data.messages.at(-1)?.role === "user") {
+  const routed = requestSchema.safeParse(input);
+  // Usage questions skip the command shortcuts and go to the assistant with the platform guide.
+  const asksHelp = routed.success && helpQuestion(routed.data.messages.at(-1)?.content ?? "");
+  const documentInput = routed;
+  if (!asksHelp && documentInput.success && documentInput.data.messages.at(-1)?.role === "user") {
     const previousReply = documentInput.data.messages.slice(0, -1).findLast((message) => message.role === "assistant")?.content;
     const reply = await workflowConversation({ previousReply, message: documentInput.data.messages.at(-1)!.content, athleteId: documentInput.data.contextAthleteId ?? null, proposals: documentInput.data.displayedProposals ?? [], messageId: documentInput.data.messageId, inputMode: documentInput.data.inputMode }) ?? await documentDictation({ message: documentInput.data.messages.at(-1)!.content, previousReply, athleteId: documentInput.data.contextAthleteId ?? null, messageId: documentInput.data.messageId, proposals: documentInput.data.displayedProposals ?? [] }) ?? await documentConversation({ previousReply, message: documentInput.data.messages.at(-1)!.content, athleteId: documentInput.data.contextAthleteId ?? null, proposals: documentInput.data.displayedProposals ?? [], messageId: documentInput.data.messageId, inputMode: documentInput.data.inputMode });
     if (reply) {
@@ -1204,7 +1207,7 @@ export async function openIntelligenceStream(input: unknown): Promise<{ stream: 
     }
   }
   const clinicalInput=requestSchema.safeParse(input);
-  if(clinicalInput.success&&clinicalInput.data.messages.at(-1)?.role==="user") {
+  if(!asksHelp&&clinicalInput.success&&clinicalInput.data.messages.at(-1)?.role==="user") {
     const message=clinicalInput.data.messages.at(-1)!.content;
     const previous=clinicalSearchBoard(clinicalInput.data.clinicalSearchScope);
     if(clinicalSearchIntent(message,previous)) {
@@ -1217,7 +1220,8 @@ export async function openIntelligenceStream(input: unknown): Promise<{ stream: 
     }
   }
   const attachmentInput = requestSchema.safeParse(input);
-  if (attachmentInput.success && attachmentInput.data.messages.at(-1)?.role === "user") {
+  // Without an athlete in context the shortcut cannot answer; the assistant guides instead.
+  if (!asksHelp && attachmentInput.success && attachmentInput.data.contextAthleteId && attachmentInput.data.messages.at(-1)?.role === "user") {
     const reply=await attachmentConversation({message:attachmentInput.data.messages.at(-1)!.content,athleteId:attachmentInput.data.contextAthleteId??null,ids:attachmentInput.data.attachmentRoster,mode:attachmentInput.data.inputMode});
     if(reply) {
       const bytes=new TextEncoder().encode(`event: done\ndata: ${JSON.stringify({text:reply.text,attachments:reply.board,athletes:[],navigation:null,search:null,draft:null,document:null,context:null})}\n\n`);

@@ -189,7 +189,7 @@ export async function generateConsultationReport(input: {
       temperature: 0.2,
       maxRetries: 1,
       abortSignal: AbortSignal.timeout(60_000),
-      providerOptions: model.provider === "openai" ? { openai: { store: false } } : undefined,
+      providerOptions: model.provider === "openai" && !model.baseURL ? { openai: { store: false } } : undefined,
     });
     if (generated.finishReason !== "stop") throw new Error("Incomplete report");
     const content = plainReport(generated.text);

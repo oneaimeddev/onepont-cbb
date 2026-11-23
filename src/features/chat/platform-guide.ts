@@ -45,3 +45,15 @@ export function listAthletesRequest(message: string) {
   return /^(?:(?:por favor|pode|quero|gostaria de)\s+)?(?:listar|liste|lista|mostrar|mostre|ver|exibir|exiba|quais sao)\s+(?:a lista de\s+|todos\s+)?(?:os\s+|as\s+)?(?:meus\s+)?atletas(?:\s+(?:cadastrados|cadastradas|autorizados|autorizadas|disponiveis|da plataforma))?$/.test(text)
     || /^(?:lista de atletas|todos os atletas|atletas cadastrados)$/.test(text);
 }
+
+/**
+ * A question about how to use the platform ("como anexo um exame?", "onde vejo a linha do
+ * tempo?"). These go straight to the assistant with the platform guide, never to the keyword
+ * shortcuts that execute commands.
+ */
+export function helpQuestion(message: string) {
+  const text = message.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
+  if (text.length > 300) return false;
+  return /^(?:(?:e|mas|ok|certo|oi|ola|bom dia|boa tarde|boa noite)[,!.]?\s+)?(?:como|onde|o que (?:e|faz|significa)|oque (?:e|faz)|para que serve|pra que serve|tem como|e possivel|da para|da pra|consigo|posso|me (?:ensina|explica|ajuda|mostra como)|ajuda|qual (?:o caminho|a forma|o jeito)|nao (?:sei|consigo|estou conseguindo))\b/.test(text)
+    || /\bcomo (?:eu |que eu |faco para |faco pra |faz para |faz pra |devo )?(?:fa[cz]o|faz|usar?|uso|anex|registr|cri|ger|coloc|envi|vej|ver|abr|acess|cadastr|finaliz|assin|edit|salv|import|transcrev|grav|dit|busc|procur|encontr)/.test(text);
+}
