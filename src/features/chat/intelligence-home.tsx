@@ -31,8 +31,8 @@ import { LongitudinalCard } from "./longitudinal-card";
 import { createdDocumentIds, presentedDocumentRoster, presentedReadings, type ReadingBoard, type ReadingRef } from "./document-resolution";
 import { conversationSnapshot, discardInactiveTranscript, loadScroll, loadTurns, readConversationSnapshot, rememberServerSnapshot, replaceTurns, saveScroll, subscribeTurns, transcriptFollowsServer, turnCarriesContent, turnsFrom, updateDocumentTurn, type ChatTurn } from "./transcript";
 import { hasUnsavedClinicalDraft, setUnsavedClinicalDraft } from "../clinical/unsaved";
-import { useVoiceSession } from "./voice/use-voice-session";
-import { VoicePanel, VoiceToggle } from "./voice/voice-panel";
+import { useDictation } from "./voice/use-dictation";
+import { DictationButton, DictationStatus } from "./voice/dictation-control";
 import { joinSegments } from "./voice/transcription";
 import "./intelligence.css";
 
@@ -260,14 +260,18 @@ export function IntelligenceHome({
   );
   const turns = useMemo(() => turnsFrom(rawTurns), [rawTurns]);
   const live = turns.some((turn) => turn.role === "user" || turnCarriesContent(turn));
-  const voice = useVoiceSession({
-    busy: pending || starting || attachmentPending,
-    responding: pending && !processingTools && Boolean(turns.find((turn) => turn.id === streamingId)?.text),
-    editing: draftMessage.trim().length > 0,
-    onTurn: (text) => void send(text, "voice"),
-    onDraft: (text) => {
+  // Dictation records like a voice note and only fills the composer; the professional reviews,
+  // edits and sends. The message keeps the voice origin for the agent's transcription rules.
+  const dictation = useDictation({
+    onText: (text) => {
       voiceDraft.current = true;
       setDraftMessage((current) => joinSegments(current.trim(), text));
+      requestAnimationFrame(() => {
+        const field = document.getElementById("chat-input");
+        if (!(field instanceof HTMLTextAreaElement)) return;
+        field.focus();
+        field.setSelectionRange(field.value.length, field.value.length);
+      });
     },
   });
 
@@ -342,7 +346,7 @@ export function IntelligenceHome({
       setFailure("Aguarde a conclusão da solicitação antes de sair da conversa.");
       return;
     }
-    voice.stop();
+    dictation.cancel();
     const epoch = epochRef.current;
     queuePersist(currentAthlete(), epoch);
     void persistQueue.current.then(() => {
@@ -428,7 +432,7 @@ export function IntelligenceHome({
       if (!proceed) return;
       setUnsavedClinicalDraft(false);
     }
-    voice.stop(true);
+    dictation.cancel();
     const epoch = epochRef.current + 1;
     epochRef.current = epoch;
     abortRef.current?.abort();
@@ -478,7 +482,7 @@ export function IntelligenceHome({
       setHistoryOpen(false);
       return;
     }
-    voice.stop(true);
+    dictation.cancel();
     const epoch = epochRef.current + 1;
     epochRef.current = epoch;
     abortRef.current?.abort();
@@ -654,7 +658,6 @@ export function IntelligenceHome({
 
   async function send(message: string, inputMode: "text" | "voice" = "text") {
     if(hasPendingAttachment()){setFailure("Conclua ou descarte o anexo pendente antes de enviar outra mensagem.");return;}
-    voice.touch();
     const pendingDrafts = loadTurns().flatMap((turn) => turn.draft && turn.draft.contentHash && (turn.draft.state === "proposal" || turn.draft.state === "error")
       ? [{ turnId: turn.id, draft: turn.draft }]
       : []);
@@ -1033,7 +1036,7 @@ export function IntelligenceHome({
           <div className="ia-hero" inert={live ? true : undefined} aria-hidden={live ? true : undefined}>
             <div className="ia-hero-inner">
               <p>{greeting}</p>
-              {!live && <HomeGreeting paused={composerFocused || draftMessage.length > 0 || voice.active || starting || attachmentOpen} />}
+              {!live && <HomeGreeting paused={composerFocused || draftMessage.length > 0 || dictation.active || starting || attachmentOpen} />}
             </div>
           </div>
           {live ? (
@@ -1113,14 +1116,23 @@ export function IntelligenceHome({
             key="composer"
             onFocusChange={setComposerFocused}
             enabled={enabled}
-            pending={pending || attachmentPending}
-            attachmentControl={<button type="button" className="ia-attach" disabled={starting || pending} onClick={()=>{voice.stop(true);setAttachmentOpen(true);}}><Icon name="clip" size={16}/>Anexar ao prontuário</button>}
+            pending={pending || attachmentPending || dictation.state === "transcribing"}
+            attachmentControl={dictation.state !== "idle" ? (
+              <DictationStatus
+                state={dictation.state}
+                elapsed={dictation.elapsed}
+                level={dictation.level}
+                error={dictation.error}
+                canRetry={dictation.canRetry}
+                onCancel={dictation.cancel}
+                onRetry={() => void dictation.retry()}
+              />
+            ) : <button type="button" className="ia-attach" disabled={starting || pending} onClick={()=>setAttachmentOpen(true)}><Icon name="clip" size={16}/>Anexar ao prontuário</button>}
             failure={failure}
             value={draftMessage}
             onValueChange={(next) => {
               if (!next) voiceDraft.current = false;
               setDraftMessage(next);
-              voice.touch();
             }}
             onEdit={() => setFailure(null)}
             onSend={(message) => {
@@ -1129,39 +1141,11 @@ export function IntelligenceHome({
               void send(message, mode);
             }}
             voiceControl={voiceEnabled ? (
-              <VoiceToggle
-                active={voice.active}
-                status={voice.status}
-                muted={voice.muted}
-                disabled={!enabled || starting}
-                onStart={() => void voice.start()}
-                onStop={() => voice.stop()}
-              />
-            ) : undefined}
-            voicePanel={voiceEnabled ? (
-              <VoicePanel
-                status={voice.status}
-                readyCue={voice.readyCue}
-                active={voice.active}
-                muted={voice.muted}
-                partial={voice.partial}
-                held={voice.held}
-                level={voice.level}
-                capture={voice.capture}
-                deviceLabel={voice.deviceLabel}
-                idleWarning={voice.idleWarning}
-                error={voice.error}
-                notice={voice.notice}
-                review={voice.review}
-                onMute={voice.toggleMute}
-                onStop={() => voice.stop()}
-                onRetry={() => void voice.start()}
-                onDismiss={voice.dismiss}
-                onReview={voice.setReview}
-                onCorrect={() => {
-                  voice.correct();
-                  document.getElementById("chat-input")?.focus();
-                }}
+              <DictationButton
+                state={dictation.state}
+                disabled={!enabled || starting || pending || attachmentPending}
+                onStart={() => void dictation.start()}
+                onStop={() => void dictation.stop()}
               />
             ) : undefined}
           />

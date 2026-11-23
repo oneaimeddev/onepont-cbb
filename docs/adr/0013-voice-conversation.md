@@ -1,5 +1,7 @@
 # 0013. Voz como entrada do mesmo agente
 
+> Substituída pela [0023](0023-voice-dictation.md): o microfone passou a funcionar como ditado revisado no campo de mensagem.
+
 A conversa por voz é só outro modo de entrada da Home CBB Intelligence. O áudio vira texto no navegador, e cada turno finalizado segue para `POST /api/inteligencia` como uma mensagem digitada, com `inputMode: "voice"`. O agente, as ferramentas, as permissões e a auditoria são os mesmos. A voz não tem ferramentas próprias, e o navegador não chama RPCs clínicas em nome do modelo.
 
 A transcrição usa `gemini-3.5-transcribe-live` pela Live API. O navegador não recebe a chave permanente. `POST /api/inteligencia/voz` confere a origem, a sessão e o perfil e então pede ao Gemini um token efêmero. O token vale para uma única sessão, precisa ser usado em 60 segundos e expira em 11 minutos. O endpoint `BidiGenerateContentConstrained` aplica a configuração gravada no token: modelo, pt-BR, modo `VERBATIM`, vocabulário esportivo e parâmetros de detecção de fala. O navegador não consegue trocá-la. A configuração fica em `src/features/chat/voice/live-setup.json`, lida tanto pela rota quanto por `scripts/voice-homologation.mjs`.

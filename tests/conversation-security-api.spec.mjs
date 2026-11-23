@@ -54,11 +54,6 @@ test("histórico revogado não chega ao modelo nem autoriza iniciar voz", async 
   });
   expect(response.status()).toBe(409);
   expect(await response.text()).not.toContain(secret);
-  const voice = await page.request.post("/api/inteligencia/voz", {
-    headers: { Origin: origin },
-  });
-  expect(voice.status()).toBe(409);
-  expect(await voice.text()).not.toContain(secret);
   const recent = await page.request.post("/api/inteligencia/sessao", {
     headers: { Origin: origin },
     data: { action: "recent" },

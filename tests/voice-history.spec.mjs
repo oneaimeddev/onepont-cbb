@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { mkdirSync } from "node:fs";
-import { expect, test } from "./fixtures.mjs";
+import { expect, mockDictation, test } from "./fixtures.mjs";
 import { createClient } from "@supabase/supabase-js";
 import { localSupabase } from "../scripts/local-supabase.mjs";
 
@@ -31,32 +31,6 @@ test.afterAll(async () => {
   for (const id of users) await admin.auth.admin.deleteUser(id);
 });
 
-async function mockVoice(page) {
-  const live = { tokens: 0, sockets: [] };
-  await page.route("**/api/inteligencia/voz", async (route) => {
-    live.tokens += 1;
-    const socketUrl = "wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContent";
-    await route.fulfill({ json: { token: `auth_tokens/offline-${live.tokens}`, url: socketUrl, expiresAt: new Date(Date.now() + 600_000).toISOString() } });
-  });
-  await page.routeWebSocket(/generativelanguage\.googleapis\.com/, (ws) => {
-    const entry = { ws, ready: false };
-    live.sockets.push(entry);
-    ws.onMessage((raw) => {
-      const message = JSON.parse(String(raw));
-      if (message.setup) {
-        entry.ready = true;
-        ws.send(JSON.stringify({ setupComplete: {} }));
-      }
-    });
-  });
-  return {
-    final(text) {
-      const current = live.sockets.at(-1);
-      current.ws.send(JSON.stringify({ serverContent: { inputTranscription: { text } } }));
-    },
-  };
-}
-
 test("texto e voz usam a mesma análise longitudinal", async ({ page }) => {
   test.setTimeout(120_000);
   const email = `voz-historico-${randomUUID()}@example.com`;
@@ -84,7 +58,7 @@ test("texto e voz usam a mesma análise longitudinal", async ({ page }) => {
   });
   expect(saved.data.status).toBe("draft");
 
-  const voice = await mockVoice(page);
+  const dictation = await mockDictation(page);
   mkdirSync(shots, { recursive: true });
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/login");
@@ -131,9 +105,7 @@ test("texto e voz usam a mesma análise longitudinal", async ({ page }) => {
   await expect(page.getByRole("region", { name: "Análise longitudinal" }).last()).toContainText("todo o histórico autorizado");
 
   const heard = page.waitForRequest((request) => request.url().includes("/api/inteligencia/historico") && request.postDataJSON()?.inputMode === "voice");
-  await page.getByRole("button", { name: "Iniciar conversa por voz" }).click();
-  await expect(page.getByRole("region", { name: "Conversa por voz" }).getByRole("status")).toContainText("Ouvindo");
-  voice.final("Analise o histórico deste atleta nos últimos seis meses.");
+  await dictation.dictate("Analise o histórico deste atleta nos últimos seis meses.");
   const request = await heard;
   expect(request.postDataJSON().inputMode).toBe("voice");
   await expect(page.getByRole("region", { name: "Análise longitudinal" }).last()).toContainText("últimos 6 meses");

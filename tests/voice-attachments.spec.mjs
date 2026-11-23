@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { mkdirSync } from "node:fs";
-import { expect, test } from "./fixtures.mjs";
+import { expect, mockDictation, test } from "./fixtures.mjs";
 import { createClient } from "@supabase/supabase-js";
 import { PDFDocument } from "pdf-lib";
 import { localSupabase } from "../scripts/local-supabase.mjs";
@@ -71,23 +71,7 @@ test("voz consulta metadados reais e abre referência ordinal sem interpretar o 
   sql(
     `insert into clinical.athletes(id,full_name,source) values('${target}','Atleta DEMO Voz Anexos','demo');insert into clinical.athlete_access(athlete_id,professional_id,can_read_records,can_write) values('${target}','${userId}',true,true);`,
   );
-  const sockets = [];
-  await page.route("**/api/inteligencia/voz", (r) =>
-    r.fulfill({
-      json: {
-        token: "auth_tokens/offline",
-        url: "wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContent",
-        expiresAt: new Date(Date.now() + 600000).toISOString(),
-      },
-    }),
-  );
-  await page.routeWebSocket(/generativelanguage\.googleapis\.com/, (ws) => {
-    sockets.push(ws);
-    ws.onMessage((raw) => {
-      if (JSON.parse(String(raw)).setup)
-        ws.send(JSON.stringify({ setupComplete: {} }));
-    });
-  });
+  const dictation = await mockDictation(page);
   const requests = [];
   page.on("request", (r) => {
     if (new URL(r.url()).pathname === "/api/inteligencia")
@@ -118,36 +102,14 @@ test("voz consulta metadados reais e abre referência ordinal sem interpretar o 
   });
   expect(upload.ok()).toBe(true);
   await page.goto(`/?atleta=${target}`);
-  await page
-    .getByRole("button", { name: "Iniciar conversa por voz", exact: true })
-    .click();
-  await expect.poll(() => sockets.length).toBe(1);
-  await expect(
-    page.getByText("Ouvindo", { exact: true }).first(),
-  ).toBeVisible();
-  sockets[0].send(
-    JSON.stringify({
-      serverContent: {
-        inputTranscription: { text: "Quais anexos estão disponíveis?" },
-      },
-    }),
-  );
+  await dictation.dictate("Quais anexos estão disponíveis?");
   const cards = page.getByRole("region", { name: "Anexos da conversa" });
   await expect(
     cards.getByText("Laudo DEMO para voz", { exact: true }),
   ).toBeVisible();
   expect(requests[0].inputMode).toBe("voice");
   expect(JSON.stringify(requests[0])).not.toContain("ARQUIVO FICTICIO");
-  await expect(
-    page.getByText("Ouvindo", { exact: true }).first(),
-  ).toBeVisible();
-  sockets[0].send(
-    JSON.stringify({
-      serverContent: {
-        inputTranscription: { text: "Abra o primeiro arquivo." },
-      },
-    }),
-  );
+  await dictation.dictate("Abra o primeiro arquivo.");
   const viewer = page.getByRole("dialog", {
     name: "Laudo DEMO para voz",
     exact: true,

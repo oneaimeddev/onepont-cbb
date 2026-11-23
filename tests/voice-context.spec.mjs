@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { mkdirSync } from "node:fs";
-import { expect, test } from "./fixtures.mjs";
+import { expect, mockDictation, test } from "./fixtures.mjs";
 import { createClient } from "@supabase/supabase-js";
 import { localSupabase } from "../scripts/local-supabase.mjs";
 
@@ -163,18 +163,7 @@ test("voz seleciona o contexto e a frase explícita grava o rascunho", async ({ 
   if (signed.error) throw signed.error;
   const requestId = randomUUID();
   const calls = [];
-  const socketUrl = "wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContentConstrained";
-  await page.route("**/api/inteligencia/voz", async (route) => {
-    await route.fulfill({ json: { token: "auth_tokens/offline-context", url: socketUrl, expiresAt: new Date(Date.now() + 600_000).toISOString() } });
-  });
-  let socket = null;
-  await page.routeWebSocket(/generativelanguage\.googleapis\.com/, (ws) => {
-    socket = ws;
-    ws.onMessage((raw) => {
-      const message = JSON.parse(String(raw));
-      if (message.setup) ws.send(JSON.stringify({ setupComplete: {} }));
-    });
-  });
+  const dictation = await mockDictation(page);
   await page.route("**/api/inteligencia", async (route) => {
     const body = route.request().postDataJSON();
     calls.push(body);
@@ -196,10 +185,7 @@ test("voz seleciona o contexto e a frase explícita grava o rascunho", async ({ 
   await page.getByRole("button", { name: "Entrar", exact: true }).click();
   await page.waitForURL("/");
   await page.setViewportSize({ width: 1440, height: 900 });
-  const composer = page.getByRole("form", { name: "Composição de mensagem" });
-  await composer.getByRole("button", { name: "Iniciar conversa por voz" }).click();
-  await expect(page.getByRole("region", { name: "Conversa por voz" }).getByRole("status")).toContainText("Ouvindo");
-  socket.send(JSON.stringify({ serverContent: { inputTranscription: { text: "Coloque Alice Almeida Lopes em contexto." } } }));
+  await dictation.dictate("Coloque Alice Almeida Lopes em contexto.");
   await expect.poll(() => calls.length).toBe(1);
   expect(calls[0].inputMode).toBe("voice");
   await expect(page.getByRole("heading", { name: "Alice Almeida Lopes" })).toBeVisible();
@@ -228,13 +214,13 @@ test("voz seleciona o contexto e a frase explícita grava o rascunho", async ({ 
     },
   ]);
   await expect(page.getByRole("region", { name: "Proposta de evolução" })).toBeVisible();
-  socket.send(JSON.stringify({ serverContent: { inputTranscription: { text: "Pode confirmar e salvar." } } }));
+  await dictation.dictate("Pode confirmar e salvar.");
   await expect(page.getByText("Rascunho salvo")).toBeVisible();
   await expect(page.getByRole("link", { name: "Abrir no prontuário" })).toBeVisible();
   expect(sql(`select count(*) from clinical.records where athlete_id = '${voiceAthlete}' and status = 'draft'`)).toBe("1");
   expect(sql(`select execution_method from clinical.audit_events where actor_user_id = '${professional}' and operation = 'clinical_draft.confirmed' and outcome = 'success'`)).toBe("human_voice");
   await page.screenshot({ path: `${shots}/voz-rascunho.png` });
-  socket.send(JSON.stringify({ serverContent: { inputTranscription: { text: "Pode salvar o rascunho." } } }));
+  await dictation.dictate("Pode salvar o rascunho.");
   await expect.poll(() => calls.length).toBe(3);
   expect(sql(`select count(*) from clinical.records where athlete_id = '${voiceAthlete}'`)).toBe("1");
 });

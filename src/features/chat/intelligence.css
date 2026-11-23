@@ -616,44 +616,34 @@ p.ia-status {
     transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
   }
 }
-.ia-voice {
-  display: grid;
-  gap: 0.5rem;
-  margin: 0 0 0.35rem;
-  padding: 0.6rem 0.7rem;
-  border: 1px solid var(--ia-line);
-  border-radius: 14px;
-  background: #f7f9fc;
-  color: var(--quiet);
-  font-size: 0.8125rem;
-}
-.ia-voice-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.75rem; }
-.ia-voice-state { display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem 0.5rem; margin: 0; }
-.ia-voice-state strong { color: var(--navy); font-weight: 500; }
-.ia-voice-mic { color: #4e5d73; }
-.ia-voice-device { color: #6d7c90; }
-.ia-voice-level { display: inline-block; width: 44px; height: 4px; border-radius: 999px; background: #e4e9f1; overflow: hidden; }
-.ia-voice-level span { display: block; height: 100%; background: var(--ia-blue); }
-.ia-voice-dot { width: 8px; height: 8px; border-radius: 999px; background: #8b98ab; }
-.ia-voice[data-status="listening"] .ia-voice-dot,
-.ia-voice[data-status="transcribing"] .ia-voice-dot { background: var(--ia-blue); }
-.ia-voice[data-status="processing"] .ia-voice-dot,
-.ia-voice[data-status="responding"] .ia-voice-dot { background: var(--navy); }
-.ia-voice[data-status="connecting"] .ia-voice-dot,
-.ia-voice[data-status="reconnecting"] .ia-voice-dot { background: #c27a00; }
-.ia-voice-wait { color: #8a4b00; font-weight: 500; }
-.ia-voice-go {
-  padding: 0.05rem 0.5rem;
-  border-radius: 999px;
-  background: var(--cbb-green);
-  color: #fff;
-  font-weight: 600;
-}
-.ia-voice-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem; margin-left: auto; }
-.ia-voice-actions button {
+/* Dictation: recording indicator in the composer toolbar, like a voice note. */
+.ia-dictation {
   display: inline-flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.35rem 0.5rem;
+  min-height: 36px;
+  color: var(--navy);
+  font-size: 0.875rem;
+}
+.ia-dictation-dot { width: 9px; height: 9px; border-radius: 999px; background: #c62828; }
+.ia-dictation[data-state="starting"] .ia-dictation-dot { background: #8b98ab; }
+.ia-dictation-time { min-width: 2.6rem; color: var(--navy); font-variant-numeric: tabular-nums; font-weight: 500; }
+.ia-dictation-level { display: inline-flex; align-items: center; gap: 2px; height: 18px; }
+.ia-dictation-level span { width: 3px; height: 100%; border-radius: 2px; background: #c62828; transform-origin: center; transition: transform 160ms ease; }
+.ia-dictation-discard {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #5c6b80;
+}
+.ia-dictation-discard:hover { background: #eef2f7; color: var(--navy); }
+.ia-dictation.is-error { color: #8a4b00; }
+.ia-dictation.is-error button {
   min-height: 32px;
   padding: 0 0.7rem;
   border: 1px solid #dfe5ee;
@@ -663,48 +653,16 @@ p.ia-status {
   font-size: 0.8125rem;
   font-weight: 500;
 }
-.ia-voice-actions button:hover { border-color: #c9d3e1; }
-.ia-voice-actions button:disabled { opacity: 0.5; cursor: not-allowed; }
-.ia-voice-actions .ia-voice-end { border-color: var(--navy); background: var(--navy); color: #fff; }
-.ia-voice-review { display: inline-flex; align-items: center; gap: 0.4rem; color: var(--quiet); cursor: pointer; }
-.ia-voice-review input { width: 1rem; height: 1rem; min-height: 1rem; max-height: 1rem; margin: 0; padding: 0; accent-color: var(--cbb-green); }
-.ia-voice-partial { margin: 0; color: #4e5d73; font-style: italic; overflow-wrap: anywhere; }
-.ia-voice-held { display: flex; align-items: flex-start; gap: 0.5rem; }
-.ia-voice-held p { flex: 1; margin: 0; color: var(--navy); overflow-wrap: anywhere; }
-.ia-voice-held button { flex-shrink: 0; border: 0; background: none; color: var(--cbb-green); font-weight: 500; text-decoration: underline; text-underline-offset: 2px; }
-.ia-voice-warning { margin: 0; color: #8a4b00; }
-.ia-voice.is-ended { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
-.ia-voice.is-ended p { flex: 1 1 14rem; margin: 0; color: var(--navy); }
-.ia-voice-toggle { position: relative; }
-.ia-voice-toggle[aria-pressed="true"] { background: #e7f1fb; color: var(--ia-blue); }
+.ia-dictation-button[data-state="recording"],
+.ia-dictation-button[data-state="starting"] { background: #fdecec; color: #c62828; }
 @media (max-width: 760px) {
-  .ia-voice { gap: 0.35rem; padding: 0.5rem 0.6rem; }
-  .ia-voice-actions { margin-left: 0; width: 100%; }
-  .ia-voice-actions button { flex: 1 1 0; justify-content: center; min-height: 44px; }
-  .ia-voice-review { flex-basis: 100%; min-height: 32px; }
+  .ia-dictation-discard { width: 44px; height: 44px; }
+  .ia-dictation.is-error button { min-height: 44px; }
 }
 @media (prefers-reduced-motion: no-preference) {
-  .ia-voice[data-status="listening"] .ia-voice-dot { animation: ia-voice-pulse 1.6s ease-in-out infinite; }
-  .ia-voice[data-status="connecting"] .ia-voice-dot,
-  .ia-voice[data-status="reconnecting"] .ia-voice-dot { animation: ia-voice-wait 0.9s ease-in-out infinite; }
-  .ia-voice-toggle[data-status="connecting"]::after,
-  .ia-voice-toggle[data-status="reconnecting"]::after {
-    content: "";
-    position: absolute;
-    inset: 3px;
-    border: 2px solid transparent;
-    border-top-color: #c27a00;
-    border-radius: 999px;
-    animation: ia-voice-spin 0.8s linear infinite;
-    pointer-events: none;
-  }
+  .ia-dictation[data-state="recording"] .ia-dictation-dot { animation: ia-dictation-blink 1.2s ease-in-out infinite; }
 }
-@keyframes ia-voice-wait { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
-@keyframes ia-voice-spin { to { transform: rotate(360deg); } }
-@keyframes ia-voice-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgb(0 121 213 / .35); }
-  50% { box-shadow: 0 0 0 5px rgb(0 121 213 / 0); }
-}
+@keyframes ia-dictation-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
 
 /* Handoff 007.10.1: local greeting and transient response state. */
 .ia-hero h1.ia-greeting { display: grid; width: min(12em, 100%); max-width: 100%; margin-inline: auto; }
@@ -721,11 +679,6 @@ p.ia-status {
 .ia-processing-dots > span:nth-child(2) { animation-delay: .15s; }
 .ia-processing-dots > span:nth-child(3) { animation-delay: .3s; }
 @keyframes ia-processing-dot { 0%, 65%, 100% { opacity: .35; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-3px); } }
-.ia-voice-toggle[data-status="listening"] { color: var(--ia-blue); background: #e7f1fb; }
-.ia-voice-toggle[data-status="muted"] { color: #a32631; background: #fbeff0; }
-.ia-voice-toggle[data-status="processing"], .ia-voice-toggle[data-status="responding"],
-.ia-voice-toggle[data-status="transcribing"], .ia-voice-toggle[data-status="connecting"],
-.ia-voice-toggle[data-status="reconnecting"] { color: var(--navy); background: #e4e9f1; }
 @media (prefers-reduced-motion: reduce) {
   .ia-processing-dots > span { animation: none; }
   .ia-greeting-typed { display: none; }

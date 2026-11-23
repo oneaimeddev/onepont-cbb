@@ -1,4 +1,4 @@
-import { test, expect, stubMicrophone } from "./fixtures.mjs";
+import { test, expect, mockDictation, stubMicrophone } from "./fixtures.mjs";
 import { randomUUID } from "node:crypto";
 import { createRequire } from "node:module";
 import { mkdirSync } from "node:fs";
@@ -257,39 +257,14 @@ test("voice transcription reaches same edit/review authority; high impact stays 
   await stubMicrophone(page);
   await seed("prescription");
   await page.goto(`/?atleta=${f.athlete}`);
-  let socket;
-  await page.route("**/api/inteligencia/voz", (route) =>
-    route.fulfill({
-      json: {
-        token: "auth_tokens/offline-journey",
-        url: "wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContentConstrained",
-        expiresAt: new Date(Date.now() + 600000).toISOString(),
-      },
-    }),
-  );
-  await page.routeWebSocket(/generativelanguage\.googleapis\.com/, (ws) => {
-    socket = ws;
-    ws.onMessage((raw) => {
-      if (JSON.parse(String(raw)).setup)
-        ws.send(JSON.stringify({ setupComplete: {} }));
-    });
-  });
-  const composer = page.getByRole("form", { name: "Composição de mensagem" });
-  await composer
-    .getByRole("button", { name: "Iniciar conversa por voz" })
-    .click();
-  await expect(
-    page.getByRole("region", { name: "Conversa por voz" }).getByRole("status"),
-  ).toContainText("Ouvindo");
+  const dictation = await mockDictation(page);
   const spoken = async (text) => {
     const result = page.waitForResponse(
       (r) =>
         r.url().endsWith("/api/inteligencia") &&
         r.request().postDataJSON()?.inputMode === "voice",
     );
-    socket.send(
-      JSON.stringify({ serverContent: { inputTranscription: { text } } }),
-    );
+    await dictation.dictate(text);
     expect((await result).status()).toBe(200);
   };
   await spoken(

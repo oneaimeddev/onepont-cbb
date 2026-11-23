@@ -9,7 +9,6 @@ export function MessageComposer({
   pending,
   failure,
   value,
-  voicePanel,
   voiceControl,
   attachmentControl,
   onFocusChange,
@@ -21,7 +20,6 @@ export function MessageComposer({
   pending: boolean;
   failure: string | null;
   value: string;
-  voicePanel?: ReactNode;
   voiceControl?: ReactNode;
   attachmentControl?: ReactNode;
   onFocusChange?: (focused: boolean) => void;
@@ -65,7 +63,6 @@ export function MessageComposer({
         submit();
       }}
     >
-      {voicePanel}
       <label className="ia-sr" htmlFor="chat-input">Mensagem</label>
       <textarea
         ref={fieldRef}
@@ -96,7 +93,7 @@ export function MessageComposer({
         </button>}
         <div className="ia-toolbar-end">
           {voiceControl ?? (
-            <button type="button" className="ia-icon" disabled aria-label="Iniciar conversa por voz" title="Iniciar conversa por voz" aria-describedby="composer-status">
+            <button type="button" className="ia-icon" disabled aria-label="Gravar áudio" title="Gravar áudio" aria-describedby="composer-status">
               <Icon name="mic" size={18} />
             </button>
           )}
