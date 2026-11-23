@@ -736,3 +736,34 @@ test("chat anexa sem LLM, pede atleta sem contexto, persiste card e protege troc
   ).toBeVisible();
   await page.getByRole("button", { name: "Fechar", exact: true }).click();
 });
+
+test("pedido de anexo na conversa abre o envio com o atleta em contexto e registra na linha do tempo", async ({ page }) => {
+  test.setTimeout(120_000);
+  page.setDefaultTimeout(20_000);
+  const owner = await account();
+  const target = athlete(owner, "Atleta DEMO Pedido");
+  const bytes = await pdfBytes();
+  let modelRequests = 0;
+  page.on("request", (r) => {
+    if (new URL(r.url()).pathname === "/api/inteligencia") modelRequests++;
+  });
+  await login(page, owner);
+  await page.goto(`/?atleta=${target}`);
+  await page.getByLabel("Mensagem").fill("Anexe o hemograma de 10/11/2026 ao prontuário");
+  await page.keyboard.press("Enter");
+  await expect(page.getByText(/Abri o envio de anexo clínico para o atleta em contexto/)).toBeVisible();
+  const dialog = page.getByRole("dialog", { name: "Adicionar anexo", exact: true });
+  await expect(dialog.getByLabel("Título", { exact: true })).toHaveValue("Hemograma");
+  await expect(dialog.getByLabel("Categoria", { exact: true })).toHaveValue("laboratory");
+  await expect(dialog.getByLabel("Data clínica (opcional)")).toHaveValue("2026-11-10");
+  await dialog.getByLabel("Arquivo PDF ou imagem").setInputFiles({ name: "hemograma.pdf", mimeType: "application/pdf", buffer: bytes });
+  await dialog.getByLabel("Confirmo o atleta destinatário").check();
+  await dialog.getByRole("button", { name: "Confirmar upload", exact: true }).click();
+  await expect(page.getByText(/Anexo clínico registrado no cadastro do atleta/)).toBeVisible();
+  expect(modelRequests).toBe(0);
+  expect(sql(`select count(*) from clinical.attachments where athlete_id='${target}' and status='ready' and category='laboratory'`)).toBe("1");
+  await page.goto(`/atletas/${target}?aba=timeline`);
+  await expect(page.getByText("Anexo clínico · Exame laboratorial")).toBeVisible();
+  await page.getByRole("link", { name: "Ver anexo" }).click();
+  await expect(page.getByRole("dialog", { name: "Hemograma", exact: true })).toBeVisible();
+});

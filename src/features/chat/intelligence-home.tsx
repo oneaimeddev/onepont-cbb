@@ -4,8 +4,8 @@ import { ClinicalSearchCards } from "../clinical-search/cards";
 import { clinicalSearchBoard, previousClinicalSearch, type ActivityResult } from "../clinical-search/contract";
 import { AttachmentUpload } from "../attachments/upload";
 import { AttachmentCards } from "../attachments/module";
-import { attachmentBoard } from "../attachments/types";
-import { attachmentRoster } from "../attachments/conversation";
+import { attachmentBoard, attachmentCategories } from "../attachments/types";
+import { attachmentRoster, uploadRequest, type UploadRequest } from "../attachments/conversation";
 import { allowAttachmentContextChange, hasPendingAttachment } from "../attachments/pending";
 import Image from "next/image";
 import { AccountMenu } from "../../components/account-menu";
@@ -237,6 +237,7 @@ export function IntelligenceHome({
   const scrollRestoredRef = useRef(false);
   const [attachmentOpen,setAttachmentOpen]=useState(false);
   const [attachmentPending,setAttachmentPending]=useState(false);
+  const [attachmentPrefill,setAttachmentPrefill]=useState<UploadRequest|null>(null);
   const [starting, setStarting] = useState(false);
   const [pending, setPending] = useState(false);
   const [processingTools, setProcessingTools] = useState(false);
@@ -581,9 +582,30 @@ export function IntelligenceHome({
     return sessionRef.current!;
   }
 
+  // A request to attach a file opens the attachment form with the athlete in context and the
+  // fields suggested from the message. Nothing is stored until the professional selects the
+  // file, reviews the required fields and confirms the sending.
+  function requestAttachmentUpload(message:string, upload:UploadRequest) {
+    const target = currentAthlete();
+    const empty = { athletes: [], navigation: null, search: null, draft: null, document: null, readings: null, analysis: null };
+    const suggested = [upload.title && `título ${upload.title}`, upload.category && `categoria ${attachmentCategories[upload.category as keyof typeof attachmentCategories]}`, upload.documentDate && `data clínica ${upload.documentDate.split("-").reverse().join("/")}`].filter(Boolean);
+    const text = target
+      ? `Abri o envio de anexo clínico para o atleta em contexto. Selecione o arquivo (PDF ou imagem)${suggested.length ? `, revise os campos sugeridos (${suggested.join(", ")})` : ", informe título e categoria"} e confirme. O anexo entra no cadastro do atleta e na linha do tempo.`
+      : "Abri o envio de anexo clínico. Escolha o atleta, selecione o arquivo (PDF ou imagem), informe título e categoria e confirme. O anexo entra no cadastro do atleta e na linha do tempo.";
+    patchTurns((current) => [
+      ...current,
+      { ...empty, id: crypto.randomUUID(), role: "user", text: message },
+      { ...empty, id: crypto.randomUUID(), role: "assistant", text },
+    ]);
+    setFailure(null);
+    setAttachmentPrefill(upload);
+    setAttachmentOpen(true);
+    if (target) queuePersist(target, epochRef.current);
+  }
+
   function uploadedAttachment(id:string,athleteId:string,reused=false) {
-    setAttachmentOpen(false);setAttachmentPending(false);
-    patchTurns(current=>[...current,{id:crypto.randomUUID(),role:"assistant",text:reused?"Este arquivo já estava anexado. O registro existente foi reutilizado e seus metadados foram preservados.":"Documento anexado ao prontuário do atleta confirmado. O conteúdo não foi enviado à IA.",athletes:[],navigation:null,search:null,draft:null,document:null,readings:null,analysis:null,attachments:{athleteId,ids:[id]}}]);
+    setAttachmentOpen(false);setAttachmentPending(false);setAttachmentPrefill(null);
+    patchTurns(current=>[...current,{id:crypto.randomUUID(),role:"assistant",text:reused?"Este arquivo já estava anexado. O registro existente foi reutilizado e seus metadados foram preservados.":"Anexo clínico registrado no cadastro do atleta confirmado e incluído na linha do tempo. O conteúdo do arquivo não foi enviado à IA.",athletes:[],navigation:null,search:null,draft:null,document:null,readings:null,analysis:null,attachments:{athleteId,ids:[id]}}]);
     queuePersist(athleteId,epochRef.current);
   }
 
@@ -704,6 +726,8 @@ export function IntelligenceHome({
 
   async function send(message: string, inputMode: "text" | "voice" = "text") {
     if(hasPendingAttachment()){setFailure("Conclua ou descarte o anexo pendente antes de enviar outra mensagem.");return;}
+    const upload = uploadRequest(message);
+    if (upload) { requestAttachmentUpload(message, upload); return; }
     const pendingDrafts = loadTurns().flatMap((turn) => turn.draft && turn.draft.contentHash && (turn.draft.state === "proposal" || turn.draft.state === "error")
       ? [{ turnId: turn.id, draft: turn.draft }]
       : []);
@@ -1184,7 +1208,7 @@ export function IntelligenceHome({
               />
             ) : (
               <span className="ia-attach-group">
-                <button type="button" className="ia-attach" disabled={starting || pending} onClick={()=>setAttachmentOpen(true)}><Icon name="clip" size={16}/>Anexar ao prontuário</button>
+                <button type="button" className="ia-attach" disabled={starting || pending} onClick={()=>{setAttachmentPrefill(null);setAttachmentOpen(true);}}><Icon name="clip" size={16}/>Anexar ao prontuário</button>
                 {voiceEnabled ? <ConsultationAudioButton disabled={!enabled || starting || pending} onFile={attachConsultationAudio} /> : null}
               </span>
             )}
@@ -1209,7 +1233,7 @@ export function IntelligenceHome({
               />
             ) : undefined}
           />
-          {attachmentOpen && <AttachmentUpload athleteId={selectedId} base="/api/inteligencia/anexos" ensureSession={ensureAttachmentSession} onSelect={selectAthlete} onClose={()=>{setAttachmentOpen(false);setAttachmentPending(false);}} onSaved={uploadedAttachment} onPending={setAttachmentPending}/>}
+          {attachmentOpen && <AttachmentUpload athleteId={selectedId} base="/api/inteligencia/anexos" initial={attachmentPrefill ?? undefined} ensureSession={ensureAttachmentSession} onSelect={selectAthlete} onClose={()=>{setAttachmentOpen(false);setAttachmentPending(false);setAttachmentPrefill(null);}} onSaved={uploadedAttachment} onPending={setAttachmentPending}/>}
 
         </main>
       </div>

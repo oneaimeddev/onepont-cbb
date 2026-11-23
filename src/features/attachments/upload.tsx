@@ -11,8 +11,11 @@ export function AttachmentUpload({
   onClose,
   onSaved,
   onPending,
+  initial,
 }: {
   athleteId: string | null;
+  /** Fields suggested from a chat request; the professional reviews them before sending. */
+  initial?: { title?: string; category?: string; documentDate?: string | null };
   base?: string;
   ensureSession?: (target: string) => Promise<string>;
   onSelect?: (id: string) => void;
@@ -303,6 +306,7 @@ export function AttachmentUpload({
               Título
               <input
                 name="title"
+                defaultValue={initial?.title ?? ""}
                 required
                 maxLength={160}
                 autoComplete="off"
@@ -314,6 +318,7 @@ export function AttachmentUpload({
               <select
                 aria-label="Categoria"
                 name="category"
+                defaultValue={initial?.category ?? ""}
                 required
                 disabled={busy}
               >
@@ -329,6 +334,7 @@ export function AttachmentUpload({
               Data clínica (opcional)
               <input
                 name="document_date"
+                defaultValue={initial?.documentDate ?? ""}
                 type="date"
                 min="1900-01-01"
                 disabled={busy}
