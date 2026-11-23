@@ -145,14 +145,17 @@ test("conversa por voz com turnos automáticos, controles, rascunho e recuperaç
   expect(voice.live.tokens).toBe(0);
 
   await toggle.click();
-  await expect(state).toContainText("Conectando a voz…");
-  await expect(state).not.toContainText("Ouvindo");
+  // Capture starts at the click: the panel listens while the provider session is still
+  // connecting, and the audio is held locally until the session is ready.
+  await expect(state).toContainText("Ouvindo");
   await expect.poll(() => voice.live.sockets.length).toBe(1);
   expect(voice.live.sockets[0].url).toContain("access_token=auth_tokens%2Foffline-1");
   expect(voice.live.sockets[0].url).not.toContain("key=");
-  await page.waitForTimeout(400);
+  await page.waitForTimeout(600);
   expect(voice.live.frames).toBe(0);
   voice.release();
+  // The speech captured before the handshake is delivered at once instead of being dropped.
+  await expect.poll(() => voice.live.frames, { timeout: 1_000 }).toBeGreaterThanOrEqual(4);
   await expect(state).toContainText("Ouvindo");
   await expect(state).toContainText("Microfone ativo");
   await expect(composer.getByRole("button", { name: "Encerrar conversa por voz" })).toHaveAttribute("aria-pressed", "true");
