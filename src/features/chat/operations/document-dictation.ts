@@ -119,7 +119,8 @@ export async function documentDictation(input: {
     return null;
   }
   if (!input.athleteId || !uuidPattern.test(input.athleteId))
-    return { text: "Para qual atleta? Selecione a pessoa para eu abrir a proposta." };
+    // Without an athlete, the assistant guides the professional with the platform guide.
+    return null;
   const client = await supabaseServer();
   const [profile, current, roster] = await Promise.all([
     client.rpc("medical_profile"),
@@ -129,14 +130,14 @@ export async function documentDictation(input: {
   if (profile.error || current.error || roster.error)
     return { text: "Tive um problema ao abrir a proposta. Pode tentar novamente?" };
   if (profile.data?.enabled !== true)
-    return { text: "Seu perfil precisa de autorização para preparar este documento." };
+    return { text: "Esse documento é preparado pelo perfil médico, e o seu perfil ainda não tem essa autorização. Se quiser, posso ajudar com uma evolução." };
   const athlete = athletesFromDirectory(roster.data).find(({ id }) => id === input.athleteId);
   if (!athlete || current.data?.session?.athleteId !== input.athleteId)
-    return { text: "Selecione o atleta do documento para eu continuar." };
+    return { text: "Me diga para qual atleta é o documento que eu continuo daqui." };
 
   const prompt = documentOpeningQuestion(kind, athlete.name);
   if (continuing === kind && input.previousReply !== prompt && !opening)
-    return { text: "O atleta em contexto mudou. Peça para abrir o cartão para o atleta selecionado." };
+    return { text: "Percebi que o atleta em contexto mudou. Quer que eu abra o cartão para o atleta selecionado agora?" };
 
   const key = input.messageId ?? crypto.randomUUID();
   const payload = kind === "prescription" ? prescriptionPayload("", medication && !opening ? [medication] : [])
@@ -165,6 +166,6 @@ export async function documentDictation(input: {
   });
   const document = presentedDocument(result.data?.document);
   if (result.error || result.data?.error || !document)
-    return { text: "Não consegui abrir a proposta agora. Confira o atleta selecionado e tente novamente." };
+    return { text: "Não consegui abrir a proposta agora. Pode tentar de novo? Se continuar, confira se o atleta certo está em contexto." };
   return { document, text: document.state === "saved" ? "Essa proposta já está salva como rascunho." : nextQuestion };
 }

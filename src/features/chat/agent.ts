@@ -618,21 +618,21 @@ async function prepareConversation(input: unknown) {
     documentPreparation.attempted = true;
     documentPreparation.spoken = Boolean(source);
     const blocked = (fields: string[] = []) => {
-      documentPreparation.notice = "Não preparei nem alterei o documento. Pode dizer qual item você quer incluir e os dados dele? Se forem vários, vamos por partes.";
+      documentPreparation.notice = "Ainda não consegui montar o documento. Me conte qual item você quer incluir e os dados dele; se forem vários, vamos um de cada vez.";
       if (source) {
         const field = fields[0];
-        documentPreparation.notice = field === "athlete_context" ? "Para qual atleta você quer abrir esse cartão?"
-          : field === "item_source" || field === "item_sources" ? "Pode confirmar os itens e os detalhes que pertencem a cada um?"
-          : field === "ambiguous_intent" ? "Quais dados você quer que entrem no cartão?"
-          : field === "field_source" ? "Pode confirmar o dado clínico que deseja registrar?"
-          : "Não consegui preparar o cartão com esses dados. Pode confirmar o que deseja incluir?";
+        documentPreparation.notice = field === "athlete_context" ? "Claro! Para qual atleta é esse documento? Me diga o nome que eu abro o cartão."
+          : field === "item_source" || field === "item_sources" ? "Pode me confirmar os itens e os detalhes de cada um? Assim eu monto o cartão certinho."
+          : field === "ambiguous_intent" ? "Quais informações você quer que entrem no cartão?"
+          : field === "field_source" ? "Pode me confirmar o dado clínico que você quer registrar?"
+          : "Não consegui montar o cartão com essas informações. Pode me dizer de novo o que você quer incluir?";
       }
       return { status: "needs_source" as const, fields };
     };
     const decision = decideAthleteAccess(athleteId, contextAthleteId, searches);
     if (decision !== "allow") {
       const search = searches.findLast((item) => item.ids.includes(athleteId) || item.total > 1);
-      documentPreparation.notice = "Não preparei o documento. Confirme o atleta autorizado antes de continuar.";
+      documentPreparation.notice = "Antes de preparar o documento, preciso saber para qual atleta ele é. Me diga o nome ou escolha um dos atletas abaixo.";
       return { ...unavailable(decision), athletes: decision === "confirm" ? search?.athletes ?? [] : [] };
     }
     const openingOnly = documentCreationRequested(kind, utterance)
@@ -740,13 +740,13 @@ async function prepareConversation(input: unknown) {
     const decision = decideAthleteAccess(athleteId, contextAthleteId, searches);
     if (decision !== "allow") {
       const search = searches.findLast((item) => item.ids.includes(athleteId) || item.total > 1);
-      documentPreparation.notice = "Não preparei o documento. Confirme o atleta autorizado antes de continuar.";
+      documentPreparation.notice = "Antes de preparar o documento, preciso saber para qual atleta ele é. Me diga o nome ou escolha um dos atletas abaixo.";
       return { ...unavailable(decision), athletes: decision === "confirm" ? search?.athletes ?? [] : [] };
     }
     const roster = await client.rpc("agent_presented_athletes", { ids: [athleteId] });
     const intended = athletesFromDirectory(roster.error ? [] : roster.data).find((p) => p.id === athleteId);
     if (!intended || !letterPatientMatches(kind, utterance, intended.name)) {
-      documentPreparation.notice = kind === "certificate" ? "Para qual atleta você quer o atestado?" : "Para qual atleta você quer o encaminhamento?";
+      documentPreparation.notice = kind === "certificate" ? "Claro! Para qual atleta é o atestado? Me diga o nome que eu preparo." : "Claro! Para qual atleta é o encaminhamento? Me diga o nome que eu preparo.";
       return { status: "needs_source" as const, fields: ["athlete_context"] };
     }
     const registered = await client.rpc("chat_document_proposal_create", { target: athleteId, kind, payload: content, message_key: creationTurnKey });
@@ -1282,15 +1282,17 @@ export async function openIntelligenceStream(input: unknown): Promise<{ stream: 
         const saveOnly = !preparation.attempted && !preparation.requested && steps.some((step) => step.toolCalls.some((call) => call.toolName === "saveClinicalDocument"));
         const content = view.document?.content;
         const blankDocument = content && Object.values(content).every((value) => Array.isArray(value) ? value.length === 0 : value === "");
-        const text = prepared.documentActionView() ?? (blankDocument && view.document?.state === "proposal"
+        // A guidance the assistant wrote (offerReplies) answers turns that produced no card.
+        const guided = offered && !view.document && !view.draft && !prepared.documentActionView() ? offered : null;
+        const text = guided ?? prepared.documentActionView() ?? (blankDocument && view.document?.state === "proposal"
           ? documentOpeningQuestion(view.document.kind, view.document.athleteName)
           : preparation.attempted || preparation.requested || medicalDocumentTool
           ? view.document
             ? view.document.readOnlyReason ? "Recuperei o documento somente para consulta. Confira seu estado no prontuário."
               : view.document.state === "saved" ? "Esta proposta já foi salva como rascunho. Recuperei o mesmo documento, sem nova gravação, assinatura ou emissão."
                 : preparation.spoken ? "O cartão está pronto para você conferir."
-                : "Preparei a proposta com os valores informados nesta mensagem. Confira o cartão antes de salvar. Ela não foi gravada no prontuário, assinada ou emitida."
-            : preparation.notice || (saveOnly ? "O salvamento ainda precisa de confirmação. Use “Confirmar e salvar” no cartão que deseja guardar como rascunho." : "Não preparei o documento. Informe os nomes e campos clínicos explicitamente.")
+                : "Pronto! Preparei o cartão com o que você informou. Dê uma conferida antes de salvar: ele ainda não foi gravado no prontuário, assinado ou emitido."
+            : preparation.notice || (saveOnly ? "O salvamento ainda precisa de confirmação. Use “Confirmar e salvar” no cartão que deseja guardar como rascunho." : "Ainda não consegui montar o documento. Me diga para qual atleta é e as informações principais, que eu preparo o cartão para você revisar.")
           : view.document
           ? (modelText || "Organizei uma proposta de documento para revisão. Ela ainda não foi salva.")
           : view.draft?.state === "choose"

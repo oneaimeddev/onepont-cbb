@@ -22,16 +22,16 @@ const spokenDocument: Record<DocumentKind, string> = {
 };
 
 export async function resumeDocumentProposal(athleteId: string | null, proposals: DisplayedProposal[], kind?: DocumentKind) {
-  if (!athleteId) return { text: "Selecione o atleta para retomar o cartão." };
+  if (!athleteId) return { text: "Para retomar o cartão, me diga de qual atleta ele é." };
   const shown = proposals.filter(p => p.athleteId === athleteId && (!kind || p.kind === kind));
-  if (shown.length > 1) return { text: "Há mais de um cartão possível. Selecione o que você quer retomar." };
-  if (shown[0]?.dirty) return { text: "O cartão selecionado está em edição. Continue nele para manter as alterações que você fez." };
+  if (shown.length > 1) return { text: "Encontrei mais de um cartão em andamento. Qual deles você quer retomar?" };
+  if (shown[0]?.dirty) return { text: "Esse cartão está com alterações em andamento. É só continuar nele para não perder o que você já fez." };
   const client = await supabaseServer();
   const read = await client.rpc("chat_document_proposal_read", { request_id: shown[0]?.requestId ?? null, kind: kind ?? null });
   const document = presentedDocument(read.data?.document);
-  if (read.data?.error === "ambiguous") return { text: "Há mais de uma proposta em andamento. Selecione o cartão que você quer retomar." };
+  if (read.data?.error === "ambiguous") return { text: "Há mais de uma proposta em andamento. Qual delas você quer retomar?" };
   if (read.error || !document || document.athleteId !== athleteId)
-    return { text: "Não consegui localizar essa proposta na conversa ativa deste atleta." };
+    return { text: "Não encontrei essa proposta nesta conversa do atleta. Quer que eu abra uma nova?" };
   return { document, text: document.state === "saved" ? "Aqui está o cartão do rascunho salvo." : "Aqui está o cartão com os dados que você já ditou." };
 }
 
