@@ -6,6 +6,7 @@ import { setUnsavedClinicalDraft } from "../clinical/unsaved";
 import { reportModes, type ReportMode } from "../clinical/consultation-report-modes";
 import { discardClinicalDraft, finalizeClinicalDraft, generateConsultationReport, saveClinicalDraft } from "./clinical-draft-actions";
 import { draftSaveMessage, type ClinicalDraft } from "./clinical-draft";
+import { ClinicalText } from "../../components/clinical-text";
 
 function formatDay(value: string) {
   const [year, month, day] = value.split("-");
@@ -173,7 +174,7 @@ export function ClinicalDraftCard({ draft, canFinalize, mandatoryRestriction = f
       ) : (
         <div className="ia-draft-read">
           <p className="ia-draft-title">{draft.title}</p>
-          {draft.body ? <p className="ia-draft-body">{draft.body}</p> : null}
+          {draft.body ? <p className="ia-draft-body"><ClinicalText text={draft.body} /></p> : null}
           {mandatoryRestriction ? <p>Sigilo obrigatório de Psicologia</p> : draft.restricted ? <p>Restrito ao autor</p> : <p>Visível para a equipe de cuidado depois da finalização</p>}
         </div>
       )}

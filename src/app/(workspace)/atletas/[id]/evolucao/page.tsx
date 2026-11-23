@@ -15,6 +15,7 @@ import { ConsultationCapture, ConsultationProcessing } from "../../../../../feat
 import { consultationSpecialty } from "../../../../../features/clinical/consultation-prompt";
 import { getAccess, requireProfile } from "../../../../../lib/profile";
 import { supabaseServer } from "../../../../../lib/supabase";
+import { ClinicalText } from "../../../../../components/clinical-text";
 
 type HistoryEntry = {
   version: number;
@@ -129,7 +130,7 @@ export default async function EvolutionPage({
       {record && published && (
         <section aria-label="Conteúdo vigente">
           <h2>{record.title}</h2>
-          <p className="record-body">{record.body}</p>
+          <p className="record-body"><ClinicalText text={record.body} /></p>
           <p>
             {record.has_signature
               ? `Versão assinada ${record.signed_version}. As correções vinculadas preservam o conteúdo assinado.`
@@ -147,7 +148,7 @@ export default async function EvolutionPage({
           {record.linked_corrections?.map((c) => (
             <section key={c.version} aria-label="Correção vinculada">
               <h3>{c.title}</h3>
-              <p className="record-body">{c.body}</p>
+              <p className="record-body"><ClinicalText text={c.body} /></p>
               <p>
                 {c.actor_name} · {eventDate.format(new Date(c.created_at))} ·{" "}
                 {c.reason}
@@ -256,7 +257,7 @@ export default async function EvolutionPage({
         record && (
           <section aria-label="Conteúdo vigente">
             <h2>{record.title}</h2>
-            <p className="record-body">{record.body}</p>
+            <p className="record-body"><ClinicalText text={record.body} /></p>
             <p>Somente leitura.</p>
           </section>
         )
@@ -282,7 +283,7 @@ export default async function EvolutionPage({
               </p>
               {v.reason && <p>Motivo: {v.reason}</p>}
               <strong>{v.title}</strong>
-              <p className="record-body">{v.body}</p>
+              <p className="record-body"><ClinicalText text={v.body} /></p>
             </section>
           ))}
         </details>

@@ -307,6 +307,7 @@ button.ghost-link { border: 0; background: transparent; cursor: pointer; font: i
 .timeline .pill-draft { background: transparent; color: #6b5400; box-shadow: none; }
 .timeline .clinical-link { display: inline-flex; min-height: 44px; align-items: center; }
 .record-body { white-space: pre-wrap; margin-top: .5rem; padding: .875rem 1rem; border-radius: var(--radius); background: var(--surface); color: var(--ink); }
+.clinical-title { font-weight: 700; color: inherit; }
 
 .audit-entry strong { color: var(--cbb-navy); font-weight: 600; letter-spacing: -.014em; }
 .audit-list { border: 0; background: transparent; }

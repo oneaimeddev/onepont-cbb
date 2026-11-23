@@ -11,6 +11,7 @@ import {
   updateProfileQuery,
   profileFilterDate,
 } from "./profile-dates";
+import { ClinicalText } from "../../components/clinical-text";
 type RecordEntry = NonNullable<AthleteWorkspace["records"]>[number];
 
 /** Medical document shown in the timeline next to the evolutions, opened in its read-only view. */
@@ -88,9 +89,9 @@ function RecordRow({ record, target, canWrite, base }: { record: RecordEntry; ta
               </time>
               {record.content_restricted ? <p>Conteúdo restrito</p> : <details open={target === record.id}>
                 <summary>{record.title}</summary>
-                <p className="record-body">{record.body}</p>
+                <p className="record-body"><ClinicalText text={record.body} /></p>
                 {record.linked_corrections?.map((correction) => <section key={correction.version} aria-label="Correção vinculada">
-                  <h4>{correction.title}</h4><p className="record-body">{correction.body}</p>
+                  <h4>{correction.title}</h4><p className="record-body"><ClinicalText text={correction.body} /></p>
                   <p>{correction.actor_name} · {correction.reason}</p>
                 </section>)}
                 <Link className="clinical-link" prefetch={false} href={`${base}/evolucao?registro=${record.id}`}>

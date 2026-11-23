@@ -7,6 +7,7 @@ import { LetterSheet } from "../documents/letter-sheet";
 import { certificateLetter, referralLetter } from "../documents/letter-format";
 import { isDocumentKind, presentedCertificate, presentedReferral } from "./document-draft";
 import type { ReadingBoard, ReadingKind } from "./document-resolution";
+import { ClinicalText } from "../../components/clinical-text";
 
 type MedicationView = {
   name: string;
@@ -290,7 +291,7 @@ export function ClinicalReadings({ board, onMore, morePending }: {
                   {item.kind === "evolution" ? (
                     <dl>
                       <Field label="Especialidade" value={view.specialty} />
-                      <Field label="Registro" value={view.body} />
+                      {view.body ? <div><dt>Registro</dt><dd className="clinical-reading-body"><ClinicalText text={view.body} /></dd></div> : null}
                       {view.truncated ? <div><dt>Continuação</dt><dd>O restante permanece no prontuário.</dd></div> : null}
                       {view.restricted ? <div><dt>Visibilidade</dt><dd>Restrito ao autor</dd></div> : null}
                     </dl>
