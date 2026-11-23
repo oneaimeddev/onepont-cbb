@@ -26,7 +26,8 @@ export async function submitEvolution(
     if (access.status !== 200) return { ok: false, error: "denied" };
     const athlete = String(form.get("athlete") ?? ""),
       record = String(form.get("record") ?? ""),
-      request = String(form.get("request") ?? "");
+      request = String(form.get("request") ?? ""),
+      capture = String(form.get("capture") ?? "");
     const version = Number(form.get("version")),
       intent = String(form.get("intent") ?? "");
     const title = String(form.get("title") ?? "").trim(),
@@ -35,6 +36,7 @@ export async function submitEvolution(
       !uuidPattern.test(athlete) ||
       !uuidPattern.test(request) ||
       (record && !uuidPattern.test(record)) ||
+      (capture && (!uuidPattern.test(capture) || process.env.CONSULTATION_VOICE_BETA !== "1")) ||
       !Number.isInteger(version) ||
       version < 0 ||
       (intent !== "draft" && intent !== "finalize") ||
@@ -45,7 +47,8 @@ export async function submitEvolution(
     )
       return { ok: false, error: "invalid" };
     const client = await supabaseServer();
-    const result = await client.rpc("evolution_submit", {
+    const result = await client.rpc(capture ? "consultation_submit" : "evolution_submit", {
+      ...(capture ? { capture_id: capture } : {}),
       target: athlete,
       record_id: record || null,
       request_id: request,

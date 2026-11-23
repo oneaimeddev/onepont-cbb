@@ -100,22 +100,30 @@ export function workflowIntent(message: string) {
     /\b(confirmar e salvar|salvar)\b/.test(header)
   )
     return false;
-  return /\b(assine|assinar|assinatura|identidade|certificado|envie|enviar|enviado|whatsapp|entrega|derivado|reenviar|reenvie|confirmo|confirmar|conectar assinatura|tente novamente|sim|cancelar operacao|cancele a operacao|retome|retomar)\b/.test(
+  return /^(?:sim|confirmo)\b/.test(header) || /\b(assine|assinar|assinatura|identidade|certificado|envie|enviar|envio|enviado|whatsapp|entrega|derivado|reenviar|reenvie|conectar assinatura|tente novamente|cancelar operacao|cancele a operacao|retome a operacao autorizada|retomar a operacao autorizada)\b/.test(
     header,
   );
 }
+const recipientBlocked = "Ainda falta um destinatário autorizado para esta entrega.";
+const recipientHelp = "Abra o cadastro existente para conferir os dados do atleta ou responsável. Depois volte e diga “Retomar a preparação do envio”.";
+
 export async function workflowConversation(input: {
   message: string;
   athleteId: string | null;
   proposals: DisplayedProposal[];
   messageId?: string;
   inputMode?: "text" | "voice";
+  previousReply?: string;
 }) {
-  if (!workflowIntent(input.message)) return null;
+  const text = foldName(input.message);
+  const blockedRecipient = input.previousReply?.startsWith(recipientBlocked) === true;
+  const followRecipient = blockedRecipient && /^(?:(?:certo|ok|sim) )?(?:vamos resolver(?: isso)?|como (?:corrijo|resolvo)(?: isso)?)$/.test(text);
+  const resumeRecipient = /^retom(?:e|ar) a preparacao do envio$/.test(text);
+  if (!followRecipient && !workflowIntent(input.message)) return null;
   if (
     !input.proposals.length &&
     !/\b(assine|assinar|assinatura|identidade|certificado|documento|prescricao|receita|exames|cirurgico|whatsapp|entrega|derivado)\b/.test(
-      foldName(input.message),
+      text,
     )
   )
     return null;
@@ -123,12 +131,11 @@ export async function workflowConversation(input: {
     text: string,
     document: ReturnType<typeof presentedDocument> = null,
   ) => ({ text, document });
-  const text = foldName(input.message),
-    kinds = [
-      /\b(prescricao|receita)\b/.test(text) ? "prescription" : null,
-      /\bexames?\b/.test(text) ? "exam_request" : null,
-      /\bcirurgico\b/.test(text) ? "surgical_order" : null,
-    ].filter(Boolean);
+  const kinds = [
+    /\b(prescricao|receita)\b/.test(text) ? "prescription" : null,
+    /\bexames?\b/.test(text) ? "exam_request" : null,
+    /\bcirurgico\b/.test(text) ? "surgical_order" : null,
+  ].filter(Boolean);
   const candidates = [
     ...new Map(
       input.proposals
@@ -155,6 +162,12 @@ export async function workflowConversation(input: {
       "Esta versão não está disponível. Confira seu acesso, o contexto e a versão atual do cartão.",
     );
   const { document, sessionId } = view;
+  const recipientGuidance = () => ({
+    ...reply(recipientBlocked + " " + recipientHelp, document),
+    navigation: { id: document.athleteId, name: document.athleteName, href: `/atletas/${document.athleteId}?aba=cadastro` },
+  });
+  if (followRecipient || (blockedRecipient && /^(sim|confirmo|retom(?:e|ar) a operacao autorizada)\b/.test(text)))
+    return recipientGuidance();
   if (
     /\b(assine|assinar)\b/.test(text) &&
     !creationPatientMatches(input.message, document.athleteName) &&
@@ -173,7 +186,7 @@ export async function workflowConversation(input: {
     /\b(ja foi|foi enviado)\b/.test(text)
   )
     return reply(statusText(view.workflow), document);
-  if (input.inputMode === "voice" && /^(sim|confirmo)\b/.test(text))
+  if (input.inputMode === "voice" && /^(sim|confirmo|retom(?:e|ar) a operacao autorizada)\b/.test(text))
     return reply(
       "Confira a versão e o resumo no cartão. Para autorizar assinatura, entrega, reenvio ou derivação, envie a confirmação por texto neste chat.",
       document,
@@ -250,7 +263,7 @@ export async function workflowConversation(input: {
       document,
     );
   let state = view.state;
-  if (requiresNewReview && state?.authorization) state = null;
+  if ((requiresNewReview || resumeRecipient) && state?.authorization) state = null;
   if (/^retom(?:e|ar) a operacao autorizada$/.test(text)) {
     const authorization = state?.authorization;
     if (!authorization)
@@ -348,7 +361,7 @@ export async function workflowConversation(input: {
       "Não foi possível recuperar a revisão atual. Peça uma nova revisão.",
       document,
     );
-  if (/\b(envie|enviar|whatsapp|sem envio|nao envie|nao enviar)\b/.test(text)) {
+  if (resumeRecipient || /\b(envie|enviar|whatsapp|sem envio|nao envie|nao enviar|preparar o envio)\b/.test(text)) {
     if (
       /\bpara\b/.test(text) &&
       !/\bpara (o atleta|a atleta|o responsavel|a responsavel|o destinatario apresentado)\b/.test(
@@ -376,11 +389,9 @@ export async function workflowConversation(input: {
       revision: state.workspace.revision,
       requested,
     });
-    if (r?.error)
-      return reply(
-        "Não há destinatário elegível para esta entrega. Confira o cadastro e a política para atleta ou responsável.",
-        document,
-      );
+    if (r?.error === "recipient_unavailable") return recipientGuidance();
+    if (!r || r.error)
+      return reply("Não foi possível atualizar a entrega. Abra a revisão e retome a preparação do envio.", document);
     state = r;
   }
   if (!state?.workspace.identityId)

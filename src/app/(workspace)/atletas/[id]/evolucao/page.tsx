@@ -1,3 +1,4 @@
+import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
 import { randomUUID } from "node:crypto";
 import { notFound } from "next/navigation";
@@ -10,7 +11,9 @@ import { SubmitButton } from "../../../../../components/submit-button";
 import { ClinicalDraftWatch } from "../../../../../features/clinical/draft-watch";
 import { correctEvolution } from "./actions";
 import { EvolutionForm } from "../../../../../features/clinical/evolution-form";
-import { requireProfile } from "../../../../../lib/profile";
+import { ConsultationCapture, ConsultationProcessing } from "../../../../../features/clinical/consultation-capture";
+import { consultationSpecialty } from "../../../../../features/clinical/consultation-prompt";
+import { getAccess, requireProfile } from "../../../../../lib/profile";
 import { supabaseServer } from "../../../../../lib/supabase";
 
 type HistoryEntry = {
@@ -27,10 +30,10 @@ export default async function EvolutionPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ registro?: string; erro?: string; salvo?: string }>;
+  searchParams: Promise<{ registro?: string; erro?: string; salvo?: string; modo?: string; consulta?: string }>;
 }) {
   const { id } = await params;
-  const { registro, erro, salvo } = await searchParams;
+  const { registro, erro, salvo, modo, consulta } = await searchParams;
   const context = await getAthlete(id, "timeline");
   const profile = await requireProfile();
   if (!registro && !context.can_write) notFound();
@@ -53,6 +56,22 @@ export default async function EvolutionPage({
       throw new Error("Não foi possível consultar o histórico da evolução.");
     history = versions.data.versions;
   }
+  const voiceAvailable = !registro && context.can_write && context.athlete.source === "demo"
+    && process.env.CONSULTATION_VOICE_BETA === "1" && Boolean(consultationSpecialty(profile.profession));
+  const access = voiceAvailable && modo === "voz" ? await getAccess() : null;
+  let voiceReview: { body: string; transcript: string; specialty: string } | null = null;
+  if (access?.status === 200 && consulta) {
+    if (!uuidPattern.test(consulta)) notFound();
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!url || !serviceKey) notFound();
+    const admin = createClient(url, serviceKey, { auth: { persistSession: false } });
+    const result = await admin.rpc("consultation_work", {
+      actor: access.userId, target: id, capture_id: consulta, action: "status",
+    });
+    if (result.error || !result.data || result.data.error) notFound();
+    if (result.data.state === "ready") voiceReview = result.data;
+  }
   const published = record?.status === "finalized";
   const editable = record ? Boolean(record.can_edit) : context.can_write;
   return (
@@ -64,8 +83,11 @@ export default async function EvolutionPage({
       <Link className="back-link" href={`/atletas/${id}?aba=timeline`}>
         Voltar ao atleta
       </Link>
+      {(modo === "voz" || registro) && <Link className="back-link" href={`/?atleta=${id}`} prefetch={false}>Voltar ao CBB Intelligence</Link>}
       <h1>
-        {record
+        {voiceReview
+          ? "Revisar evolução por voz"
+          : record
           ? published
             ? !editable
               ? "Evolução registrada"
@@ -88,6 +110,11 @@ export default async function EvolutionPage({
           </small>
         )}
       </div>
+      {voiceAvailable && (
+        <Link className="back-link" href={modo === "voz" ? `/atletas/${id}/evolucao` : `/atletas/${id}/evolucao?modo=voz`}>
+          {modo === "voz" ? "Preencher evolução manualmente" : "Registrar consulta por voz"}
+        </Link>
+      )}
       {erro && (
         <p role="alert">
           Não foi possível salvar. O registro ou suas permissões podem ter
@@ -184,6 +211,34 @@ export default async function EvolutionPage({
             </form>
           </ClinicalDraftWatch>
         )
+      ) : voiceReview ? (
+        <>
+          <section className="evolution-review" aria-label="Revisão da consulta por voz">
+            <p>Especialidade utilizada: {voiceReview.specialty}</p>
+            <p>Confira as informações antes de salvar ou finalizar.</p>
+            {voiceReview.transcript?.includes("[inaudível]") && <p role="status">A transcrição contém trechos inaudíveis.</p>}
+            <details>
+              <summary>Conferir transcrição</summary>
+              <p className="record-body">{voiceReview.transcript}</p>
+            </details>
+            {consulta && <ConsultationProcessing athlete={id} session={consulta} regenerate />}
+          </section>
+          <EvolutionForm
+            key={voiceReview.body}
+            athleteId={id}
+            consultationId={consulta}
+            requestId={randomUUID()}
+            recordId={null}
+            version={0}
+            title="Evolução da consulta"
+            body={voiceReview.body}
+            restricted={Boolean(context.psychology_required)}
+            mandatoryRestriction={Boolean(context.psychology_required || voiceReview.specialty === "Psicologia")}
+            canFinalize={context.can_finalize}
+          />
+        </>
+      ) : access?.status === 200 ? (
+        <ConsultationCapture athlete={id} owner={access.userId} label={`${context.athlete.social_name || context.athlete.full_name} · ${profile.profession}`} />
       ) : editable ? (
         <EvolutionForm
           key={`${record?.id ?? "new"}:${record?.version ?? 0}`}

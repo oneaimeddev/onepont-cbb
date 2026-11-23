@@ -8,6 +8,7 @@ import {
 } from "./helpers/workflow-fixtures.mjs";
 import {
   resolveProposalEdit,
+  resolveSpokenEdit,
   proposalIntent,
 } from "../src/features/chat/operations/document-intent.ts";
 import {
@@ -417,4 +418,34 @@ test("card save preserves one real human confirmation event across retries", () 
       method: "human_ui",
     },
   ]);
+});
+
+test("edição conversacional usa o item da receita ou do exame selecionado", () => {
+  const id = randomUUID();
+  const rx = { kind: "prescription", content: { items: [{ id, name: "Alfa", dose: "20", dose_unit: "mg" }] } };
+  expect(resolveSpokenEdit("A dose passa a ser 15 mg.", rx, [{ field: "dose", value: "15" }])).toEqual({ changes: [
+    { operation: "set_field", field: "dose", value: "15", itemId: id },
+  ] });
+  const exams = { kind: "exam_request", content: { items: [
+    { id, name: "Hemograma", notes: "" }, { id: randomUUID(), name: "Ferritina", notes: "" },
+  ] } };
+  expect(resolveSpokenEdit("No hemograma, o nome é hemograma completo.", exams,
+    [{ field: "nome", item: "hemograma", value: "hemograma completo" }])).toEqual({ changes: [
+    { operation: "set_field", field: "name", itemId: id, value: "hemograma completo" },
+  ] });
+  expect(resolveSpokenEdit("Agora é hemograma completo.", exams, [{ field: "nome", value: "hemograma completo" }])).toHaveProperty("clarification");
+});
+
+test("uma troca de lado sem região ditada preserva o alvo do cartão e pede a região se houver vários locais", () => {
+  const message = "lateralidade e vamos colocar para o direito.";
+  const edit = [{ field: "lateralidade", value: "direito" }];
+  const card = { kind: "surgical_order", content: { region: "joelho esquerdo", procedure: "artroscopia do joelho esquerdo", laterality: "left" } };
+  const result = resolveSpokenEdit(message, card, edit);
+  expect(result.changes).toEqual(expect.arrayContaining([
+    { operation: "set_field", field: "laterality", value: "right" },
+    { operation: "set_field", field: "region", value: "joelho direito" },
+    { operation: "set_field", field: "procedure", value: "artroscopia do joelho direito" },
+  ]));
+  const multiple = { ...card, content: { ...card.content, procedure: "avaliação de joelho esquerdo e tornozelo direito" } };
+  expect(resolveSpokenEdit(message, multiple, edit)).toHaveProperty("clarification");
 });

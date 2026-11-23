@@ -5,6 +5,8 @@ import type { VoiceStatus } from "./use-voice-session";
 const labels: Record<VoiceStatus, string> = {
   inactive: "Voz desligada",
   connecting: "Conectando a voz…",
+  reconnecting: "Reconectando a voz…",
+  responding: "Respondendo",
   listening: "Ouvindo",
   transcribing: "Transcrevendo",
   processing: "Processando a resposta",
@@ -99,7 +101,7 @@ export function VoicePanel({
         <p className="ia-voice-state" role="status" aria-live="polite">
           <span className="ia-voice-dot" aria-hidden="true" />
           <strong>{labels[status]}</strong>
-          <span className="ia-voice-mic">{muted ? "Microfone silenciado" : "Microfone ativo"}</span>
+          {status !== "connecting" ? <span className="ia-voice-mic">{muted ? "Microfone silenciado" : "Microfone ativo"}</span> : null}
           {deviceLabel ? <span className="ia-voice-device">{deviceLabel}</span> : null}
           {capture === "hearing" && !muted ? (
             <span className="ia-voice-level" aria-hidden="true"><span style={{ width: `${Math.round(Math.min(level, 1) * 100)}%` }} /></span>
@@ -112,7 +114,7 @@ export function VoicePanel({
           </label>
           <button type="button" onClick={onMute} disabled={status === "connecting"} aria-pressed={muted}>
             <Icon name={muted ? "mic" : "micOff"} size={16} />
-            {muted ? "Reativar" : "Silenciar"}
+            {muted ? "Retomar" : "Pausar"}
           </button>
           <button type="button" className="ia-voice-end" onClick={onStop}>
             <Icon name="stop" size={14} />
@@ -121,14 +123,14 @@ export function VoicePanel({
         </div>
       </div>
       {partial ? <p className="ia-voice-partial" aria-live="off">{partial}</p> : null}
-      {held ? (
+      {held || partial ? (
         <div className="ia-voice-held">
-          <p><span className="ia-sr">Transcrição a enviar: </span>{held}</p>
+          {held ? <p><span className="ia-sr">Transcrição a enviar </span>{held}</p> : null}
           <button type="button" onClick={onCorrect}>Corrigir</button>
         </div>
       ) : null}
       {capture === "silent" && !muted ? <p className="ia-voice-warning" role="status">Esse microfone não está captando som. No Windows, confira o dispositivo de entrada e se o volume dele não está em zero.</p> : null}
-      {capture === "blocked" && !muted ? <p className="ia-voice-warning" role="status">O navegador não está enviando áudio. Abra localhost:3000 no Chrome ou no Edge, fora da janela do editor.</p> : null}
+      {capture === "blocked" && !muted ? <p className="ia-voice-warning" role="status">O navegador não está enviando áudio. Confira a permissão de microfone ou continue por texto.</p> : null}
       {idleWarning ? <p className="ia-voice-warning" role="alert">Sem atividade. A voz será encerrada em instantes.</p> : null}
     </section>
   );

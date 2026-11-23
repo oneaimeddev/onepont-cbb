@@ -8,7 +8,6 @@ import {
 let f, provider, script, session;
 const falseClaim = "Documento salvo e assinado!";
 test.beforeAll(async () => {
-  f = await workflowFixture();
   provider = createServer(async (request, response) => {
     if (request.url !== "/v1/chat/completions" || request.method !== "POST") {
       response.writeHead(404).end();
@@ -56,9 +55,10 @@ test.beforeAll(async () => {
 test.afterAll(async () => {
   provider?.closeAllConnections();
   await new Promise((resolve) => provider.close(resolve));
-  await f?.cleanup();
 });
+test.afterEach(async () => { await f?.cleanup(); });
 test.beforeEach(async ({ page }) => {
+  f = await workflowFixture();
   session = (await f.rpc("conversation_start", {})).session.id;
   await f.rpc("conversation_set_context", { context_athlete: f.athlete });
   await page.goto("/login");
@@ -377,4 +377,67 @@ test("controlled SDK cannot stream a false creation claim for a professional wit
       `select count(*) from clinical.document_proposals where actor_id='${f.other.id}'`,
     ),
   ).toBe("0");
+});
+
+test("fonte por item permite ditado livre e impede transferir dose entre medicamentos", async ({ page }) => {
+  const items = [{ name: "alfa demo", dose: "10", dose_unit: "mg" }, { name: "beta demo", dose: "25", dose_unit: "mg" }];
+  const source = { action: "create", itemQuotes: ["alfa demo 10 mg", "beta demo 25 mg"] };
+  const message = "Pro cartão dele eu queria alfa demo 10 mg e depois beta demo 25 mg, tudo junto.";
+  choose("preparePrescription", { athleteId: f.athlete, source, items });
+  const ok = await send(page, message);
+  expect(ok.body.document.content.items).toMatchObject(items);
+  choose("preparePrescription", { athleteId: f.athlete, source, items: [{ ...items[0], dose: "25" }, items[1]] });
+  expect((await send(page, message)).body.document).toBeNull();
+  choose("preparePrescription", { athleteId: f.athlete, source, items });
+  expect((await send(page, message + " Isso é para Outra Pessoa.")).body.document).toBeNull();
+  choose("preparePrescription", {
+    athleteId: f.athlete,
+    source: { action: "create", itemQuotes: ["alfa demo 0,5mg"] },
+    items: [{ name: "alfa demo", dose: "5", dose_unit: "mg" }],
+  });
+  expect((await send(page, "Pro cartão dele eu queria alfa demo 0,5mg.")).body.document).toBeNull();
+  expect(count()).toBe(1);
+});
+
+test("retoma a mesma proposta após confirmação interrompida e salva o pedido selecionado", async ({ page }) => {
+  const exam = (await send(page, "Peça uma ressonância do joelho direito. Coloca também um hemograma no mesmo pedido.")).body.document;
+  const shown = { requestId: exam.requestId, kind: exam.kind, athleteId: exam.athleteId, contentHash: exam.contentHash, version: exam.version };
+  for (const message of ["Perfeito, pode confirmar e salvar, peraí, vou abrir outro depois.", "Pode confirmar e salvar o pedido cirúrgico."]) {
+    expect((await send(page, message, randomUUID(), [shown], "voice")).body.document).toEqual(exam);
+  }
+  choose("resumeDocumentProposal", { kind: "exam_request" });
+  const resumed = await send(page, "Abre para mim o pedido de exame que nós estávamos trabalhando.");
+  expect(resumed.body.document).toEqual(exam);
+  const saved = await send(page, "Perfeito. Pode confirmar e salvar.", randomUUID(), [shown], "voice");
+  expect(saved.body.document).toMatchObject({ state: "saved", requestId: exam.requestId, content: exam.content });
+  expect(count()).toBe(1);
+});
+
+test("corrige a lateralidade no mesmo pedido cirúrgico sem redigitar o procedimento", async ({ page }) => {
+  const original = (await send(page, "Vamos abrir um pedido cirúrgico de artroscopia do joelho esquerdo.")).body.document;
+  const shown = { requestId: original.requestId, kind: original.kind, athleteId: original.athleteId, contentHash: original.contentHash, version: original.version };
+  const message = "Ah, desculpa, vamos corrigir. O joelho é direito.";
+  const edit = value => choose("editDocumentProposal", { kind: "surgical_order", edits: [{ field: "lateralidade", value, anatomy: "joelho" }] });
+  edit("esquerdo");
+  expect((await send(page, message, randomUUID(), [shown], "voice")).body.document).toBeNull();
+  edit("direito");
+  const corrected = (await send(page, message, randomUUID(), [shown], "voice")).body.document;
+  expect(corrected).toMatchObject({
+    requestId: original.requestId, version: original.version + 1, state: "proposal",
+    content: { ...original.content, procedure: "artroscopia do joelho direito", laterality: "right" },
+  });
+  expect(count()).toBe(1);
+});
+
+test("retoma o cartão e corrige o lado sem repetir a região anatômica", async ({ page }) => {
+  const original = (await send(page, "Vamos abrir um pedido cirúrgico de artroscopia do joelho esquerdo.")).body.document;
+  choose("resumeDocumentProposal", { kind: "surgical_order" });
+  const resumed = (await send(page, "Perfeito, vamos confirmar qual que é o pedido que a gente está trabalhando agora?")).body.document;
+  expect(resumed).toEqual(original);
+  const shown = { requestId: resumed.requestId, kind: resumed.kind, athleteId: resumed.athleteId, contentHash: resumed.contentHash, version: resumed.version };
+  choose("editDocumentProposal", { kind: "surgical_order", edits: [{ field: "lateralidade", value: "direito" }] });
+  const corrected = (await send(page, "Isso, e aí vamos alterar a lateralidade para direito do do pedido.", randomUUID(), [shown], "voice")).body.document;
+  expect(corrected).toMatchObject({ requestId: original.requestId, version: original.version + 1,
+    content: { ...original.content, procedure: "artroscopia do joelho direito", laterality: "right" } });
+  expect(count()).toBe(1);
 });

@@ -428,3 +428,73 @@ export function groundDocumentCreation(
     ? { ok: false, fields: [...new Set(errors)] }
     : { ok: true, content: output as unknown as DocumentContent };
 }
+
+export type SpokenSource = {
+  action: "open" | "create" | "fill";
+  itemQuotes: string[];
+  patientName?: string;
+};
+
+export function spokenPatientMatches(message: string, name: string, reported?: string) {
+  if (reported && (!foldName(reported) || !nameMatches(name, reported))) return false;
+  // Check explicit recipients independently of the model. A pronoun refers to
+  // the server-selected athlete. Anatomy following "do/da" is not a recipient.
+  const recipients = /\b(?:[Pp]ara|[Pp]ra|[Pp]ro)\s+(?:(?:o|a)\s+)?(?:(atleta|paciente)\s+)?(\p{L}+(?:\s+\p{Lu}[\p{Ll}\p{M}]+)*)/gu;
+  for (const [, role, candidate] of message.matchAll(recipients)) {
+    if (!role && !/^\p{Lu}/u.test(candidate)) continue;
+    if (/^(?:em contexto|selecionad[oa]|em|ele|ela)$/iu.test(candidate)) continue;
+    if (!nameMatches(name, candidate)) return false;
+  }
+  return true;
+}
+
+// The model assigns meaning. The server accepts only clinical values that
+// occur in the user's turn, with a separate, non-overlapping span per item.
+export function groundSpokenContent(content: DocumentContent, message: string, source: SpokenSource, itemId: (index: number) => string): Grounded {
+  const fail = (field: string): Grounded => ({ ok: false, fields: [field] });
+  if (/(?:^|[;\n])\s*(?:medicamento|exame|procedimento)\s*:/iu.test(message)) return fail("structured_source");
+  const words = foldName(message);
+  if (/\b(?:nao|exceto|evite|talvez|hipoteticamente)\b/.test(words)) return fail("ambiguous_intent");
+  const output = structuredClone(content);
+  const items = "items" in output ? output.items : [];
+  if (items.length !== source.itemQuotes.length) return fail("item_sources");
+  function literal(span: string, value: string, key?: string) {
+    // A numeric field must cover the whole decimal, including when the
+    // clinician dictates the unit directly after it ("0,5mg").
+    const number = /^\d+(?:[.,]\d+)?$/u.test(value);
+    const before = key === "dose_unit" ? "(?<![\\p{L}])" : "(?<![\\p{L}\\p{N}])";
+    const after = number && key === "dose" ? "(?!\\p{N})" : "(?![\\p{L}\\p{N}])";
+    const pattern = before + (number ? "(?<!\\d[.,])" : "") + escaped(value)
+      + (number ? "(?![.,]\\d)" : "") + after;
+    return span.match(new RegExp(pattern, "iu"))?.[0];
+  }
+  function verify(fields: Record<string, unknown>, span: string) {
+    for (const [key, value] of Object.entries(fields)) {
+      if (key === "id" || key === "items" || !value) continue;
+      if (typeof value !== "string") return false;
+      const aliases = enums[key as Field];
+      if (aliases) {
+        if (!Object.entries(aliases).some(([word, mapped]) => mapped === value && literal(foldName(span), word))) return false;
+      } else {
+        const original = literal(span, value, key);
+        if (!original) return false;
+        fields[key] = original;
+      }
+    }
+    return true;
+  }
+  const spans: [number, number][] = [];
+  for (const [i, item] of items.entries()) {
+    const quote = source.itemQuotes[i].trim();
+    const start = message.indexOf(quote);
+    const end = start + quote.length;
+    if (!quote || !item.name || negatedName(message, item.name) || start < 0 || message.indexOf(quote, start + 1) >= 0 ||
+        spans.some(([a,b]) => start < b && end > a) || !verify(item, quote)) return fail("item_source");
+    spans.push([start, end]);
+    item.id = itemId(i);
+  }
+  if (!verify(output, message)) return fail("field_source");
+  const empty = Object.values(output).every(value => Array.isArray(value) ? !value.length : !value);
+  if (empty !== (source.action === "open")) return fail("document_contents");
+  return { ok: true, content: output };
+}

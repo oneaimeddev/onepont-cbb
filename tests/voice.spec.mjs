@@ -1,13 +1,14 @@
 import { randomUUID } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { mkdirSync } from "node:fs";
-import { expect, request, test } from "./fixtures.mjs";
+import { expect, request, stubMicrophone, test } from "./fixtures.mjs";
 import { createClient } from "@supabase/supabase-js";
 import { localSupabase } from "../scripts/local-supabase.mjs";
 
 const admin = createClient(localSupabase.url, localSupabase.adminKey, { auth: { persistSession: false } });
 const users = [];
 const athlete = randomUUID();
+const handoffAthlete = randomUUID();
 const shots = "docs/visual/handoff-007-5-1";
 const socketUrl = "wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContentConstrained";
 
@@ -102,10 +103,11 @@ async function mockAgent(page) {
 
 test.afterAll(async () => {
   const ids = users.map((id) => `'${id}'`).join(",");
-  if (ids) sql(`delete from clinical.conversation_messages where session_id in (select id from clinical.conversation_sessions where professional_id in (${ids}));
+  if (ids) sql(`delete from clinical.consultation_sessions where athlete_id in ('${athlete}', '${handoffAthlete}');
+    delete from clinical.conversation_messages where session_id in (select id from clinical.conversation_sessions where professional_id in (${ids}));
     delete from clinical.conversation_sessions where professional_id in (${ids});
-    delete from clinical.audit_events where actor_user_id in (${ids}) or athlete_id = '${athlete}';
-    delete from clinical.athletes where id = '${athlete}';`);
+    delete from clinical.audit_events where actor_user_id in (${ids}) or athlete_id in ('${athlete}', '${handoffAthlete}');
+    delete from clinical.athletes where id in ('${athlete}', '${handoffAthlete}');`);
   for (const id of users) await admin.auth.admin.deleteUser(id);
 });
 
@@ -215,7 +217,7 @@ test("conversa por voz com turnos automáticos, controles, rascunho e recuperaç
   expect(agent.calls.at(-1)).toMatchObject({ inputMode: "text" });
   await expect(state).toContainText("Ouvindo");
 
-  const muteButton = panel.getByRole("button", { name: "Silenciar" });
+  const muteButton = panel.getByRole("button", { name: "Pausar" });
   await muteButton.click();
   await expect(state).toContainText("Microfone silenciado");
   await expect(state).not.toContainText("Ouvindo");
@@ -224,7 +226,7 @@ test("conversa por voz com turnos automáticos, controles, rascunho e recuperaç
   await page.waitForTimeout(600);
   expect(voice.live.frames).toBe(frozen);
   await page.screenshot({ path: `${shots}/silenciado.png` });
-  await panel.getByRole("button", { name: "Reativar" }).click();
+  await panel.getByRole("button", { name: "Retomar" }).click();
   await expect(state).toContainText("Ouvindo");
   await expect.poll(() => voice.live.frames).toBeGreaterThan(frozen);
 
@@ -239,9 +241,16 @@ test("conversa por voz com turnos automáticos, controles, rascunho e recuperaç
   voice.final("Dor no joelho direito.");
   await panel.getByRole("button", { name: "Corrigir" }).click();
   await expect(field).toHaveValue("Dor no joelho direito.");
-  await page.waitForTimeout(1500);
   expect(agent.calls).toHaveLength(13);
-  await field.fill("");
+  await field.fill("Dor no joelho esquerdo.");
+  await field.press("Enter");
+  await expect.poll(() => agent.calls.length).toBe(14);
+  expect(agent.calls.at(-1)).toMatchObject({
+    inputMode: "voice",
+    contextAthleteId: athlete,
+  });
+  expect(agent.calls.at(-1).messages.at(-1).content).toBe("Dor no joelho esquerdo.");
+  await panel.getByRole("button", { name: "Retomar" }).click();
 
   const requestId = randomUUID();
   agent.replies.push({
@@ -267,7 +276,7 @@ test("conversa por voz com turnos automáticos, controles, rascunho e recuperaç
   await page.screenshot({ path: `${shots}/rascunho-por-voz.png` });
   agent.replies.push({ text: "A gravação depende da sua confirmação no cartão." });
   voice.say("Pode salvar isso.");
-  await expect.poll(() => agent.calls.length).toBe(15);
+  await expect.poll(() => agent.calls.length).toBe(16);
   await expect(page.getByText("A gravação depende da sua confirmação no cartão.")).toBeVisible();
   await expect(card.getByText("Proposta ainda não salva")).toBeVisible();
   expect(sql(`select count(*) from clinical.records where athlete_id = '${athlete}'`)).toBe("0");
@@ -281,16 +290,12 @@ test("conversa por voz com turnos automáticos, controles, rascunho e recuperaç
   voice.final("Texto pendente antes da queda.");
   voice.close();
   const ended = page.getByRole("region", { name: "Conversa por voz" });
-  await expect(ended.getByRole("alert")).toContainText("A conexão de voz caiu");
+  await expect(state).toContainText("Reconectando");
   await expect(field).toHaveValue("Texto pendente antes da queda.");
-  await page.waitForTimeout(1500);
-  expect(agent.calls).toHaveLength(15);
-  expect(voice.live.sockets).toHaveLength(2);
-  await page.screenshot({ path: `${shots}/conexao-perdida.png` });
-  await field.fill("");
-  await ended.getByRole("button", { name: "Tentar novamente" }).click();
   await expect(state).toContainText("Ouvindo");
+  expect(agent.calls).toHaveLength(16);
   expect(voice.live.sockets).toHaveLength(3);
+  await field.fill("");
 
   await page.evaluate(() => {
     Object.defineProperty(document, "visibilityState", { value: "hidden", configurable: true });
@@ -298,31 +303,83 @@ test("conversa por voz com turnos automáticos, controles, rascunho e recuperaç
   });
   await expect(state).toContainText("Microfone silenciado");
   await page.evaluate(() => {
-    Object.defineProperty(document, "visibilityState", { value: "visible", configurable: true });
+    delete document.visibilityState;
   });
-  await panel.getByRole("button", { name: "Reativar" }).click();
+  await panel.getByRole("button", { name: "Retomar" }).click();
   await expect(state).toContainText("Ouvindo");
 
+  await page.bringToFront();
+  const closedBefore = voice.live.closed;
   await context.clearPermissions();
   await expect(ended.getByRole("alert")).toContainText("O acesso ao microfone foi interrompido");
-  await expect(composer.getByRole("button", { name: "Iniciar conversa por voz" })).toHaveAttribute("aria-pressed", "false");
-  await context.grantPermissions(["microphone"]);
-
-  await ended.getByRole("button", { name: "Tentar novamente" }).click();
-  await expect(state).toContainText("Ouvindo");
-  const closedBefore = voice.live.closed;
-  await panel.getByRole("button", { name: "Encerrar" }).click();
-  await expect(page.getByRole("region", { name: "Conversa por voz" })).toHaveCount(0);
+  await expect(toggle).toHaveAttribute("aria-pressed", "false");
   await expect.poll(() => voice.live.closed).toBeGreaterThan(closedBefore);
   await expect(page.getByText("Resposta 13.")).toBeVisible();
+});
 
+test("transfere o microfone ao 009.1 e retorna para revisar a evolução do mesmo atleta", async ({ page }) => {
+  test.setTimeout(45_000);
+  await stubMicrophone(page);
+  const writer = await user("QA Consulta");
+  sql(`insert into clinical.athletes(id, full_name, category, source) values('${handoffAthlete}', 'Lara Menezes QA', 'Sub-19', 'demo');
+    insert into clinical.athlete_access(athlete_id, professional_id, can_read_records, can_edit, can_write, can_finalize)
+    values('${handoffAthlete}', '${writer.id}', true, false, true, false);`);
+  await signIn(page, writer);
+  const voice = await mockVoice(page);
+  const agent = await mockAgent(page);
+  await page.goto(`/?atleta=${handoffAthlete}`);
+  const composer = page.getByRole("form", { name: "Composição de mensagem" });
+  const ended = page.getByRole("region", { name: "Conversa por voz" });
+  const state = ended.getByRole("status");
   await composer.getByRole("button", { name: "Iniciar conversa por voz" }).click();
   await expect(state).toContainText("Ouvindo");
-  const beforeNew = voice.live.closed;
-  await page.getByRole("button", { name: "Nova conversa" }).click();
-  await expect.poll(() => voice.live.closed).toBeGreaterThan(beforeNew);
-  await expect(page.getByRole("region", { name: "Conversa por voz" })).toHaveCount(0);
-  await expect(page.locator(".ia-turn-user")).toHaveCount(0);
+  const client = createClient(localSupabase.url, localSupabase.publishableKey, { auth: { persistSession: false } });
+  const signed = await client.auth.signInWithPassword({ email: writer.email, password: writer.password });
+  expect(signed.error).toBeNull();
+  expect((await client.rpc("chat_consultation_navigation", { target: handoffAthlete, review: false })).data).toEqual({ available: true });
+  expect((await client.rpc("chat_consultation_navigation", { target: randomUUID(), review: false })).data).toBeNull();
+  expect((await client.rpc("chat_consultation_navigation", { target: handoffAthlete, review: true })).data).toBeNull();
+  const beforeHandoff = voice.live.closed;
+  const capturePath = `/atletas/${handoffAthlete}/evolucao?modo=voz`;
+  agent.replies.push({
+    text: "Abra a experiência de evolução pelo link abaixo.",
+    navigation: { id: handoffAthlete, name: "Lara Menezes QA", href: capturePath },
+  });
+  voice.say("Quero gravar a consulta e gerar a evolução depois.");
+  await page.getByRole("region", { name: "Histórico da conversa" })
+    .getByRole("link", { name: "Registrar evolução por voz" }).click();
+  await page.waitForURL(`**${capturePath}`);
+  await expect.poll(() => voice.live.closed).toBeGreaterThan(beforeHandoff);
+  expect(await page.evaluate(() => window.testMicrophoneTracks.map((track) => track.readyState))).toEqual(["ended"]);
+  await expect(page.getByRole("button", { name: "Iniciar gravação" })).toBeDisabled();
+  await page.getByRole("link", { name: "Voltar ao CBB Intelligence" }).click();
+  await expect(page.getByRole("region", { name: "Histórico da conversa" })
+    .getByText("Quero gravar a consulta e gerar a evolução depois.", { exact: true })).toBeVisible();
+  await expect(ended).toHaveCount(0);
+
+  const consultation = randomUUID();
+  sql(`insert into clinical.consultation_sessions
+    (id, athlete_id, professional_id, specialty, authorization_basis, capture_state, processing_state, transcript, generated_body)
+    values ('${consultation}', '${handoffAthlete}', '${writer.id}', 'Fisioterapia', 'staged_fictional_v1', 'complete', 'ready',
+    'Relato fictício de desconforto no joelho esquerdo.', 'Evolução fictícia para revisão.');`);
+  const latest = await client.rpc("chat_consultation_navigation", { target: handoffAthlete, review: true });
+  expect(latest.data).toEqual({ captureId: consultation, recordId: null });
+  const reviewPath = `${capturePath}&consulta=${consultation}`;
+  agent.replies.push({
+    text: "Confira a evolução gerada.",
+    navigation: { id: handoffAthlete, name: "Lara Menezes QA", href: reviewPath },
+  });
+  const field = composer.getByRole("textbox", { name: "Mensagem", exact: true });
+  await field.fill("Agora quero revisar o relatório que acabamos de gerar.");
+  await field.press("Enter");
+  await page.getByRole("link", { name: "Abrir revisão da evolução" }).click();
+  await page.waitForURL(`**${reviewPath}`);
+  await expect(page.getByRole("heading", { name: "Revisar evolução por voz" })).toBeVisible();
+  await expect(page.getByLabel("Conteúdo", { exact: true })).toHaveValue("Evolução fictícia para revisão.");
+  expect(sql(`select count(*) from clinical.records where athlete_id = '${handoffAthlete}'`)).toBe("0");
+  await page.getByRole("link", { name: "Voltar ao CBB Intelligence" }).click();
+  await expect(page.getByRole("region", { name: "Histórico da conversa" })
+    .getByText("Agora quero revisar o relatório que acabamos de gerar.", { exact: true })).toBeVisible();
 });
 
 test("voz encerra por inatividade, ao sair da tela e funciona no celular", async ({ page }) => {

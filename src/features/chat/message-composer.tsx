@@ -49,8 +49,8 @@ export function MessageComposer({
   function submit() {
     const message = value.trim();
     if (!enabled || pending || !message || tooLong) return;
-    onValueChange("");
     onSend(message);
+    onValueChange("");
   }
 
   return (

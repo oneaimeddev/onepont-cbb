@@ -15,6 +15,7 @@ type Phase =
   | "error";
 export function EvolutionForm({
   athleteId,
+  consultationId,
   requestId,
   recordId,
   version,
@@ -25,6 +26,7 @@ export function EvolutionForm({
   canFinalize,
 }: {
   athleteId: string;
+  consultationId?: string;
   requestId: string;
   recordId: string | null;
   version: number;
@@ -198,6 +200,7 @@ export function EvolutionForm({
       }}
     >
       <input type="hidden" name="athlete" value={athleteId} />
+      {consultationId && <input type="hidden" name="capture" value={consultationId} />}
       <input type="hidden" name="request" value={submissionId} />
       <input type="hidden" name="record" value={recordId ?? ""} />
       <input type="hidden" name="version" value={version} />

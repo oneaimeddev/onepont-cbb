@@ -84,6 +84,11 @@ for (const [kind, label] of [
     });
 for (const text of [
   "Sim",
+  "Pode confirmar e salvar. Peraí, depois vamos abrir um pedido cirúrgico.",
+  "Pode salvar e depois vamos abrir uma receita, mas não salve ainda.",
+  "Se estiver certo, pode salvar. Depois vamos abrir uma receita.",
+  "Tá, perfeito. Não pode confirmar e salvar.",
+  "Tá, perfeito. Pode confirmar e salvar?",
   "Não pode confirmar e salvar a prescrição",
   "Se estiver certo, pode confirmar e salvar a prescrição",
   "Pode confirmar e salvar a prescrição?",
@@ -152,3 +157,27 @@ test("field content is not a saving directive", () => {
     proposalSaveIntent("Pode confirmar e salvar a prescrição.").action,
   ).toBe("save");
 });
+
+test("pedido genérico não salva prescrição e fala interrompida não confirma exame", () => {
+  for (const [kind, phrase] of [
+    ["prescription", "Pode confirmar e salvar o pedido."],
+    ["exam_request", "Perfeito, pode confirmar e salvar, peraí."],
+  ]) {
+    const [result] = run(seed(kind) + out(save(phrase, "voice")));
+    expect(result.error).toBeTruthy();
+  }
+});
+
+for (const [kind, phrase] of [
+  ["exam_request", "Perfeito. Pode confirmar e salvar."],
+  ["prescription", "Pode salvar."],
+  ["prescription", "Tá bom, perfeito. Pode confirmar e salvar. E aí depois a gente vai abrir um pedido cirúrgico."],
+  ["exam_request", "Salve a solicitação de exames e depois vamos abrir uma receita."],
+  ["prescription", "Tá, perfeito. Pode confirmar e salvar."],
+  ["surgical_order", "Certo, pode salvar!"],
+]) {
+  test("salva o cartão em contexto por voz: " + phrase, () => {
+    const [result] = run(seed(kind) + out(save(phrase, "voice")));
+    expect(result.document).toMatchObject({ kind, state: "saved" });
+  });
+}

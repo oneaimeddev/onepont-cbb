@@ -190,6 +190,7 @@ export function IntelligenceHome({
   profile,
   context,
   contextAthleteId = null,
+  consultationAvailable = false,
   canFinalize = false,
   evolutionRestricted = false,
   initialSessionId = null,
@@ -205,6 +206,7 @@ export function IntelligenceHome({
   profile: { displayName: string; profession: string; initials: string; canReadAudit: boolean };
   context?: ReactNode;
   contextAthleteId?: string | null;
+  consultationAvailable?: boolean;
   canFinalize?: boolean;
   evolutionRestricted?: boolean;
   initialSessionId?: string | null;
@@ -248,13 +250,9 @@ export function IntelligenceHome({
   const [openSessionId, setOpenSessionId] = useState<string | null>(initialSessionId);
   const [expectedAthlete, setExpectedAthlete] = useState<string | null | undefined>(undefined);
   const [draftMessage, setDraftMessage] = useState("");
+  const voiceDraft = useRef(false);
   const contextClearedRef = useRef(false);
   const selectedAthleteRef = useRef<string | null | undefined>(undefined);
-  const voice = useVoiceSession({
-    busy: pending || starting || attachmentPending,
-    onTurn: (text) => void send(text, "voice"),
-    onDraft: (text) => setDraftMessage((current) => joinSegments(current.trim(), text)),
-  });
   const rawTurns = useSyncExternalStore(
     subscribeTurns,
     () => readConversationSnapshot(initialSnapshot),
@@ -262,6 +260,17 @@ export function IntelligenceHome({
   );
   const turns = useMemo(() => turnsFrom(rawTurns), [rawTurns]);
   const live = turns.some((turn) => turn.role === "user" || turnCarriesContent(turn));
+  const voice = useVoiceSession({
+    busy: pending || starting || attachmentPending,
+    responding: pending && !processingTools && Boolean(turns.find((turn) => turn.id === streamingId)?.text),
+    editing: draftMessage.trim().length > 0,
+    onTurn: (text) => void send(text, "voice"),
+    onDraft: (text) => {
+      voiceDraft.current = true;
+      setDraftMessage((current) => joinSegments(current.trim(), text));
+    },
+  });
+
 
   useLayoutEffect(() => () => abortRef.current?.abort(), []);
   useLayoutEffect(() => {
@@ -326,6 +335,19 @@ export function IntelligenceHome({
       if (!(error instanceof Error)) throw error;
       if (epoch === epochRef.current) setFailure((current) => current ?? "Não foi possível guardar esta conversa.");
     }
+  }
+
+  function leaveForClinicalPage(href: string) {
+    if (pending || starting || attachmentPending) {
+      setFailure("Aguarde a conclusão da solicitação antes de sair da conversa.");
+      return;
+    }
+    voice.stop();
+    const epoch = epochRef.current;
+    queuePersist(currentAthlete(), epoch);
+    void persistQueue.current.then(() => {
+      if (epoch === epochRef.current) router.push(href);
+    });
   }
 
   function queuePersist(athleteId: string | null, epoch: number) {
@@ -527,6 +549,9 @@ export function IntelligenceHome({
   function finishTurn(id: string, text: string, athletes: PresentedAthlete[], navigation: ChatTurn["navigation"], search: PresentedSearch | null, draft: ChatTurn["draft"] = null, document: ChatTurn["document"] = null, readings: ReadingBoard | null = null, analysis: HistoryAnalysis | null = null) {
     if (document) { selectedProposalRef.current = document.requestId; setSelectedProposal(document.requestId); }
     patchTurns((current) => {
+      // A recovered server copy must not replace an editor with unsaved local input.
+      const editing = document && current.some(turn => turn.document?.requestId === document.requestId && turn.document.locallyEdited);
+      if (editing) return current.map(turn => turn.id === id ? { ...turn, text: "O cartão selecionado tem alterações locais. Você pode continuar a edição nele." } : turn);
       return current.map((turn) => turn.id === id
         ? { ...turn, text, athletes, navigation, search, draft, document, readings, analysis }
         : document && turn.document?.requestId === document.requestId ? { ...turn, document: null } : turn);
@@ -693,7 +718,14 @@ export function IntelligenceHome({
         if (controller.signal.aborted) return;
         sessionRef.current = id;
         setOpenSessionId(id);
+        const athleteId = currentAthlete();
+        if (athleteId) {
+          const context = await postConversation({ action: "context", athleteId, sessionId: id });
+          if (!context.ok) throw new Error("Não foi possível selecionar o atleta.");
+        }
       }
+      await persistQueue.current;
+      if (controller.signal.aborted) return;
       const asked = historyRequest(message);
       if (asked.command === "sources" || asked.command === "analyze" || (asked.command === "follow" && previousAnalysis)) {
         if (asked.command === "sources") {
@@ -1041,7 +1073,19 @@ export function IntelligenceHome({
                       onMore={showMore}
                     />
                   ) : null}
-                  {turn.navigation && turn.athletes.length === 0 ? <Link className="ia-open" href={turn.navigation.href} prefetch={false}>Abrir prontuário de {turn.navigation.name}</Link> : null}
+                  {turn.navigation && (turn.athletes.length === 0 || turn.navigation.href.includes("?")) ? (
+                    <Link className="ia-open" href={turn.navigation.href} prefetch={false}
+                      onNavigate={(event) => {
+                        if (!turn.navigation?.href.includes("?")) return;
+                        event.preventDefault();
+                        leaveForClinicalPage(turn.navigation.href);
+                      }}>
+                      {turn.navigation.href.endsWith("?modo=voz") ? "Registrar evolução por voz"
+                        : turn.navigation.href.includes("/evolucao?") ? "Abrir revisão da evolução"
+                        : turn.navigation.href.endsWith("?aba=cadastro") ? "Abrir cadastro do atleta"
+                        : "Abrir prontuário de " + turn.navigation.name}
+                    </Link>
+                  ) : null}
                   {turn.draft ? <ClinicalDraftCard draft={turn.draft} mandatoryRestriction={evolutionRestricted} canFinalize={canFinalize && turn.draft.athleteId === selectedId} onChange={(next) => updateDraft(turn.id, next)} /> : null}
                   {turn.document ? <DocumentDraftCard draft={turn.document} onChange={(next) => updateDocument(turn.id, next)} selected={selectedProposal === turn.document.requestId} sending={pending} onSend={(message) => { selectedProposalRef.current = turn.document!.requestId; setSelectedProposal(turn.document!.requestId); void send(message); }} onSelect={() => { selectedProposalRef.current = turn.document!.requestId; setSelectedProposal(turn.document!.requestId); }} /> : null}
                   {turn.clinicalSearch ? <ClinicalSearchCards board={turn.clinicalSearch} onSelect={selectAthlete}
@@ -1074,11 +1118,16 @@ export function IntelligenceHome({
             failure={failure}
             value={draftMessage}
             onValueChange={(next) => {
+              if (!next) voiceDraft.current = false;
               setDraftMessage(next);
               voice.touch();
             }}
             onEdit={() => setFailure(null)}
-            onSend={(message) => void send(message)}
+            onSend={(message) => {
+              const mode = voiceDraft.current ? "voice" : "text";
+              voiceDraft.current = false;
+              void send(message, mode);
+            }}
             voiceControl={voiceEnabled ? (
               <VoiceToggle
                 active={voice.active}
@@ -1108,7 +1157,10 @@ export function IntelligenceHome({
                 onRetry={() => void voice.start()}
                 onDismiss={voice.dismiss}
                 onReview={voice.setReview}
-                onCorrect={voice.correct}
+                onCorrect={() => {
+                  voice.correct();
+                  document.getElementById("chat-input")?.focus();
+                }}
               />
             ) : undefined}
           />
@@ -1132,6 +1184,15 @@ export function IntelligenceHome({
               <button type="button" className="ia-panel-collapse" onClick={() => { storePanels({ ...readPanels(), context: true }); contextToggleRef.current?.focus(); }}>Recolher</button>
             </div>
             {visibleContext}
+            {consultationAvailable && selectedId ? (
+              <Link className="ia-open" href={`/atletas/${selectedId}/evolucao?modo=voz`} prefetch={false}
+                onNavigate={(event) => {
+                  event.preventDefault();
+                  leaveForClinicalPage(`/atletas/${selectedId}/evolucao?modo=voz`);
+                }}>
+                Registrar evolução por voz
+              </Link>
+            ) : null}
           </div>
         </aside>
       ) : null}

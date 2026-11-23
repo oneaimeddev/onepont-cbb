@@ -17,7 +17,7 @@ export const getAccess = cache(async () => {
 
   if (profileError) throw new Error("Não foi possível consultar o perfil profissional.");
   if (!profile) return { status: 403 } as const;
-  return { status: 200, profile } as const;
+  return { status: 200, profile, userId: data.user.id } as const;
 });
 
 export async function requireProfile() {

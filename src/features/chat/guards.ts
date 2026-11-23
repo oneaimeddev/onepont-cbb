@@ -160,6 +160,13 @@ export function presentedNavigation(value: unknown) {
   const row = value as Record<string, unknown>;
   if (typeof row.id !== "string" || typeof row.name !== "string" || typeof row.href !== "string") return null;
   const href = athleteProfilePath(row.id);
-  if (!href || row.href !== href) return null;
-  return { id: row.id, href, name: row.name.trim() };
+  if (!href) return null;
+  const target = row.href;
+  const capturePath = href + "/evolucao?modo=voz";
+  const reviewPrefix = capturePath + "&consulta=";
+  const recordPrefix = href + "/evolucao?registro=";
+  const valid = target === href || target === href + "?aba=cadastro" || target === capturePath
+    || [reviewPrefix, recordPrefix].some((prefix) => target.startsWith(prefix)
+      && uuidPattern.test(target.slice(prefix.length)));
+  return valid ? { id: row.id, href: target, name: row.name.trim() } : null;
 }

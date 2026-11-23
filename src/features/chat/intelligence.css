@@ -637,7 +637,8 @@ p.ia-status {
 .ia-voice-dot { width: 8px; height: 8px; border-radius: 999px; background: #8b98ab; }
 .ia-voice[data-status="listening"] .ia-voice-dot,
 .ia-voice[data-status="transcribing"] .ia-voice-dot { background: var(--ia-blue); }
-.ia-voice[data-status="processing"] .ia-voice-dot { background: var(--navy); }
+.ia-voice[data-status="processing"] .ia-voice-dot,
+.ia-voice[data-status="responding"] .ia-voice-dot { background: var(--navy); }
 .ia-voice-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem; margin-left: auto; }
 .ia-voice-actions button {
   display: inline-flex;
@@ -696,7 +697,9 @@ p.ia-status {
 @keyframes ia-processing-dot { 0%, 65%, 100% { opacity: .35; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-3px); } }
 .ia-voice-toggle[data-status="listening"] { color: var(--ia-blue); background: #e7f1fb; }
 .ia-voice-toggle[data-status="muted"] { color: #a32631; background: #fbeff0; }
-.ia-voice-toggle[data-status="processing"], .ia-voice-toggle[data-status="transcribing"], .ia-voice-toggle[data-status="connecting"] { color: var(--navy); background: #e4e9f1; }
+.ia-voice-toggle[data-status="processing"], .ia-voice-toggle[data-status="responding"],
+.ia-voice-toggle[data-status="transcribing"], .ia-voice-toggle[data-status="connecting"],
+.ia-voice-toggle[data-status="reconnecting"] { color: var(--navy); background: #e4e9f1; }
 @media (prefers-reduced-motion: reduce) {
   .ia-processing-dots > span { animation: none; }
   .ia-greeting-typed { display: none; }
