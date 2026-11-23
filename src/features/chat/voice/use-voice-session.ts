@@ -19,6 +19,8 @@ type Runtime = {
   context: AudioContext | null;
   socket: WebSocket | null;
   ready: boolean;
+  capturing: boolean;
+  pending: string[];
   muted: boolean;
   buffer: string;
   queue: string[];
@@ -40,6 +42,9 @@ const setupTimeoutMs = 10_000;
 const renewAfterMs = 9.5 * 60_000;
 const maxRenewals = 6;
 const duplicateWindowMs = 4_000;
+// Audio captured while the socket is still connecting is held and sent once the session is
+// ready, so speech starts counting at the click instead of after the network handshake.
+const maxPendingFrames = 150; // 15 s of 100 ms frames
 
 const messages = {
   denied: "O acesso ao microfone foi negado. Libere o microfone no navegador para usar a voz.",
@@ -73,6 +78,8 @@ export function useVoiceSession(options: Options) {
     context: null,
     socket: null,
     ready: false,
+    capturing: false,
+    pending: [],
     muted: false,
     buffer: "",
     queue: [],
@@ -98,6 +105,7 @@ export function useVoiceSession(options: Options) {
   const [level, setLevel] = useState(0);
   const [capture, setCapture] = useState<"pending" | "hearing" | "silent" | "blocked">("pending");
   const [deviceLabel, setDeviceLabel] = useState("");
+  const [capturing, setCapturing] = useState(false);
 
   useLayoutEffect(() => {
     optionsRef.current = options;
@@ -171,6 +179,8 @@ export function useVoiceSession(options: Options) {
     const socket = rt.socket;
     rt.socket = null;
     rt.ready = false;
+    rt.capturing = false;
+    rt.pending = [];
     if (socket) {
       if (socket.readyState === WebSocket.OPEN) socket.send(JSON.stringify({ realtimeInput: { audioStreamEnd: true } }));
       if (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING) socket.close(1000);
@@ -195,6 +205,7 @@ export function useVoiceSession(options: Options) {
     setLevel(0);
     setCapture("pending");
     setDeviceLabel("");
+    setCapturing(false);
   }
 
   function end(next: { notice?: string; error?: string; discard?: boolean } = {}) {
@@ -218,8 +229,22 @@ export function useVoiceSession(options: Options) {
     rt.frames += 1;
     rt.level = peak / 32767;
     if (rt.level > rt.maxLevel) rt.maxLevel = rt.level;
-    if (!rt.ready || rt.muted || !socket || socket.readyState !== WebSocket.OPEN) return;
-    socket.send(JSON.stringify({ realtimeInput: { audio: { data: pcmBase64(buffer), mimeType: "audio/pcm;rate=16000" } } }));
+    if (rt.muted) return;
+    const data = pcmBase64(buffer);
+    if (!rt.ready || !socket || socket.readyState !== WebSocket.OPEN) {
+      rt.pending.push(data);
+      if (rt.pending.length > maxPendingFrames) rt.pending.shift();
+      return;
+    }
+    socket.send(JSON.stringify({ realtimeInput: { audio: { data, mimeType: "audio/pcm;rate=16000" } } }));
+  }
+
+  function flushPending() {
+    const rt = runtime.current;
+    const socket = rt.socket;
+    if (!socket || socket.readyState !== WebSocket.OPEN) return;
+    for (const data of rt.pending) socket.send(JSON.stringify({ realtimeInput: { audio: { data, mimeType: "audio/pcm;rate=16000" } } }));
+    rt.pending = [];
   }
 
   function handle(message: LiveMessage, current: boolean) {
@@ -227,6 +252,7 @@ export function useVoiceSession(options: Options) {
     if (!current && message.kind !== "final") return;
     if (message.kind === "ready") {
       rt.ready = true;
+      flushPending();
       setPhase("live");
       touch();
       if (rt.renewTimer) clearTimeout(rt.renewTimer);
@@ -260,8 +286,12 @@ export function useVoiceSession(options: Options) {
     }
   }
 
-  async function connect(generation: number) {
-    const response = await fetch("/api/inteligencia/voz", { method: "POST", cache: "no-store" });
+  function requestToken() {
+    return fetch("/api/inteligencia/voz", { method: "POST", cache: "no-store" });
+  }
+
+  async function connect(generation: number, request = requestToken()) {
+    const response = await request;
     let body: { token?: unknown; url?: unknown; text?: unknown } = {};
     try {
       body = await response.json() as typeof body;
@@ -321,13 +351,18 @@ export function useVoiceSession(options: Options) {
     setPhase("connecting");
     setError(null);
     setNotice(null);
-    const context = new AudioContext();
-    rt.context = context;
-    const resumed = context.resume();
     try {
       if (!navigator.mediaDevices?.getUserMedia || typeof AudioWorkletNode === "undefined" || typeof WebSocket === "undefined") {
         throw new VoiceFailure(messages.unsupported);
       }
+      // Token, audio module and microphone are requested together instead of one after another.
+      const tokenRequest = requestToken();
+      tokenRequest.catch(() => undefined);
+      const context = new AudioContext();
+      rt.context = context;
+      const resumed = context.resume();
+      const moduleReady = context.audioWorklet.addModule("/voice/pcm-capture.js");
+      moduleReady.catch(() => undefined);
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true },
       });
@@ -342,7 +377,7 @@ export function useVoiceSession(options: Options) {
       setDeviceLabel(track.label);
       await resumed;
       if (context.state === "suspended") throw new VoiceFailure(messages.unsupported);
-      await context.audioWorklet.addModule("/voice/pcm-capture.js");
+      await moduleReady;
       if (generation !== rt.generation) return;
       const source = context.createMediaStreamSource(stream);
       const capture = new AudioWorkletNode(context, "pcm-capture", { channelCount: 1 });
@@ -350,6 +385,8 @@ export function useVoiceSession(options: Options) {
       sink.gain.value = 0.00001;
       capture.port.onmessage = (event: MessageEvent<ArrayBuffer>) => sendAudio(event.data);
       source.connect(capture).connect(sink).connect(context.destination);
+      rt.capturing = true;
+      setCapturing(true);
       navigator.permissions?.query({ name: "microphone" as PermissionName }).then((status) => {
         if (generation !== runtime.current.generation) return;
         runtime.current.permission = status;
@@ -359,7 +396,7 @@ export function useVoiceSession(options: Options) {
       }).catch((cause: unknown) => {
         if (!(cause instanceof TypeError)) throw cause;
       });
-      await connect(generation);
+      await connect(generation, tokenRequest);
     } catch (cause) {
       if (generation === runtime.current.generation) end({ error: failureText(cause) });
     }
@@ -367,7 +404,7 @@ export function useVoiceSession(options: Options) {
 
   function toggleMute() {
     const rt = runtime.current;
-    if (phase !== "live" || !rt.stream) return;
+    if (!rt.capturing || !rt.stream) return;
     const next = !rt.muted;
     rt.muted = next;
     for (const track of rt.stream.getAudioTracks()) track.enabled = !next;
@@ -394,7 +431,7 @@ export function useVoiceSession(options: Options) {
   });
 
   useEffect(() => {
-    if (phase !== "live") return;
+    if (!capturing) return;
     const opened = Date.now();
     const watch = setInterval(() => {
       const rt = runtime.current;
@@ -404,7 +441,7 @@ export function useVoiceSession(options: Options) {
       else if (Date.now() - opened > 2500) setCapture(rt.frames === 0 ? "blocked" : "silent");
     }, 400);
     return () => clearInterval(watch);
-  }, [phase]);
+  }, [capturing]);
 
   useEffect(() => {
     if (phase !== "live") return;
@@ -436,7 +473,9 @@ export function useVoiceSession(options: Options) {
 
   useEffect(() => () => teardown(), []);
 
-  const status: VoiceStatus = phase === "inactive" || phase === "error" || phase === "connecting"
+  // Once the microphone is capturing, the session is listening even if the socket is still
+  // connecting: the audio is buffered and delivered as soon as the session is ready.
+  const status: VoiceStatus = phase === "inactive" || phase === "error" || (phase === "connecting" && !capturing)
     ? phase
     : muted
       ? "muted"
