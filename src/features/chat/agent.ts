@@ -310,7 +310,7 @@ async function prepareConversation(input: unknown) {
   }
 
   const searchAthletes = tool({
-    description: "Pesquisa todos os atletas autorizados, não apenas os cards visíveis. O nome pode omitir sobrenomes do meio. Passe clube de origem, categoria atual, naipe em division, modalidade, gênero e convocação para seleção separados do nome. Não invente pessoas. Se houver mais de uma, não escolha a primeira.",
+    description: "Pesquisa todos os atletas autorizados, não apenas os cards visíveis. O nome pode omitir sobrenomes do meio. Passe clube de origem, categoria atual, naipe em division, modalidade e gênero separados do nome. Não invente pessoas. Se houver mais de uma, não escolha a primeira.",
     inputSchema: z.object({
       q: z.string().max(160).optional(),
       category: z.string().max(80).optional(),
@@ -318,13 +318,12 @@ async function prepareConversation(input: unknown) {
       modality: z.string().max(40).optional(),
       club: z.string().max(120).optional().describe("Clube de origem, em que o atleta atua hoje."),
       gender: z.enum(genders).optional().describe("Gênero: atletas femininas = feminino; masculinos = masculino."),
-      national_team: z.string().max(120).optional().describe("Convocados para seleção: nome da seleção, ou sim para qualquer seleção."),
       status: z.enum(["active", "inactive"]).optional(),
       page: z.number().int().min(1).max(20).optional(),
     }),
     execute: async (filters) => {
       const payload: Record<string, string> = {};
-      for (const key of ["q", "category", "division", "modality", "club", "gender", "national_team", "status"] as const) {
+      for (const key of ["q", "category", "division", "modality", "club", "gender", "status"] as const) {
         const value = filters[key]?.trim();
         if (value) payload[key] = value;
       }
@@ -340,7 +339,6 @@ async function prepareConversation(input: unknown) {
         modality: payload.modality,
         club: payload.club,
         gender: payload.gender,
-        national_team: payload.national_team,
         status: payload.status,
       }) ?? {};
       const total = Number(data.total) || 0;
@@ -1089,7 +1087,8 @@ async function prepareConversation(input: unknown) {
         "Seleção sub-19 corresponde à categoria Sub-19 quando esse valor existir nos filtros.",
         "Buscar ou listar usa searchAthletes e não muda o contexto. A consulta percorre todos os atletas autorizados, não só os cinco cards.",
         "Separe nome, clube, categoria e naipe. O naipe vai em division, como Masculino ou Feminino. Não invente sobrenome, clube ou categoria.",
-        "Categoria é a categoria atual do atleta; clube é o clube de origem, onde ele atua e ao qual volta após as convocações da Seleção. Para atletas do mesmo clube, da mesma categoria ou de um gênero (todas as atletas femininas, por exemplo), use searchAthletes com club, category ou gender, e informe o total retornado. Convocados para seleção vão em national_team.",
+        "Contexto: este é o prontuário da Confederação Brasileira de Basketball (CBB). Todos os atletas da plataforma são convocados para as seleções brasileiras, de todas as categorias. As convocações acontecem periodicamente, conforme o calendário de competições e treinamentos; fora delas, o atleta atua no clube de origem. A cada nova convocação podem chegar atletas de clubes que ainda não passaram pela plataforma.",
+        "Categoria é a categoria atual do atleta; clube é o clube de origem, onde ele atua na temporada e ao qual volta após a convocação. Não trate ser convocado como filtro: todos são. Para atletas do mesmo clube, da mesma categoria ou de um gênero (todas as atletas femininas, por exemplo), use searchAthletes com club, category ou gender, e informe o total retornado.",
         "Um nome sem os sobrenomes do meio pode corresponder ao nome completo quando a ferramenta devolver uma única pessoa.",
         "Para o terceiro da lista, ele, ela ou aquele de um clube já mostrado, use recallAthlete. O ordinal começa em 1.",
         "me traga o atleta e coloque em contexto selecionam só quando a ferramenta devolver uma pessoa. Não escolha a primeira de várias.",

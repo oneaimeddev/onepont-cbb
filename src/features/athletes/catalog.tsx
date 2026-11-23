@@ -14,7 +14,7 @@ import { openAthleteAccess } from "./access-actions";
 import { directory, loadCatalog } from "./data";
 import { RegistrationEntry } from "./registration-form";
 
-const filterLabels = { category: "Categoria", division: "Naipe", modality: "Modalidade", club: "Clube de origem", national_team: "Seleção" } as const;
+const filterLabels = { category: "Categoria", division: "Naipe", modality: "Modalidade", club: "Clube de origem" } as const;
 const genderLabels: Record<string, string> = { feminino: "Feminino", masculino: "Masculino", nao_binario: "Não binário", outro: "Outro" };
 
 function sportFacts(athlete: { team: string | null; category: string | null; sports?: { category: string; division: string; modality: string; club: string | null }[] }) {
@@ -40,7 +40,7 @@ export async function AthleteCatalog({ intent = "browse", action, query, params 
   const refined = action === "/atletas";
   const search = typeof query === "string" ? query.trim().slice(0, 160) : "";
   const filters: Record<string, string> = { q: search };
-  for (const key of ["category", "division", "modality", "club", "national_team", "gender", "status", "page"]) {
+  for (const key of ["category", "division", "modality", "club", "gender", "status", "page"]) {
     if (typeof params[key] === "string") filters[key] = params[key];
   }
   if (!/^\d+$/.test(filters.page ?? "")) filters.page = "1";
@@ -69,16 +69,15 @@ export async function AthleteCatalog({ intent = "browse", action, query, params 
   }
   const catalog = canCreate && action === "/atletas" ? await loadCatalog() : null;
   const returnTo = action + "?" + new URLSearchParams(filters);
-  const activeKeys = ["gender", "category", "division", "modality", "club", "national_team", "status"].filter((key) => filters[key]);
+  const activeKeys = ["gender", "category", "division", "modality", "club", "status"].filter((key) => filters[key]);
   const activeFilters = activeKeys.length;
   const activeLabels = activeKeys.map((key) => key === "status" ? (filters.status === "inactive" ? "Inativo" : "Ativo")
-    : key === "gender" ? `Gênero: ${genderLabels[filters.gender] ?? filters.gender}`
-    : key === "national_team" ? `Convocação: ${filters.national_team}` : filters[key]);
+    : key === "gender" ? `Gênero: ${genderLabels[filters.gender] ?? filters.gender}` : filters[key]);
   const hasCriteria = Boolean(search || activeFilters);
   const filterFields = (
             <div className="filter-grid">
               <label>Gênero<select name="gender" defaultValue={filters.gender ?? ""}><option value="">Todos</option>{Object.entries(genderLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
-              {(["category", "division", "modality", "club", "national_team"] as const).map((key) => (
+              {(["category", "division", "modality", "club"] as const).map((key) => (
                 <label key={key}>{filterLabels[key]}
                   <select name={key} defaultValue={filters[key] ?? ""}>
                     <option value="">Todos</option>

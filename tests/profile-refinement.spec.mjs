@@ -129,8 +129,7 @@ test("cadastro protege saída, recarga e descarte; salvar usa confirmação do s
     .click();
   await page
     .getByRole("combobox", { name: "Categoria atual", exact: true })
-    .fill("Sub-19");
-  await page.getByRole("option", { name: "Sub-19", exact: true }).click();
+    .selectOption({ label: "Sub-19" });
   await expect(
     page
       .getByRole("status")
@@ -139,8 +138,8 @@ test("cadastro protege saída, recarga e descarte; salvar usa confirmação do s
   page.once("dialog", (d) => d.dismiss());
   await page.getByRole("link", { name: "Trocar atleta", exact: true }).click();
   await expect(
-    page.getByRole("combobox", { name: "Categoria atual", exact: true }),
-  ).toHaveValue("Sub-19");
+    page.getByRole("combobox", { name: "Categoria atual", exact: true }).locator("option:checked"),
+  ).toHaveText("Sub-19");
   page.once("dialog", (d) => d.accept());
   await page.getByRole("link", { name: "Linha do tempo", exact: true }).click();
   await page.waitForURL((u) => u.searchParams.get("aba") === "timeline");

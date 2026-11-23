@@ -1,8 +1,8 @@
 import type { SportLink } from "./data";
 
-const keys = ["category", "division", "modality", "club", "national_team"] as const;
-const labels = { category: "Categoria", division: "Naipe", modality: "Modalidade", club: "Clube de origem", national_team: "Convocação" };
-type Sport = Pick<SportLink, "category" | "division" | "modality" | "club" | "national_team" | "season">;
+const keys = ["category", "division", "modality", "club"] as const;
+const labels = { category: "Categoria", division: "Naipe", modality: "Modalidade", club: "Clube de origem" };
+type Sport = Pick<SportLink, "category" | "division" | "modality" | "club" | "season">;
 const identity = (sport: Sport) => JSON.stringify(keys.map((key) => sport[key] ?? "").concat(String(sport.season)));
 
 export function DirectorySports({ sports = [], category, team, filters }: { sports?: Sport[]; category: string | null; team: string | null; filters: Record<string, string> }) {

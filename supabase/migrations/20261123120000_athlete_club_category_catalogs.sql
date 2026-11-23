@@ -1,9 +1,17 @@
--- Categoria atual, clube de origem e convocação para a Seleção passam a ser dados estruturados.
--- 1. Os catálogos de categorias e clubes são preenchidos com os nomes já usados nos vínculos
---    esportivos, e cada vínculo passa a apontar para o clube do catálogo (club_id).
+-- Categoria atual e clube de origem passam a ser dados estruturados.
+-- Todos os atletas da plataforma são convocados pela CBB; fora das convocações atuam no clube
+-- de origem. A lista de categorias é completa e fixa; clubes novos entram a cada convocação.
+-- 1. O catálogo de categorias recebe todas as categorias de seleção, e os catálogos são
+--    completados com os nomes já usados nos vínculos. Cada vínculo aponta para o clube do
+--    catálogo (club_id).
 -- 2. Gatilhos mantêm catálogo, texto do clube e cadastro do atleta sincronizados em qualquer
 --    caminho de gravação (cadastro, novo vínculo, importação).
--- 3. O diretório aceita filtros de gênero e de seleção, além de categoria, naipe e clube.
+-- 3. O diretório aceita filtro de gênero, além de categoria, naipe e clube.
+
+insert into clinical.categories (name, name_key)
+select name, clinical.catalog_key(name)
+from unnest(array['Sub-13', 'Sub-14', 'Sub-15', 'Sub-16', 'Sub-17', 'Sub-18', 'Sub-19', 'Sub-20', 'Sub-21', 'Sub-22', 'Sub-23', 'Profissional']) name
+on conflict (name_key) do nothing;
 
 -- Nomes de clube ou categoria vindos de vínculos: catálogo com chave normalizada.
 insert into clinical.categories (name, name_key)
@@ -18,10 +26,6 @@ select distinct on (clinical.catalog_key(label)) label, clinical.catalog_key(lab
 from (select clinical.catalog_label(club, 120) label from clinical.sport_links) source
 where label is not null and clinical.catalog_key(label) <> ''
 order by clinical.catalog_key(label), label
-on conflict (kind, name_key) do nothing;
-
-insert into clinical.organizations (name, name_key, kind)
-values ('Seleção Brasileira', clinical.catalog_key('Seleção Brasileira'), 'national_team')
 on conflict (kind, name_key) do nothing;
 
 -- Vínculos existentes passam a apontar para o clube do catálogo, com o nome padronizado.
@@ -182,9 +186,8 @@ begin
   with matching as (
     select a.id, a.full_name, a.social_name, a.birth_date, a.team, a.category, a.status, a.photo_version, a.external_cbb_id, a.gender_identity,
       coalesce((select jsonb_agg(jsonb_build_object('category', o.category, 'division', o.division, 'modality', o.modality, 'club', l.club,
-          'club_id', l.club_id, 'national_team', n.name, 'season', o.season) order by l.starts_on desc)
+          'club_id', l.club_id, 'season', o.season) order by l.starts_on desc)
         from clinical.sport_links l join clinical.sport_options o on o.id = l.option_id
-        left join clinical.organizations n on n.id = l.national_team_id
         where l.athlete_id = a.id and l.starts_on <= current_date and (l.ends_on is null or l.ends_on >= current_date)), '[]'::jsonb) sports
     from clinical.athletes a join clinical.athlete_access v on v.athlete_id = a.id and v.professional_id = actor
     where (
@@ -196,18 +199,14 @@ begin
       and (coalesce(filters->>'status', '') = '' or a.status = filters->>'status')
       and clinical.athlete_gender_matches(a.id, a.gender_identity, nullif(wanted_gender, ''))
       and ((coalesce(filters->>'category', '') = '' and coalesce(filters->>'division', '') = '' and coalesce(filters->>'modality', '') = ''
-          and coalesce(filters->>'club', '') = '' and coalesce(filters->>'national_team', '') = '')
+          and coalesce(filters->>'club', '') = '')
         or exists(select 1 from clinical.sport_links l join clinical.sport_options o on o.id = l.option_id
-          left join clinical.organizations n on n.id = l.national_team_id
           where l.athlete_id = a.id and l.starts_on <= current_date and (l.ends_on is null or l.ends_on >= current_date)
             and (coalesce(filters->>'category', '') = '' or clinical.search_text(o.category) = clinical.search_text(filters->>'category'))
             and (coalesce(filters->>'division', '') = '' or clinical.search_text(o.division) = clinical.search_text(filters->>'division'))
             and (coalesce(filters->>'modality', '') = '' or clinical.search_text(o.modality) = clinical.search_text(filters->>'modality'))
             and (coalesce(filters->>'club', '') = '' or clinical.search_text(l.club) = clinical.search_text(filters->>'club')
-              or clinical.athlete_name_matches(l.club, filters->>'club'))
-            and (coalesce(filters->>'national_team', '') = '' or n.id is not null and (
-              clinical.search_text(filters->>'national_team') in ('sim', 'convocado', 'convocada', 'selecao')
-              or clinical.search_text(n.name) = clinical.search_text(filters->>'national_team')))))
+              or clinical.athlete_name_matches(l.club, filters->>'club'))))
   ), paged as (select * from matching order by full_name, id limit page_size offset (page_number - 1) * page_size)
   select jsonb_build_object(
     'athletes', coalesce((select jsonb_agg(to_jsonb(p) order by p.full_name, p.id) from paged p), '[]'::jsonb),
@@ -216,9 +215,8 @@ begin
     'page_size', page_size,
     'can_create', exists(select 1 from clinical.athlete_creators where professional_id = actor),
     'options', coalesce((select jsonb_agg(distinct jsonb_build_object('category', o.category, 'division', o.division, 'modality', o.modality,
-        'club', l.club, 'national_team', n.name))
+        'club', l.club))
       from clinical.sport_links l join clinical.sport_options o on o.id = l.option_id
-      left join clinical.organizations n on n.id = l.national_team_id
       join clinical.athlete_access v on v.athlete_id = l.athlete_id and v.professional_id = actor
       where l.starts_on <= current_date and (l.ends_on is null or l.ends_on >= current_date)), '[]'::jsonb)
   ) into result;

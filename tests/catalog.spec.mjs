@@ -55,7 +55,7 @@ async function addOption(scope, label, name) {
   const combo = scope.getByRole("combobox", { name: label });
   await combo.click();
   await combo.fill(name);
-  await scope.getByRole("button", { name: `Adicionar “${name.trim().replace(/\s+/g, " ")}”` }).click();
+  await scope.getByRole("button", { name: `Cadastrar novo clube “${name.trim().replace(/\s+/g, " ")}”` }).click();
   await expect(combo).toHaveAttribute("aria-expanded", "false");
   await expect(combo).toHaveValue(name.trim().replace(/\s+/g, " "));
 }
@@ -132,6 +132,11 @@ test("cadastra dados mínimos ou enriquecidos e preserva o histórico esportivo"
   const listed = await creator.client.rpc("catalog_list");
   const existingCategory = listed.data.categories.find((item) => item.name !== categoryName) ?? listed.data.categories[0];
   const existingClub = listed.data.clubs[0];
+  // A lista de categorias é fixa no formulário; as categorias do teste entram pelo catálogo.
+  for (const label of [newCategory, historyCategory]) {
+    const created = await creator.client.rpc("catalog_create_category", { label });
+    expect(created.data?.name).toBe(label);
+  }
 
   await page.goto("/login");
   await page.getByLabel("E-mail").fill(creator.email);
@@ -182,16 +187,15 @@ test("cadastra dados mínimos ou enriquecidos e preserva o histórico esportivo"
   await page.getByLabel("Contato de emergência (opcional)").fill("(11) 96666-0000");
 
   await page.getByRole("tab", { name: "Dados esportivos" }).click();
-  await chooseOption(page, "Categoria atual", existingCategory.name);
-  await expect(page.locator('input[name="category_id"]')).toHaveValue(existingCategory.id);
-  await addOption(page, "Categoria atual", newCategory);
-  await addOption(page, "Categoria atual", newCategory.replace(" ", "   "));
-  await expect(page.getByRole("status")).toContainText("Essa opção já existe e foi selecionada.");
+  const categorySelect = page.getByRole("combobox", { name: "Categoria atual" });
+  await categorySelect.selectOption({ label: existingCategory.name });
+  await expect(categorySelect).toHaveValue(existingCategory.id);
+  await categorySelect.selectOption({ label: newCategory });
   await chooseOption(page, "Clube de origem (opcional)", existingClub.name);
   await expect(page.locator('input[name="club_id"]')).toHaveValue(existingClub.id);
   await addOption(page, "Clube de origem (opcional)", newClub);
   await addOption(page, "Clube de origem (opcional)", newClub.replace(" ", "  "));
-  await expect(page.getByRole("status").last()).toContainText("Essa opção já existe e foi selecionada.");
+  await expect(page.getByRole("status").last()).toContainText("Esse clube já está cadastrado e foi selecionado.");
   await page.getByLabel("Feminino ou masculino").selectOption("Masculino");
   await page.getByLabel("Modalidade").selectOption("5x5");
   await page.getByLabel("Posição esportiva (opcional)").selectOption("Ala");
@@ -214,7 +218,7 @@ test("cadastra dados mínimos ou enriquecidos e preserva o histórico esportivo"
 
   await page.getByText("Registrar novo vínculo esportivo", { exact: true }).click();
   const linkForm = page.locator("form").filter({ has: page.getByRole("heading", { name: "Novo vínculo" }) });
-  await addOption(linkForm, "Categoria atual", historyCategory);
+  await linkForm.getByRole("combobox", { name: "Categoria atual" }).selectOption({ label: historyCategory });
   await linkForm.getByLabel("Feminino ou masculino").selectOption("Masculino");
   await linkForm.getByLabel("Modalidade").selectOption("5x5");
   await addOption(linkForm, "Clube de origem (opcional)", historyClub);
@@ -232,7 +236,7 @@ test("cadastra dados mínimos ou enriquecidos e preserva o histórico esportivo"
   await page.goto("/atletas/novo");
   await page.getByLabel("Nome completo").fill(reuseName);
   await page.getByRole("tab", { name: "Dados esportivos" }).click();
-  await chooseOption(page, "Categoria atual", newCategory);
+  await page.getByRole("combobox", { name: "Categoria atual" }).selectOption({ label: newCategory });
   await chooseOption(page, "Clube de origem (opcional)", newClub);
   await page.getByLabel("Feminino ou masculino").selectOption("Masculino");
   await page.getByLabel("Modalidade").selectOption("5x5");

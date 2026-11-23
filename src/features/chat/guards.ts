@@ -37,7 +37,6 @@ export type DirectoryFilters = {
   division?: string;
   modality?: string;
   club?: string;
-  national_team?: string;
   gender?: string;
   status?: "active" | "inactive";
 };
@@ -51,7 +50,7 @@ export type PresentedSearch = {
 
 export const genders = ["feminino", "masculino", "nao_binario", "outro"] as const;
 
-const filterLimits = { q: 160, category: 80, division: 80, modality: 40, club: 120, national_team: 120, gender: 20, status: 20 } as const;
+const filterLimits = { q: 160, category: 80, division: 80, modality: 40, club: 120, gender: 20, status: 20 } as const;
 
 function boundedInteger(value: unknown, min: number, max: number) {
   if (typeof value !== "number" || !Number.isInteger(value) || value < min || value > max) return null;

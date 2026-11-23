@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useId, useMemo, useRef, useState, type Dispatch, type FormEvent, type SetStateAction } from "react";
 import { Icon } from "../../components/icon";
 import type { CatalogOption, RegistrationCatalog } from "./data";
-import { addSportLink, createCategory, createOrganization, registerAthlete, type RegisterResult } from "../../app/(workspace)/atletas/novo/actions";
+import { addSportLink, createOrganization, registerAthlete, type RegisterResult } from "../../app/(workspace)/atletas/novo/actions";
 
 const sections = [
   ["pessoais", "Dados pessoais"],
@@ -25,7 +25,7 @@ const genderOptions = [
 
 const fieldSection: Record<string, (typeof sections)[number][0]> = {
   name: "pessoais", birth: "pessoais", gender_identity: "pessoais", document: "pessoais",
-  category_id: "esportivos", division: "esportivos", modality: "esportivos", shirt: "esportivos", club_id: "esportivos", national_team_id: "esportivos",
+  category_id: "esportivos", division: "esportivos", modality: "esportivos", shirt: "esportivos", club_id: "esportivos",
   phone: "contatos", email: "contatos", guardian_name: "contatos", guardian_relation: "contatos",
   guardian_contact: "contatos", emergency_contact: "contatos",
 };
@@ -41,7 +41,6 @@ const fieldMessage: Record<string, string> = {
   division: "Escolha feminino ou masculino.",
   modality: "Escolha a modalidade.",
   club_id: "Escolha um clube cadastrado ou adicione o nome do clube de origem.",
-  national_team_id: "Escolha uma seleção da lista.",
   shirt: "O número da camisa usa até três dígitos.",
   phone: "Informe um telefone fictício com 8 a 20 caracteres.",
   email: "Informe um e-mail fictício válido.",
@@ -69,17 +68,23 @@ function DivisionField({ divisions }: { divisions: string[] }) {
   );
 }
 
-function NationalTeamField({ teams }: { teams: CatalogOption[] }) {
-  if (teams.length === 0) return null;
+// Categorias de seleção em ordem de idade; as demais (como Profissional) vêm depois.
+function categoryRank(name: string) {
+  const age = /^sub[\s-]?(\d{1,2})$/i.exec(name.trim());
+  return age ? Number(age[1]) : 1000;
+}
+
+function CategoryField({ categories, invalid = false }: { categories: CatalogOption[]; invalid?: boolean }) {
+  const ordered = [...categories].sort((a, b) => categoryRank(a.name) - categoryRank(b.name) || a.name.localeCompare(b.name, "pt-BR"));
   return (
     <div>
-      <label>Convocação para seleção<Optional />
-        <select name="national_team_id" defaultValue="">
-          <option value="">Sem convocação</option>
-          {teams.map((team) => <option key={team.id} value={team.id}>{team.name}</option>)}
+      <label>Categoria atual
+        <select name="category_id" defaultValue="" aria-invalid={invalid}>
+          <option value="">Não informar</option>
+          {ordered.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
         </select>
       </label>
-      <p className="field-hint">Marque quando o atleta integra a lista de convocação. O clube de origem continua sendo o clube acima.</p>
+      <p className="field-hint">A categoria em que o atleta compete na temporada atual.</p>
     </div>
   );
 }
@@ -95,10 +100,11 @@ function PositionField() {
   );
 }
 
-function CatalogCombobox({ name, label, hint, optional = true, options, value, onChange, onCreate, notice }: {
-  name: "category_id" | "club_id";
+function CatalogCombobox({ name, label, hint, addLabel = "Adicionar", optional = true, options, value, onChange, onCreate, notice }: {
+  name: "club_id";
   label: string;
   hint?: string;
+  addLabel?: string;
   optional?: boolean;
   options: CatalogOption[];
   value: string;
@@ -127,12 +133,12 @@ function CatalogCombobox({ name, label, hint, optional = true, options, value, o
     if (!result.ok && result.error === "duplicate" && result.id) {
       onChange(result.id);
       setQuery("");
-      setMessage("Essa opção já existe e foi selecionada.");
+      setMessage("Esse clube já está cadastrado e foi selecionado.");
       setOpen(false);
       return;
     }
     if (!result.ok || !result.id || !result.name) {
-      setMessage(result.error === "denied" ? "Seu perfil não pode criar esta opção." : "Não foi possível adicionar. Revise o nome.");
+      setMessage(result.error === "denied" ? "Seu perfil não pode cadastrar clubes. Peça a quem administra os cadastros." : "Não foi possível cadastrar o clube. Revise o nome.");
       return;
     }
     onChange(result.id);
@@ -142,6 +148,7 @@ function CatalogCombobox({ name, label, hint, optional = true, options, value, o
   }
 
   return (
+    <div>
     <div className="catalog-combo">
       <label>{label}{optional ? <Optional /> : null}
         <input
@@ -150,14 +157,13 @@ function CatalogCombobox({ name, label, hint, optional = true, options, value, o
           aria-controls={listId}
           aria-autocomplete="list"
           value={open ? query : (selected?.name ?? "")}
-          placeholder="Buscar ou adicionar"
+          placeholder={name === "club_id" ? "Buscar ou cadastrar clube" : "Buscar ou adicionar"}
           autoComplete="off"
           onFocus={() => { cancelClose(); setOpen(true); setQuery(""); }}
           onChange={(event) => { cancelClose(); setQuery(event.target.value); setOpen(true); }}
           onBlur={() => { cancelClose(); blurTimer.current = setTimeout(() => setOpen(false), 150); }}
         />
       </label>
-      {hint ? <p className="field-hint">{hint}</p> : null}
       <input type="hidden" name={name} value={value} />
       {open && (
         <div className="catalog-menu" id={listId} role="listbox">
@@ -168,13 +174,15 @@ function CatalogCombobox({ name, label, hint, optional = true, options, value, o
           ))}
           {canAdd && (
             <button type="button" className="catalog-add" onMouseDown={(event) => event.preventDefault()} onClick={() => void add()}>
-              Adicionar “{query.trim()}”
+              {addLabel} “{query.trim()}”
             </button>
           )}
           {visible.length === 0 && !canAdd && <p>Nenhuma opção encontrada.</p>}
         </div>
       )}
       {message && <p className="field-error" role="status">{message}</p>}
+    </div>
+    {hint ? <p className="field-hint">{hint}</p> : null}
     </div>
   );
 }
@@ -187,9 +195,7 @@ export function RegistrationForm({ catalog, initialToday, onDone }: { catalog: R
   const [creationId] = useState(() => crypto.randomUUID());
   const [section, setSection] = useState<(typeof sections)[number][0]>("pessoais");
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [categories, setCategories] = useState(catalog.categories);
   const [clubs, setClubs] = useState(catalog.clubs);
-  const [categoryId, setCategoryId] = useState("");
   const [clubId, setClubId] = useState("");
   const [pending, setPending] = useState(false);
   const divisions = catalog.divisions.length > 0 ? catalog.divisions : ["Feminino", "Masculino"];
@@ -274,24 +280,18 @@ export function RegistrationForm({ catalog, initialToday, onDone }: { catalog: R
 
       <fieldset inert={section !== "esportivos"}>
         <legend className="sr-only">Dados esportivos</legend>
-        <CatalogCombobox name="category_id" label="Categoria atual" hint="A categoria em que o atleta compete hoje, como Sub-16, Sub-18 ou Profissional." optional={false} options={categories} value={categoryId} onChange={setCategoryId} onCreate={async (name) => {
-          const result = await createCategory(name);
-          if (result.ok && result.id && result.name) remember({ id: result.id, name: result.name }, categories, setCategories);
-          if (!result.ok && result.error === "duplicate" && result.id && result.name) remember({ id: result.id, name: result.name }, categories, setCategories);
-          return result;
-        }} />
+        <CategoryField categories={catalog.categories} invalid={Boolean(errors.category_id)} />
         {errors.category_id && <p className="field-error" role="alert">{errors.category_id}</p>}
         <div className="form-row">
           <DivisionField divisions={divisions} />
           <label>Modalidade<select name="modality" defaultValue=""><option value="">Não informar</option>{modalities.map((item) => <option key={item}>{item}</option>)}</select></label>
         </div>
         <PositionField />
-        <CatalogCombobox name="club_id" label="Clube de origem" hint="O clube em que o atleta atua hoje e ao qual retorna após as convocações. Atletas do mesmo clube ficam agrupados nas buscas e análises." options={clubs} value={clubId} onChange={setClubId} onCreate={async (name) => {
+        <CatalogCombobox name="club_id" label="Clube de origem" addLabel="Cadastrar novo clube" hint="O clube em que o atleta atua na temporada e ao qual retorna após a convocação. Se o clube ainda não estiver na lista, digite o nome completo e cadastre-o; ele fica disponível para os próximos atletas." options={clubs} value={clubId} onChange={setClubId} onCreate={async (name) => {
           const result = await createOrganization(name, "club");
           if (result.id && result.name) remember({ id: result.id, name: result.name }, clubs, setClubs);
           return result;
         }} />
-        <NationalTeamField teams={catalog.national_teams} />
         <label>Número da camisa<Optional /><input name="shirt" inputMode="numeric" maxLength={3} autoComplete="off" aria-invalid={Boolean(errors.shirt)} /></label>
         {errors.shirt && <p className="field-error" role="alert">{errors.shirt}</p>}
       </fieldset>
@@ -327,9 +327,7 @@ function closeRegistration(dialog: HTMLDialogElement | null) {
 }
 
 export function SportLinkForm({ athleteId, catalog }: { athleteId: string; catalog: RegistrationCatalog }) {
-  const [categories, setCategories] = useState(catalog.categories);
   const [clubs, setClubs] = useState(catalog.clubs);
-  const [categoryId, setCategoryId] = useState("");
   const [clubId, setClubId] = useState("");
   const divisions = catalog.divisions.length > 0 ? catalog.divisions : ["Feminino", "Masculino"];
   const modalities = catalog.modalities.length > 0 ? catalog.modalities : ["5x5", "3x3"];
@@ -343,22 +341,17 @@ export function SportLinkForm({ athleteId, catalog }: { athleteId: string; catal
       <h2>Novo vínculo</h2>
       <p>O vínculo aberto é encerrado hoje. O clube anterior permanece no histórico.</p>
       <input type="hidden" name="athlete_id" value={athleteId} />
-      <CatalogCombobox name="category_id" label="Categoria atual" hint="A categoria em que o atleta compete hoje, como Sub-16, Sub-18 ou Profissional." optional={false} options={categories} value={categoryId} onChange={setCategoryId} onCreate={async (name) => {
-        const result = await createCategory(name);
-        keep(result, setCategories);
-        return result;
-      }} />
+      <CategoryField categories={catalog.categories} />
       <div className="form-row">
         <DivisionField divisions={divisions} />
         <label>Modalidade<select name="modality" defaultValue=""><option value="">Não informar</option>{modalities.map((item) => <option key={item}>{item}</option>)}</select></label>
       </div>
       <PositionField />
-      <CatalogCombobox name="club_id" label="Clube de origem" hint="O clube em que o atleta atua hoje e ao qual retorna após as convocações. Atletas do mesmo clube ficam agrupados nas buscas e análises." options={clubs} value={clubId} onChange={setClubId} onCreate={async (name) => {
+      <CatalogCombobox name="club_id" label="Clube de origem" addLabel="Cadastrar novo clube" hint="O clube em que o atleta atua na temporada e ao qual retorna após a convocação. Se o clube ainda não estiver na lista, digite o nome completo e cadastre-o; ele fica disponível para os próximos atletas." options={clubs} value={clubId} onChange={setClubId} onCreate={async (name) => {
         const result = await createOrganization(name, "club");
         keep(result, setClubs);
         return result;
       }} />
-      <NationalTeamField teams={catalog.national_teams} />
       <label>Número da camisa<Optional /><input name="shirt" inputMode="numeric" maxLength={3} autoComplete="off" /></label>
       <button className="button" type="submit">Registrar vínculo</button>
     </form>
