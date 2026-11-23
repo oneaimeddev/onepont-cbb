@@ -3,7 +3,7 @@
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createOpenAI } from "@ai-sdk/openai";
 import { generateText } from "ai";
-import { buildConsultationReport, plainReport } from "../clinical/consultation-report";
+import { buildConsultationReport, generatedAt, identificationSection, plainReport, reportSeparator } from "../clinical/consultation-report";
 import { isReportMode, reportModes } from "../clinical/consultation-report-modes";
 import { requireProfile } from "../../lib/profile";
 import { supabaseServer } from "../../lib/supabase";
@@ -159,9 +159,22 @@ export async function generateConsultationReport(input: {
   const names = prepared.data as { ok?: boolean; athleteName?: string; professionalName?: string } | null;
   if (prepared.error || !names?.ok || !names.athleteName || !names.professionalName) return { ok: false, error: "denied" };
 
+  // Identification comes from the athlete record the professional can read, not from the model.
+  const workspace = await client.rpc("agent_athlete_workspace", { target: input.athleteId, view_name: "chat" });
+  const record = (workspace.data as { athlete?: Record<string, unknown> } | null)?.athlete ?? {};
+  const field = (key: string) => typeof record[key] === "string" && (record[key] as string).trim() ? (record[key] as string).trim() : null;
+  const now = new Date();
+  const identification = identificationSection({
+    name: field("social_name") ?? names.athleteName,
+    birthDate: field("birth_date"),
+    cbbId: field("external_cbb_id"),
+    category: field("category"),
+    team: field("team"),
+  }, now);
+
   const mode = input.mode;
   const request = buildConsultationReport(mode, {
-    athlete: names.athleteName,
+    patient: identification.split("\n")[1].replace(/^Nome: /, ""),
     profession: profile.profession,
     transcript,
   });
@@ -179,7 +192,8 @@ export async function generateConsultationReport(input: {
       providerOptions: model.provider === "openai" ? { openai: { store: false } } : undefined,
     });
     if (generated.finishReason !== "stop") throw new Error("Incomplete report");
-    body = plainReport(generated.text).slice(0, 20000);
+    const content = plainReport(generated.text);
+    if (content) body = [request.heading, `Data de Geração: ${generatedAt(now)}`, "", reportSeparator, "", identification, "", content].join("\n").slice(0, 20000);
   } catch (cause) {
     console.error(JSON.stringify({ event: "consultation_report_failed", mode, reason: cause instanceof Error ? cause.name : "unknown" }));
     return { ok: false, error: "unavailable" };

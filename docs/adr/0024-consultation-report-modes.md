@@ -22,9 +22,23 @@ Personas e focos: médico(a) do esporte, enfermeiro(a), fisioterapeuta esportivo
 
 O modo detalhado tem até 400 palavras. Cada seção cumpre uma finalidade sem repetir as outras e sem reproduzir o diálogo. Seções vazias recebem "Não abordado", e os dados relevantes que não foram tratados na consulta aparecem em tópicos curtos só na seção 11. O sintético tem até 250 palavras.
 
+## Formato do relatório
+
+O formato segue o relatório de referência aprovado pelo responsável pelo produto. O sistema monta o cabeçalho, sem passar pelo modelo:
+
+- "RELATÓRIO [MÉDICO | DE ENFERMAGEM | FISIOTERAPÊUTICO | NUTRICIONAL | PSICOLÓGICO] - CONSULTA", com a data de geração no horário de Brasília e um separador;
+- "1. IDENTIFICAÇÃO DO PACIENTE", com dados do cadastro do atleta: nome e idade, data de nascimento, ID CBB e categoria ou equipe. O documento de identidade continua oculto, como em todo o fluxo de leitura do cadastro.
+
+O modelo escreve a partir da seção 2, com seções numeradas em maiúsculas, linhas "Campo: valor", itens com "•", diagnóstico no padrão "• Nome (termo técnico) — CID-10: código" e conduta em itens que começam com verbo no infinitivo.
+
+- **Sintético:** 2. DATA DA CONSULTA, 3. QUEIXA PRINCIPAL, 4. RESUMO CLÍNICO, 5. DIAGNÓSTICO PRINCIPAL, 6. CONDUTA, 7. RETORNO.
+- **Detalhado:** 2. DATA DA CONSULTA, 3. QUEIXA PRINCIPAL, 4. HISTÓRIA DA DOENÇA ATUAL, 5. EXAME FÍSICO, 6. HIPÓTESES DIAGNÓSTICAS, 7. DIAGNÓSTICOS DIFERENCIAIS, 8. EXAMES COMPLEMENTARES, 9. CONDUTA, 10. ORIENTAÇÕES, 11. RETORNO.
+
+Lacunas relevantes aparecem numa frase sutil do resumo ou da HDA, sem seção própria. Com informação limitada, o relatório indica o diagnóstico mais provável, com CID-10 compatível com o grau de certeza, e propõe conduta e retorno em termos gerais, sem citar medicamentos, doses ou exames que não constem na consulta.
+
 ## Salvaguardas
 
-Hipóteses, diferenciais e exames a considerar são marcados como sugestões para validação do profissional. Conduta, orientações e retorno registram só o que foi dito. Nada é gravado antes da confirmação no cartão. O cartão `choose`, como as demais propostas, fica apenas no navegador e não entra no histórico salvo.
+Diagnóstico, conduta e retorno indicados a partir do contexto são propostas para validação do profissional. O relatório não inventa fatos: queixas, antecedentes, achados, resultados, datas, medicamentos ou doses que não constem na consulta. Nada é gravado antes da confirmação no cartão. O cartão `choose`, como as demais propostas, fica apenas no navegador e não entra no histórico salvo.
 
 ## Limites
 
