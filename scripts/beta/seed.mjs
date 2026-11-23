@@ -3,7 +3,7 @@ import { mkdirSync, writeFileSync, existsSync, readFileSync, readdirSync } from 
 import { join } from "node:path";
 import { homedir } from "node:os";
 import assert from "node:assert/strict";
-import { users, keys, client, query, batch, quote as q, projectRef, authConfig } from "./remote.mjs";
+import { users, keys, client, query, batch, quote as q, projectRef, authConfig, environmentName } from "./remote.mjs";
 import { reconcileDeliveries } from "../../src/features/delivery/engine.ts";
 
 // Password arrives only via a hidden terminal prompt piped into stdin, never argv.
@@ -17,7 +17,7 @@ assert.equal(existing, 0, "Projeto contém atletas fora deste seed; não mistura
 const { service, publishable } = keys(), admin = client(service);
 const dir = join(homedir(), ".config", "prontuario-cbb");
 mkdirSync(dir, { recursive: true, mode: 0o700 });
-const secretFile = join(dir, "beta-admin.json");
+const secretFile = join(dir, `${environmentName}-admin.json`);
 let adminPassword = existsSync(secretFile) ? JSON.parse(readFileSync(secretFile, "utf8")).password : randomBytes(32).toString("base64url");
 writeFileSync(secretFile, JSON.stringify({ projectRef, email: users[6].email, password: adminPassword }, null, 2), { mode: 0o600 });
 const oldUsers = (await admin.auth.admin.listUsers({ perPage: 1000 })).data.users;
@@ -40,7 +40,7 @@ for (const u of users) {
   u.session = signed.data.session;
 }
 writeFileSync(secretFile, JSON.stringify({ projectRef, email: users[6].email, password: adminPassword }, null, 2), { mode: 0o600 });
-writeFileSync(join(dir, "beta-sessions.json"), JSON.stringify(users.map(u => ({ email: u.email, id: u.id, session: u.session }))), { mode: 0o600 });
+writeFileSync(join(dir, `${environmentName}-sessions.json`), JSON.stringify(users.map(u => ({ email: u.email, id: u.id, session: u.session }))), { mode: 0o600 });
 password = ""; adminPassword = "";
 const id = key => {
   const h = createHash("sha256").update(`${batch}:${key}`).digest("hex").slice(0, 32).split("");

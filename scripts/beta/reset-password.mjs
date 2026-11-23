@@ -1,4 +1,4 @@
-import { users, keys, client } from "./remote.mjs";
+import { users, keys, client, projectRef, environmentName } from "./remote.mjs";
 import { writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
@@ -14,5 +14,5 @@ if (!user || user.app_metadata?.cbb_beta_batch !== "beta-008b-v1") throw new Err
 const result = await admin.auth.admin.updateUserById(user.id, { password, email_confirm: true });
 if (result.error) throw new Error("Redefinição recusada; valores privados omitidos.");
 if (users.find(u => u.email === email).admin)
-  writeFileSync(join(homedir(), ".config/prontuario-cbb/beta-admin.json"), JSON.stringify({ projectRef: "noqixverpzgvfrcybrrt", email, password },null,2), {mode:0o600});
+  writeFileSync(join(homedir(), `.config/prontuario-cbb/${environmentName}-admin.json`), JSON.stringify({ projectRef, email, password },null,2), {mode:0o600});
 console.log(`Senha redefinida administrativamente: ${email}. Nenhum e-mail enviado.`);

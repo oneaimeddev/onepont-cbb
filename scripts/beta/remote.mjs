@@ -4,7 +4,17 @@ import { tmpdir, homedir } from "node:os";
 import { join } from "node:path";
 import { createClient } from "@supabase/supabase-js";
 
-export const projectRef = "noqixverpzgvfrcybrrt";
+// Production Beta by default; CBB_TARGET=homologacao with CBB_SUPABASE_PROJECT_REF selects the
+// separate homologation project used by the preview link. The two never share data or secrets.
+const productionRef = "noqixverpzgvfrcybrrt";
+export const homologation = process.env.CBB_TARGET === "homologacao";
+export const projectRef = homologation ? (process.env.CBB_SUPABASE_PROJECT_REF ?? "") : productionRef;
+if (!/^[a-z]{20}$/.test(projectRef)) throw new Error("Informe CBB_SUPABASE_PROJECT_REF com a referência do projeto de homologação.");
+if (homologation && projectRef === productionRef) throw new Error("A homologação não pode usar o projeto de produção.");
+export const environmentName = homologation ? "homologacao" : "beta";
+export const siteUrl = homologation
+  ? "https://prontuario-cbb-beta-git-homologacao-one-ai-dev.vercel.app"
+  : "https://prontuario-cbb-beta.vercel.app";
 export const remoteUrl = `https://${projectRef}.supabase.co`;
 export const batch = "beta-008b-v1";
 export function cli(args, input) {

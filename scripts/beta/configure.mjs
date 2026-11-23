@@ -1,8 +1,8 @@
-import { cli, keys, remoteUrl, projectRef, authConfig } from "./remote.mjs";
+import { cli, keys, remoteUrl, projectRef, authConfig, homologation, siteUrl } from "./remote.mjs";
 try { process.loadEnvFile(".env.local"); } catch { /* Optional AI configuration. */ }
 const { service, publishable } = keys();
 await authConfig({ disable_signup: true, mailer_autoconfirm: false,
-  site_url: "https://prontuario-cbb-beta.vercel.app", uri_allow_list: "https://prontuario-cbb-beta.vercel.app/**" });
+  site_url: siteUrl, uri_allow_list: `${siteUrl}/**` });
 const env = {
   NEXT_PUBLIC_SUPABASE_URL: remoteUrl, NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: publishable,
   SUPABASE_SERVICE_ROLE_KEY: service, CBB_SIGNING_MODE: "demo", CBB_DEPLOYMENT_ENV: "controlled-demo",
@@ -18,8 +18,10 @@ if (process.env.CBB_INTELLIGENCE_API_KEY && !process.env.CBB_INTELLIGENCE_API_KE
   }
 } else console.log("CBB Intelligence indisponível: credencial real ausente.");
 for (const [name, value] of Object.entries(env)) {
-  cli(["vercel", "env", "add", name, "--environment", "production", "--project", "prontuario-cbb-beta", "--force", "--yes",
+  // Homologation values apply only to Preview deployments of the homologacao branch.
+  const scope = homologation ? [name, "preview", "homologacao"] : [name, "--environment", "production"];
+  cli(["vercel", "env", "add", ...scope, "--project", "prontuario-cbb-beta", "--force", "--yes",
     ...(["SUPABASE_SERVICE_ROLE_KEY", "CBB_INTELLIGENCE_API_KEY"].includes(name) ? ["--sensitive"] : ["--no-sensitive"])], value);
   console.log(`Configurada: ${name}`);
 }
-console.log("Cadastro público desabilitado. Configuração restrita ao projeto beta.");
+console.log(`Cadastro público desabilitado. Configuração restrita ao ambiente ${homologation ? "de homologação (Preview, branch homologacao)" : "beta (Production)"}.`);

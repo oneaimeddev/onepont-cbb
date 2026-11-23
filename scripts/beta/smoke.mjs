@@ -5,9 +5,9 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import { chromium } from "@playwright/test";
 import { createServerClient } from "@supabase/ssr";
-import { users, keys, client, query, remoteUrl, authConfig, batch } from "./remote.mjs";
-const base = "https://prontuario-cbb-beta.vercel.app";
-const sessions = JSON.parse(readFileSync(join(homedir(), ".config/prontuario-cbb/beta-sessions.json"), "utf8"));
+import { users, keys, client, query, remoteUrl, authConfig, batch, siteUrl, environmentName } from "./remote.mjs";
+const base = siteUrl;
+const sessions = JSON.parse(readFileSync(join(homedir(), `.config/prontuario-cbb/${environmentName}-sessions.json`), "utf8"));
 const { publishable, service } = keys();
 const id = key => {
   const h = createHash("sha256").update(`${batch}:${key}`).digest("hex").slice(0,32).split("");
