@@ -1,3 +1,4 @@
+import type { ProviderOptions } from "@ai-sdk/provider-utils";
 import "server-only";
 import { spokenEditSchema, displayedProposalSchema } from "./operations/document-intent";
 import { documentDictation, documentOpeningQuestion } from "./operations/document-dictation";
@@ -211,6 +212,11 @@ function presentationFrom(steps: ReadonlyArray<{ toolResults: ReadonlyArray<{ to
   return { athletes, navigation, search, draft, document, context, contextCleared, sessionId, kind };
 }
 
+function chatThinkingLevel(): "minimal" | "low" | "medium" | "high" {
+  const level = process.env.CBB_INTELLIGENCE_THINKING;
+  return level === "minimal" || level === "medium" || level === "high" ? level : "low";
+}
+
 function replyText(textReply: string, athletes: AgentReply["athletes"]) {
   return textReply || (athletes.length ? "Encontrei estes atletas autorizados." : "Não consegui concluir esse pedido. Você pode dizer o nome do atleta, pedir a lista de atletas ou descrever o que precisa de outra forma.");
 }
@@ -310,15 +316,22 @@ async function prepareConversation(input: unknown) {
     return null;
   }
 
-  // Quick replies the assistant offers at the end of a turn; shown as buttons under the reply.
+  // Guidance and quick replies: the assistant writes the whole answer in `message` and the
+  // options shown as buttons under it. Writing the text in the call guarantees the answer is
+  // never empty, even when the model ends its turn right after the tool.
   let replyOptions: string[] = [];
+  let replyMessage = "";
   const offerReplies = tool({
-    description: "Oferece de uma a três respostas rápidas, como botões, quando a resposta termina com uma pergunta, uma escolha ou uma sugestão de próximo passo. As opções são ações ou escolhas curtas, nunca dados clínicos.",
-    inputSchema: z.object({ options: z.array(z.string().min(1).max(60)).min(1).max(3) }),
-    execute: async ({ options }) => {
-      if (replyOptions.length) return { status: "done" as const, note: "As opções já foram oferecidas. Finalize a resposta em texto." };
+    description: "Responde ao profissional com uma orientação, pergunta ou sugestão de próximo passo e oferece de uma a três respostas rápidas como botões. Escreva em message o texto completo da resposta. As opções são ações ou escolhas curtas, nunca dados clínicos.",
+    inputSchema: z.object({
+      message: z.string().min(2).max(800),
+      options: z.array(z.string().min(1).max(60)).max(3),
+    }),
+    execute: async ({ message, options }) => {
+      if (replyMessage) return { status: "done" as const, note: "A resposta já foi enviada. Encerre." };
+      replyMessage = message.trim();
       replyOptions = presentedReplies(options);
-      return { status: "ok" as const, note: "Opções exibidas. Se ainda não escreveu a resposta, escreva-a agora." };
+      return { status: "ok" as const, note: "Resposta e opções exibidas. Encerre sem repetir o texto." };
     },
   });
 
@@ -1083,6 +1096,8 @@ async function prepareConversation(input: unknown) {
     holdClinicalNarrative: canAuthorDocuments || documentPreparation.requested,
     attachmentView: () => attachmentPublished,
     repliesView: () => replyOptions,
+    replyMessageView: () => replyMessage,
+    contextAthleteId,
     clinicalView: () => clinicalPublished,
     request: {
       model: model.provider === "google"
@@ -1166,7 +1181,10 @@ async function prepareConversation(input: unknown) {
       stopWhen: [stepCountIs(6), hasToolCall("resumeDocumentProposal", "editDocumentProposal", "offerConsultationReport")],
       maxRetries: 1,
       timeout: 60_000,
-      providerOptions: model.provider === "openai" ? { openai: { store: false } } : undefined,
+      // The chat answers routing and tool calls; a low thinking level keeps the reply fast.
+      providerOptions: (model.provider === "openai"
+        ? { openai: { store: false } }
+        : { google: { thinkingConfig: { thinkingLevel: chatThinkingLevel() } } }) satisfies ProviderOptions as ProviderOptions,
     },
   };
 }
@@ -1244,7 +1262,17 @@ export async function openIntelligenceStream(input: unknown): Promise<{ stream: 
         }
         const steps = await result.steps;
         const view = presentationFrom(steps);
-        const modelText = (await result.text).trim();
+        // The guidance written through offerReplies replaces an empty model text; without either,
+        // a missing athlete is the usual cause, so the fallback points to the right first step.
+        const offered = prepared.replyMessageView();
+        const rawText = (await result.text).trim();
+        const modelText = rawText && offered && !rawText.includes(offered.slice(0, 40)) ? rawText : rawText || offered;
+        const emptyTurn = !modelText && !steps.some((step) => step.toolResults.some((item) => item.toolName !== "offerReplies"));
+        const guidance = emptyTurn
+          ? prepared.contextAthleteId
+            ? { text: "Não entendi bem o que você precisa. Pode descrever em uma frase? Por exemplo: registrar uma evolução, gerar o relatório de uma consulta ou ver a linha do tempo.", replies: ["Registrar uma evolução", "Ver a linha do tempo"] }
+            : { text: "Para começar, escolha o atleta: diga o nome dele aqui no chat ou peça a lista de atletas. Depois é só dizer o que precisa, como uma evolução ou o relatório de uma consulta.", replies: ["Listar os atletas"] }
+          : null;
         const preparation = prepared.documentView();
         const medicalDocumentTool = steps.some((step) => step.toolCalls.some((call) => ["preparePrescription", "prepareSurgicalOrder", "prepareExamRequest", "prepareCertificate", "prepareReferral", "saveClinicalDocument"].includes(call.toolName)));
         const saveOnly = !preparation.attempted && !preparation.requested && steps.some((step) => step.toolCalls.some((call) => call.toolName === "saveClinicalDocument"));
@@ -1281,7 +1309,7 @@ export async function openIntelligenceStream(input: unknown): Promise<{ stream: 
                 ? `${view.context.name} está em contexto.`
                 : view.kind === "search"
               ? compactDirectoryReply(view.search?.total ?? view.athletes.length, view.athletes.length)
-              : replyText(modelText, view.athletes));
+              : guidance?.text ?? replyText(modelText, view.athletes));
         const clinical=prepared.clinicalView();
         send("done", {
           clinicalSearch: clinical?.board??null,
@@ -1297,7 +1325,7 @@ export async function openIntelligenceStream(input: unknown): Promise<{ stream: 
           context: clinical ? null : view.context,
           contextCleared: clinical ? false : view.contextCleared,
           sessionId: view.sessionId,
-          replies: clinical ? [] : prepared.repliesView(),
+          replies: clinical ? [] : guidance?.replies ?? prepared.repliesView(),
         });
       } catch (error) {
         send("error", { error: failureCode(error) });
