@@ -73,6 +73,7 @@ const nameStops = new Set([
   "lesao", "lesoes", "registro", "registros", "evolucao", "evolucoes", "pedido", "pedidos", "fonte", "fontes",
   "que", "como", "qual", "quais", "quando", "onde", "essa", "esse", "este", "esta", "para", "com", "sem", "nos", "nas",
   "pelo", "pela", "mais", "recente", "somente", "agora", "foram", "teve", "ultima", "ultimas", "informacao", "solicitacao",
+  "uma", "umas", "uns", "ele", "ela", "eles", "elas", "dele", "dela", "paciente", "consulta", "queda", "dor", "ombro", "tornozelo",
   ...monthNames,
 ]);
 
@@ -123,9 +124,17 @@ function monthRange(start: number, end: number, today: string) {
 export function historyRequest(utterance: string, today = saoPauloDate(new Date())): HistoryAsk {
   const text = foldName(utterance);
   const sources = /\bde onde veio\b/.test(text) || /\bquais fontes\b/.test(text) || /\bquais registros sustentam\b/.test(text) || /\bfontes sustentam\b/.test(text);
-  const fresh = /\b(analise|analisar|historico)\b/.test(text) || /\bcomo evoluiu\b/.test(text) || /\bhouve mudanc/.test(text) || /\bdivergenc/.test(text) || /\bquais lesoes\b/.test(text) || /\bcompare as evolucoes\b/.test(text) || /\bquais tratamentos\b/.test(text) || /\bforam registrados\b/.test(text);
+  // "histórico" alone is common in clinical narratives ("histórico de lesão"): it only asks for the
+  // longitudinal analysis when it is the object of a request.
+  const asksHistory = /\b(analise|analisar)\b/.test(text)
+    || /^(o )?historico\b/.test(text)
+    || /\b(mostre|mostra|mostrar|veja|ver|consulte|consultar|traga|trazer|abra|abrir|resuma|resumir|resumo|leia|ler|qual e|como esta)\b(?:\s+\S+){0,4}\s+historico\b/.test(text);
+  const fresh = asksHistory || /\bcomo evoluiu\b/.test(text) || /\bhouve mudanc/.test(text) || /\bdivergenc/.test(text) || /\bquais lesoes\b/.test(text) || /\bcompare as evolucoes\b/.test(text) || /\bquais tratamentos\b/.test(text) || /\bforam registrados\b/.test(text);
   const follow = /\bfoque\b/.test(text) || /\bamplie\b/.test(text) || /\be quanto\b/.test(text) || /\bnesse periodo\b/.test(text) || /\bo que aconteceu entre\b/.test(text) || /\bcompare o comeco\b/.test(text) || /\bcompare o final\b/.test(text);
-  const command = sources ? "sources" : fresh ? "analyze" : follow ? "follow" : "unknown";
+  // A long clinical account (a consultation, a dictated case) is not a history command unless it
+  // explicitly asks for an analysis; it goes to the assistant as a normal message.
+  const narrative = text.length > 280 && !/\b(analise|analisar)\b/.test(text);
+  const command = narrative ? "unknown" : sources ? "sources" : fresh ? "analyze" : follow ? "follow" : "unknown";
   const unbounded = /\btodo o historico\b/.test(text) || /\bhistorico completo\b/.test(text) || /\bhistorico autorizado\b/.test(text);
   const months = /\bultim[oa]s? (tres|3) meses\b/.test(text) ? 3 : /\bultim[oa]s? (seis|6) meses\b/.test(text) ? 6 : /\bultim[oa]s? (doze|12) meses\b/.test(text) || /\bultim[oa] ano\b/.test(text) ? 12 : null;
   const start = monthNames.findIndex((name) => new RegExp(`\\bentre ${name}\\b`).test(text));

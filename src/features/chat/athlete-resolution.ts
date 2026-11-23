@@ -32,6 +32,8 @@ export function nameMatches(value: string, query: string) {
 
 export function athleteCommand(utterance: string): AthleteCommand {
   const text = foldName(utterance);
+  // A long clinical account (a consultation) is not an athlete command, even if it says "histórico".
+  if (text.length > 280) return "unknown";
   if (/\b(encerre|encerrar|tire|tira|remova|remover|limpe|limpar)\b/.test(text) && text.includes("contexto")) return "clear";
   if (/\b(abra|abrir|abre)\b/.test(text) && text.includes("prontuario")) return "open";
   if (/\b(busque|busca|buscar|liste|listar|procure|procura|procurar|quais)\b/.test(text)) return "list";
