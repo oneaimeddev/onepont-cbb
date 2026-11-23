@@ -5,6 +5,7 @@ import { BirthDateField } from "./birth-date-field";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useMemo, useRef, useState, type Dispatch, type FormEvent, type SetStateAction } from "react";
 import { Icon } from "../../components/icon";
+import { photoAccept, preparePhoto } from "./photo-prepare";
 import type { CatalogOption, RegistrationCatalog } from "./data";
 import { addSportLink, createOrganization, registerAthlete, type RegisterResult } from "../../app/(workspace)/atletas/novo/actions";
 
@@ -220,7 +221,9 @@ export function RegistrationForm({ catalog, initialToday, onDone }: { catalog: R
     setPending(true);
     setErrors({});
     const form = event.currentTarget;
-    const result = await registerAthlete(new FormData(form));
+    const fields = new FormData(form);
+    fields.delete("photo"); // The photo is sent separately, already reduced in the browser.
+    const result = await registerAthlete(fields);
     if (!result.ok || !result.id) {
       const field = result.field ?? "name";
       setSection(fieldSection[field] ?? "pessoais");
@@ -231,7 +234,7 @@ export function RegistrationForm({ catalog, initialToday, onDone }: { catalog: R
     const photo = (form.elements.namedItem("photo") as HTMLInputElement | null)?.files?.[0];
     if (photo) {
       const body = new FormData();
-      body.set("photo", photo);
+      try { body.set("photo", await preparePhoto(photo)); } catch { /* The server reports the failure below. */ }
       const response = await fetch(`/api/atletas/${result.id}/foto`, { method: "POST", body });
       if (!response.ok) setErrors({ photo: "O atleta foi cadastrado, mas a foto não foi salva." });
     }
@@ -267,7 +270,7 @@ export function RegistrationForm({ catalog, initialToday, onDone }: { catalog: R
         {errors.name && <p id="erro-name" className="field-error" role="alert">{errors.name}</p>}
         <label>Nome social<Optional /><input name="social" maxLength={160} autoComplete="off" /></label>
         <BirthDateField initialToday={initialToday} error={errors.birth} onChange={() => setErrors((current) => ({ ...current, birth: "" }))} />
-        <label>Fotografia<Optional /><input name="photo" type="file" accept="image/jpeg,image/png,image/webp" /></label>
+        <label>Fotografia<Optional /><input name="photo" type="file" accept={photoAccept} /></label>
         {errors.photo && <p className="field-error" role="alert">{errors.photo}</p>}
         <label>CPF ou identificador institucional<Optional /><input name="document" maxLength={40} autoComplete="off" spellCheck={false} aria-invalid={Boolean(errors.document)} /></label>
         {errors.document && <p className="field-error" role="alert">{errors.document}</p>}

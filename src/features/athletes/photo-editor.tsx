@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { PhotoError, photoAccept, preparePhoto } from "./photo-prepare";
 
 export function PhotoEditor({ athleteId }: { athleteId: string }) {
   const router = useRouter();
@@ -16,8 +17,8 @@ export function PhotoEditor({ athleteId }: { athleteId: string }) {
     setStatus("");
     const form = new FormData();
     if (remove) form.set("remove", "yes");
-    else if (file) form.set("photo", file);
     try {
+      if (!remove && file) form.set("photo", await preparePhoto(file));
       const response = await fetch(`/api/atletas/${athleteId}/foto`, { method: "POST", body: form });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error);
@@ -27,15 +28,15 @@ export function PhotoEditor({ athleteId }: { athleteId: string }) {
       if (input.current) { input.current.value = ""; input.current.dispatchEvent(new Event("change", { bubbles: true })); }
       router.refresh();
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : "Falha ao salvar. Tente novamente.");
+      setStatus(error instanceof PhotoError || error instanceof Error ? error.message : "Falha ao salvar. Tente novamente.");
     } finally { setBusy(false); }
   }
 
   return (
     <section className="photo-editor">
       <h2>Foto de perfil</h2>
-      <label htmlFor="photo">JPEG, PNG ou WebP, até 5 MB</label>
-      <input ref={input} id="photo" type="file" accept="image/jpeg,image/png,image/webp" disabled={busy}
+      <label htmlFor="photo">Qualquer foto do aparelho (JPEG, PNG, WebP ou HEIC). Imagens grandes são reduzidas automaticamente.</label>
+      <input ref={input} id="photo" type="file" accept={photoAccept} disabled={busy}
         onChange={(event) => {
           const selected = event.target.files?.[0];
           setFile(selected);
