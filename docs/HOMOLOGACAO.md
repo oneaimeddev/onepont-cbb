@@ -12,17 +12,26 @@
 3. O responsável testa no link de preview.
 4. Aprovada, a mesma versão é integrada na `main`, as migrações são aplicadas na produção e a Vercel publica o Beta.
 
-## Preparação inicial (uma vez)
+## Banco de homologação (GitHub Actions)
 
-1. No painel do Supabase, criar o projeto `prontuario-cbb-homologacao` na organização OneAI-Dev, região West US (Oregon). Guardar a senha do banco fora do chat.
-2. Na máquina com Supabase CLI e Vercel CLI autenticados, na pasta do projeto atualizada:
+O projeto Supabase de homologação é `bcfircabczfbfdsjtgts`. O workflow **Banco de homologação** (`.github/workflows/homologacao-db.yml`) aplica as migrações a cada push na branch `homologacao` que traga migrações novas e pode ser executado manualmente em Actions → Banco de homologação → Run workflow (branch `homologacao`), com a opção de criar os dados fictícios e as contas de avaliação.
 
-   ```bash
-   bash scripts/beta/homologacao.sh <referência-do-projeto>
-   ```
+Segredos do repositório (Settings → Secrets and variables → Actions), cadastrados pelo responsável:
 
-   O script aplica as migrações, cria as variáveis de Preview da branch `homologacao` na Vercel (Supabase de homologação e, se houver no `.env.local`, a chave de IA) e cria os dados fictícios com as mesmas contas de avaliação. A senha do administrador da homologação fica em `~/.config/prontuario-cbb/homologacao-admin.json`, separada da produção.
-3. Na Vercel, reimplantar o último deploy da branch `homologacao` para carregar as variáveis.
+- `SUPABASE_ACCESS_TOKEN`: token pessoal do Supabase (Account → Access Tokens).
+- `HOMOLOG_DB_PASSWORD`: senha do banco do projeto de homologação.
+- `HOMOLOG_EVALUATOR_PASSWORD`: senha das contas de avaliação da homologação.
+
+## Variáveis do Preview na Vercel
+
+Só para Preview e branch `homologacao`. As públicas (URL e chave anon do Supabase de homologação, modo de assinatura, modelo de IA) já estão configuradas. Os segredos são cadastrados no painel da Vercel pelo responsável:
+
+- `SUPABASE_SERVICE_ROLE_KEY`: chave `service_role` do projeto de homologação (Supabase → Project Settings → API Keys).
+- `CBB_INTELLIGENCE_API_KEY` e `CONSULTATION_VOICE_BETA`: mesmos valores da produção, se a IA e a voz devem funcionar no preview.
+
+Depois de alterar variáveis, reimplantar o último deploy da branch `homologacao`.
+
+Alternativa local (máquina com Supabase CLI e Vercel CLI autenticados): `bash scripts/beta/homologacao.sh bcfircabczfbfdsjtgts`.
 
 ## Acesso ao preview
 

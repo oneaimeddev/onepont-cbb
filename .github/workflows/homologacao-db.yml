@@ -1,0 +1,62 @@
+# Banco de homologação (Supabase separado da produção).
+# - Push na branch homologacao com migrações novas: aplica as migrações.
+# - Execução manual (Actions → Banco de homologação → Run workflow): aplica as migrações e,
+#   se marcado, cria os dados fictícios e as contas de avaliação.
+# Segredos do repositório: SUPABASE_ACCESS_TOKEN, HOMOLOG_DB_PASSWORD, HOMOLOG_EVALUATOR_PASSWORD.
+name: Banco de homologação
+
+on:
+  push:
+    branches: [homologacao]
+    paths: ["supabase/migrations/**"]
+  workflow_dispatch:
+    inputs:
+      seed:
+        description: "Criar dados fictícios e contas de avaliação"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: homologacao-db
+  cancel-in-progress: false
+
+jobs:
+  banco:
+    runs-on: ubuntu-latest
+    env:
+      CBB_TARGET: homologacao
+      CBB_SUPABASE_PROJECT_REF: bcfircabczfbfdsjtgts
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.HOMOLOG_DB_PASSWORD }}
+    steps:
+      - name: Somente a branch homologacao
+        if: github.ref != 'refs/heads/homologacao'
+        run: |
+          echo "Execute este workflow na branch homologacao." >&2
+          exit 1
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Conferir segredos
+        run: |
+          test -n "$SUPABASE_ACCESS_TOKEN" || { echo "Falta o segredo SUPABASE_ACCESS_TOKEN." >&2; exit 1; }
+          test -n "$SUPABASE_DB_PASSWORD" || { echo "Falta o segredo HOMOLOG_DB_PASSWORD." >&2; exit 1; }
+      - name: Aplicar migrações
+        run: |
+          npx --no-install supabase link --project-ref "$CBB_SUPABASE_PROJECT_REF"
+          npx --no-install supabase db push --linked --yes
+      - name: Configurar autenticação
+        run: node scripts/beta/auth-setup.mjs
+      - name: Dados fictícios
+        if: github.event_name == 'workflow_dispatch' && inputs.seed
+        env:
+          EVALUATOR_PASSWORD: ${{ secrets.HOMOLOG_EVALUATOR_PASSWORD }}
+        run: |
+          test -n "$EVALUATOR_PASSWORD" || { echo "Falta o segredo HOMOLOG_EVALUATOR_PASSWORD." >&2; exit 1; }
+          printf '%s' "$EVALUATOR_PASSWORD" | node scripts/beta/seed.mjs

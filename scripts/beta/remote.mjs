@@ -51,7 +51,7 @@ export function client(key) {
   return createClient(remoteUrl, key, { auth: { persistSession: false, autoRefreshToken: false } });
 }
 export async function authConfig(patch) {
-  const token = readFileSync(join(homedir(), ".supabase/access-token"), "utf8").trim();
+  const token = process.env.SUPABASE_ACCESS_TOKEN?.trim() || readFileSync(join(homedir(), ".supabase/access-token"), "utf8").trim();
   const res = await fetch(`https://api.supabase.com/v1/projects/${projectRef}/config/auth`, {
     method: patch ? "PATCH" : "GET", headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
     ...(patch ? { body: JSON.stringify(patch) } : {}),
