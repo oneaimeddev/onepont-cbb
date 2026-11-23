@@ -18,7 +18,7 @@ O texto dos dois é montado em `src/features/documents/letter-format.ts`, só co
 
 ## Banco
 
-A migração `20261123000100_certificate_referral_documents.sql` amplia as restrições das tabelas de documentos, propostas e revisões. Ela envolve as funções de conteúdo canônico, pendências, prontidão, rótulo e detecção do tipo pela fala, e os tipos existentes continuam passando pelas funções anteriores, renomeadas para `*_c2`. A migração também regenera, a partir da definição atual, toda função que lista os tipos de documento, e amplia para sete tipos o limite da busca clínica. Ela foi validada num PostgreSQL local com as 62 migrações anteriores: salvar, revisar, listar, buscar, propor pelo chat e salvar pelo cartão, com os tipos novos e os antigos.
+A migração `20261123034910_certificate_referral_documents.sql` amplia as restrições das tabelas de documentos, propostas e revisões. Ela envolve as funções de conteúdo canônico, pendências, prontidão, rótulo e detecção do tipo pela fala, e os tipos existentes continuam passando pelas funções anteriores, renomeadas para `*_c2`. A migração também regenera, a partir da definição atual, toda função que lista os tipos de documento, e amplia para sete tipos o limite da busca clínica. Ela foi validada num PostgreSQL local com as 62 migrações anteriores: salvar, revisar, listar, buscar, propor pelo chat e salvar pelo cartão, com os tipos novos e os antigos.
 
 ## Chat
 
