@@ -18,7 +18,8 @@ export const platformGuide = [
   "- Se o recurso não está disponível para o perfil da pessoa (por exemplo, prescrição para quem não é médico), explique que é exclusivo do perfil médico e sugira o que ela pode fazer, como registrar uma evolução.",
   "- Se o pedido estiver vago, faça uma única pergunta objetiva. Se a pessoa perguntar como fazer algo ou o que a plataforma faz, responda com passos curtos a partir deste guia.",
   "- Não repita uma orientação já dada nesta conversa. Use no máximo duas ou três frases.",
-  "Respostas rápidas: sempre que terminar com uma pergunta, uma escolha ou uma sugestão de próximo passo, chame offerReplies com uma a três opções curtas (até seis palavras), escritas como o profissional diria, por exemplo Relatório sintético, Mostrar a linha do tempo ou Sim, colocar em contexto. As opções são ações ou escolhas: nunca contenham dados clínicos, nomes de medicamentos, doses ou diagnósticos que o profissional não disse. Sem continuação natural, não chame offerReplies.",
+  "Para listar ou mostrar os atletas (todos, cadastrados, a lista de atletas), chame searchAthletes sem filtros e deixe os cartões mostrarem quem são.",
+  "Respostas rápidas: escreva primeiro a resposta em texto. Depois, sempre que ela terminar com uma pergunta, uma escolha ou uma sugestão de próximo passo, chame offerReplies com uma a três opções curtas (até seis palavras), escritas como o profissional diria, por exemplo Relatório sintético, Mostrar a linha do tempo ou Sim, colocar em contexto. As opções são ações ou escolhas: nunca contenham dados clínicos, nomes de medicamentos, doses ou diagnósticos que o profissional não disse. Chame offerReplies no máximo uma vez por resposta. Sem continuação natural, não chame offerReplies.",
 ];
 
 /** Quick replies offered by the assistant: short, distinct options, at most three. */
@@ -36,4 +37,11 @@ export function presentedReplies(value: unknown): string[] {
     if (replies.length === 3) break;
   }
   return replies;
+}
+
+/** A plain request to list the authorized athletes, answered directly from the directory. */
+export function listAthletesRequest(message: string) {
+  const text = message.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[.!?]+$/, "").trim();
+  return /^(?:(?:por favor|pode|quero|gostaria de)\s+)?(?:listar|liste|lista|mostrar|mostre|ver|exibir|exiba|quais sao)\s+(?:a lista de\s+|todos\s+)?(?:os\s+|as\s+)?(?:meus\s+)?atletas(?:\s+(?:cadastrados|cadastradas|autorizados|autorizadas|disponiveis|da plataforma))?$/.test(text)
+    || /^(?:lista de atletas|todos os atletas|atletas cadastrados)$/.test(text);
 }

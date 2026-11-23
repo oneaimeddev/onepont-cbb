@@ -12,7 +12,7 @@ import { activityFilterSchema, clinicalSearchBoard } from "../clinical-search/co
 import { clinicalSearchIntent } from "../clinical-search/intent";
 import { clinicalSearchConversation, runClinicalSearch } from "../clinical-search/service";
 import { attachmentConversation } from "../attachments/chat-service";
-import { platformGuide, presentedReplies } from "./platform-guide";
+import { listAthletesRequest, platformGuide, presentedReplies } from "./platform-guide";
 import type { AttachmentBoard } from "../attachments/types";
 import { supabaseServer } from "../../lib/supabase";
 import { intelligenceModel } from "./config";
@@ -212,7 +212,7 @@ function presentationFrom(steps: ReadonlyArray<{ toolResults: ReadonlyArray<{ to
 }
 
 function replyText(textReply: string, athletes: AgentReply["athletes"]) {
-  return textReply || (athletes.length ? "Encontrei estes atletas autorizados." : "Não há informação autorizada suficiente para responder.");
+  return textReply || (athletes.length ? "Encontrei estes atletas autorizados." : "Não consegui concluir esse pedido. Você pode dizer o nome do atleta, pedir a lista de atletas ou descrever o que precisa de outra forma.");
 }
 
 async function prepareConversation(input: unknown) {
@@ -316,8 +316,9 @@ async function prepareConversation(input: unknown) {
     description: "Oferece de uma a três respostas rápidas, como botões, quando a resposta termina com uma pergunta, uma escolha ou uma sugestão de próximo passo. As opções são ações ou escolhas curtas, nunca dados clínicos.",
     inputSchema: z.object({ options: z.array(z.string().min(1).max(60)).min(1).max(3) }),
     execute: async ({ options }) => {
+      if (replyOptions.length) return { status: "done" as const, note: "As opções já foram oferecidas. Finalize a resposta em texto." };
       replyOptions = presentedReplies(options);
-      return { status: "ok" as const };
+      return { status: "ok" as const, note: "Opções exibidas. Se ainda não escreveu a resposta, escreva-a agora." };
     },
   });
 
@@ -1203,6 +1204,24 @@ export async function openIntelligenceStream(input: unknown): Promise<{ stream: 
     if(reply) {
       const bytes=new TextEncoder().encode(`event: done\ndata: ${JSON.stringify({text:reply.text,attachments:reply.board,athletes:[],navigation:null,search:null,draft:null,document:null,context:null})}\n\n`);
       return {stream:new ReadableStream<Uint8Array>({start(controller){controller.enqueue(bytes);controller.close();}})};
+    }
+  }
+  const listInput = requestSchema.safeParse(input);
+  if (listInput.success && listInput.data.messages.at(-1)?.role === "user" && listAthletesRequest(listInput.data.messages.at(-1)!.content)) {
+    // "Listar atletas" is answered straight from the authorized directory, without the model.
+    const model = intelligenceModel();
+    if (!model) return { error: "unavailable" };
+    const client = await supabaseServer();
+    const { data, error } = await client.rpc("agent_athlete_directory", { filters: { page: "1", page_size: String(directoryPageSize) } });
+    if (!error && data) {
+      const athletes = athletesFromDirectory(data.athletes);
+      const total = Number(data.total) || 0;
+      const payload = {
+        text: total ? `${compactDirectoryReply(total, athletes.length)} Para continuar com um deles, diga o nome ou toque no cartão.` : compactDirectoryReply(0, 0),
+        athletes, navigation: null, search: { total, page: 1, pageSize: directoryPageSize, filters: {} }, draft: null, document: null, context: null, contextCleared: false, replies: [],
+      };
+      const bytes = new TextEncoder().encode(`event: done\ndata: ${JSON.stringify(payload)}\n\n`);
+      return { stream: new ReadableStream<Uint8Array>({ start(controller) { controller.enqueue(bytes); controller.close(); } }) };
     }
   }
   const prepared = await prepareConversation(input);
