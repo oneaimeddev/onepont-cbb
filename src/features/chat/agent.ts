@@ -1235,11 +1235,25 @@ export async function openIntelligenceStream(input: unknown): Promise<{ stream: 
         }
       };
       try {
-        const result = streamText(prepared.request);
-        for await (const delta of result.textStream) {
-          if (delta && !prepared.holdClinicalNarrative) send("delta", { text: delta });
+        const started = Date.now();
+        const run = async (request: typeof prepared.request) => {
+          const attempt = streamText(request);
+          for await (const delta of attempt.textStream) {
+            if (delta && !prepared.holdClinicalNarrative) send("delta", { text: delta });
+          }
+          return { result: attempt, steps: await attempt.steps };
+        };
+        let { result, steps } = await run(prepared.request);
+        const answered = async () => Boolean((await result.text).trim()) || steps.some((step) => step.toolCalls.length > 0);
+        const empty = !(await answered());
+        if (empty) {
+          // The model returned neither text nor a tool call. Ask once more, with an explicit nudge,
+          // instead of falling back to a fixed text.
+          console.warn(JSON.stringify({ event: "intelligence_empty_turn", finish: steps.map((step) => step.finishReason), ms: Date.now() - started }));
+          ({ result, steps } = await run({ ...prepared.request, system: `${prepared.request.system}\nA tentativa anterior desta resposta não produziu conteúdo. Responda agora: use as ferramentas necessárias para atender o pedido e escreva a resposta ao profissional.` }));
         }
-        const steps = await result.steps;
+        // Per-turn diagnostics without clinical content: how the model finished, which tools it used.
+        console.info(JSON.stringify({ event: "intelligence_turn", retried: empty, ms: Date.now() - started, steps: steps.length, finish: steps.map((step) => step.finishReason), tools: steps.flatMap((step) => step.toolCalls.map((call) => call.toolName)) }));
         const view = presentationFrom(steps);
         // The guidance written through offerReplies replaces an empty model text; without either,
         // a missing athlete is the usual cause, so the fallback points to the right first step.
