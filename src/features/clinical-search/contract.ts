@@ -4,6 +4,8 @@ export const activityLabels = {
   prescription: "Prescrição médica",
   surgical_order: "Pedido cirúrgico",
   exam_request: "Solicitação de exame",
+  certificate: "Atestado",
+  referral: "Encaminhamento",
   attachment_result: "Resultado/laudo anexado",
 } as const;
 export type ActivityKind = keyof typeof activityLabels;
@@ -16,11 +18,13 @@ export const activityFilterSchema = z
           "prescription",
           "surgical_order",
           "exam_request",
+          "certificate",
+          "referral",
           "attachment_result",
         ]),
       )
       .min(1)
-      .max(5),
+      .max(7),
     period: z
       .enum([
         "all",

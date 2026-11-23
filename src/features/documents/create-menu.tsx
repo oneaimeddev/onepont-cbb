@@ -3,6 +3,15 @@
 import Link from "next/link";
 import "./create-menu.css";
 import { useEffect, useId, useRef, useState } from "react";
+import { documentKinds, documentMenu } from "./content";
+
+const ariaLabels = {
+  prescription: "Nova prescrição",
+  exam_request: "Nova solicitação de exames",
+  certificate: "Novo atestado",
+  referral: "Novo encaminhamento",
+  surgical_order: "Novo pedido cirúrgico",
+} as const;
 
 export function CreateDocumentMenu({ base }: { base: string }) {
   const [open, setOpen] = useState(false);
@@ -18,7 +27,8 @@ export function CreateDocumentMenu({ base }: { base: string }) {
     return () => document.removeEventListener("pointerdown", outside);
   }, [open]);
   return <div className="document-create" ref={root} onBlur={(event) => {
-    if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false);
+    // Safari does not focus links on tap (relatedTarget is null); outside taps close via pointerdown.
+    if (event.relatedTarget instanceof Node && !event.currentTarget.contains(event.relatedTarget)) setOpen(false);
   }} onKeyDown={(event) => {
     if (event.key === "Escape" && open) {
       event.preventDefault();
@@ -28,9 +38,12 @@ export function CreateDocumentMenu({ base }: { base: string }) {
   }}>
     <button ref={trigger} type="button" className="outline" aria-expanded={open} aria-controls={id} onClick={() => setOpen(!open)}>+ Novo documento</button>
     {open && <nav id={id} className="document-create-options" aria-label="Tipos de documento">
-      <Link href={`${base}/documentos/nova?tipo=prescricao`} aria-label="Nova prescrição" prefetch={false} onClick={() => setOpen(false)}>Prescrição</Link>
-      <Link href={`${base}/documentos/nova?tipo=cirurgia`} aria-label="Novo pedido cirúrgico" prefetch={false} onClick={() => setOpen(false)}>Pedido cirúrgico</Link>
-      <Link href={`${base}/documentos/nova?tipo=exames`} aria-label="Nova solicitação de exames" prefetch={false} onClick={() => setOpen(false)}>Solicitação de exames</Link>
+      {documentMenu.map(({ kind, group }, index) => (
+        <span key={kind} className="document-create-entry">
+          {group === "documents" && documentMenu[index - 1]?.group !== "documents" ? <span className="document-create-group" aria-hidden="true">Documentos</span> : null}
+          <Link href={`${base}/documentos/nova?tipo=${documentKinds[kind].slug}`} aria-label={ariaLabels[kind]} prefetch={false} onClick={() => setOpen(false)}>{documentKinds[kind].title}</Link>
+        </span>
+      ))}
     </nav>}
   </div>;
 }

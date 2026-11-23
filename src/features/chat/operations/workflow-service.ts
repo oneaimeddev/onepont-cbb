@@ -135,6 +135,8 @@ export async function workflowConversation(input: {
     /\b(prescricao|receita)\b/.test(text) ? "prescription" : null,
     /\bexames?\b/.test(text) ? "exam_request" : null,
     /\bcirurgico\b/.test(text) ? "surgical_order" : null,
+    /\batestado\b/.test(text) ? "certificate" : null,
+    /\bencaminhamento\b/.test(text) ? "referral" : null,
   ].filter(Boolean);
   const candidates = [
     ...new Map(

@@ -7,7 +7,8 @@ import { AccessPanel } from "../../../../features/athletes/access-panel";
 import { accessRoster, loadAthlete, loadCatalog, loadRegistration, searchProfessionals, uuidPattern } from "../../../../features/athletes/data";
 import { listDocuments, medicalCapability } from "../../../../features/documents/data";
 import { ProfileTabs } from "../../../../features/athletes/profile-navigation";
-import { ProfileTimeline } from "../../../../features/athletes/profile-timeline";
+import { ProfileTimeline, type TimelineDocument } from "../../../../features/athletes/profile-timeline";
+import { documentKinds, statusLabels } from "../../../../features/documents/content";
 import { ProfileRegistration } from "../../../../features/athletes/profile-registration";
 import { CreateDocumentMenu } from "../../../../features/documents/create-menu";
 import { ProfileDocumentList } from "../../../../features/documents/profile-list";
@@ -89,6 +90,17 @@ export default async function AthletePage({ params, searchParams }: {
   ] as const;
   if ((aba === "documentos" || aba === "anexos") && !can_read_records) notFound();
   const documents = aba === "documentos" ? await listDocuments(athlete.id) : null;
+  // Every medical document the professional can open also appears in the athlete's timeline.
+  const timelineDocuments: TimelineDocument[] = aba === "timeline" && capability.enabled && can_read_records
+    ? ((await listDocuments(athlete.id)) ?? []).map((document) => ({
+        id: document.id,
+        title: documentKinds[document.document_type]?.title ?? "Documento médico",
+        status: document.workflow?.lifecycle === "finalized" ? "Finalizado" : statusLabels[document.status],
+        finalized: document.workflow?.lifecycle === "finalized",
+        author: document.author_name ?? "",
+        occurred_at: document.created_at,
+      }))
+    : [];
   if (aba === "documentos" && !documents) notFound();
 
   function tabHref(value: string) {
@@ -175,7 +187,7 @@ export default async function AthletePage({ params, searchParams }: {
           </div>
         )}
 
-        {aba === "timeline" && <ProfileTimeline key={athlete.id} records={records ?? []} recordId={registro} canWrite={can_write} base={base} />}
+        {aba === "timeline" && <ProfileTimeline key={athlete.id} records={records ?? []} documents={timelineDocuments} recordId={registro} canWrite={can_write} base={base} />}
 
         {aba === "documentos" && documents && (
           <section aria-labelledby="documentos-clinicos">

@@ -6,7 +6,7 @@ export const displayedProposalSchema = z
   .object({
     requestId: z.string().uuid(),
     athleteId: z.string().uuid(),
-    kind: z.enum(["prescription", "exam_request", "surgical_order"]),
+    kind: z.enum(["prescription", "exam_request", "surgical_order", "certificate", "referral"]),
     version: z.number().int().positive(),
     contentHash: z.string().regex(/^[a-f0-9]{32}$/),
     dirty: z.boolean().optional(),
@@ -38,6 +38,8 @@ export function proposalSaveIntent(message: string) {
     /\b(prescricao|receita)\b/.test(header) ? "prescription" : null,
     /\bexames?\b/.test(header) ? "exam_request" : null,
     /\bcirurgico\b/.test(header) ? "surgical_order" : null,
+    /\batestado\b/.test(header) ? "certificate" : null,
+    /\bencaminhamento\b/.test(header) ? "referral" : null,
   ].filter(Boolean) as DisplayedProposal["kind"][];
   return {
     action: "save" as const,
@@ -87,6 +89,8 @@ export function proposalIntent(message: string) {
     /\b(prescricao|receita|medicamento)\b/.test(s) ? "prescription" : null,
     /\bexames?\b/.test(s) ? "exam_request" : null,
     /\b(cirurgico|cirurgia|procedimento)\b/.test(s) ? "surgical_order" : null,
+    /\batestado\b/.test(s) ? "certificate" : null,
+    /\bencaminhamento\b/.test(s) ? "referral" : null,
   ].filter(Boolean) as DisplayedProposal["kind"][];
   return {
     action: edit ? ("edit" as const) : ("review" as const),

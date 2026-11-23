@@ -1,6 +1,6 @@
 import {
-  documentKinds, examPending, prescriptionPending, surgicalPending,
-  type DocumentContent, type DocumentKind, type ExamContent, type ExamItem, type ExamType, type Laterality, type MedicationItem, type PrescriptionContent, type Priority, type SurgicalContent,
+  certificatePending, certificateTypeLabels, documentKinds, examPending, isCertificate, isExamRequest, isPrescription, isReferral, prescriptionPending, referralPending, surgicalPending,
+  type CertificateContent, type ReferralContent, type DocumentContent, type DocumentKind, type ExamContent, type ExamItem, type ExamType, type Laterality, type MedicationItem, type PrescriptionContent, type Priority, type SurgicalContent,
 } from "../documents/content";
 import { uuidPattern } from "./guards";
 import type { ReviewMaterial } from "../documents/review-types";
@@ -127,11 +127,84 @@ export function presentedExam(value: unknown): ExamContent | null {
   };
 }
 
+const certificateTypes = new Set(["", "leave", "attendance", "fitness"]);
+const fitnessValues = new Set(["", "fit", "fit_with_restrictions", "unfit"]);
+
+export function presentedCertificate(value: unknown): CertificateContent | null {
+  if (!value || typeof value !== "object") return null;
+  const row = value as Record<string, unknown>;
+  const certificate_type = clip(row.certificate_type, 20);
+  const fitness = clip(row.fitness, 30);
+  const occurred = clip(row.occurred_at, 10);
+  const start = clip(row.leave_start, 10);
+  if (!certificateTypes.has(certificate_type) || !fitnessValues.has(fitness)) return null;
+  if ((occurred && !/^\d{4}-\d{2}-\d{2}$/.test(occurred)) || (start && !/^\d{4}-\d{2}-\d{2}$/.test(start))) return null;
+  const time = (raw: unknown) => {
+    const next = clip(raw, 5);
+    return /^([01]\d|2[0-3]):[0-5]\d$/.test(next) ? next : "";
+  };
+  const days = clip(row.leave_days, 3);
+  return {
+    certificate_type: certificate_type as CertificateContent["certificate_type"],
+    occurred_at: occurred,
+    start_time: time(row.start_time),
+    end_time: time(row.end_time),
+    leave_days: /^\d{1,3}$/.test(days) ? days : "",
+    leave_start: start,
+    activities: clip(row.activities, 500),
+    fitness: fitness as CertificateContent["fitness"],
+    restrictions: clip(row.restrictions, 1000),
+    cid: clip(row.cid, 20),
+    cid_authorized: row.cid_authorized === true,
+    notes: clip(row.notes, 2000),
+  };
+}
+
+export function presentedReferral(value: unknown): ReferralContent | null {
+  if (!value || typeof value !== "object") return null;
+  const row = value as Record<string, unknown>;
+  const priority = clip(row.priority, 20) as Priority;
+  if (!priorities.has(priority)) return null;
+  return {
+    specialty: clip(row.specialty, 160),
+    professional: clip(row.professional, 160),
+    reason: clip(row.reason, 2000),
+    clinical_summary: clip(row.clinical_summary, 2000),
+    diagnosis: clip(row.diagnosis, 500),
+    cid: clip(row.cid, 20),
+    exams: clip(row.exams, 2000),
+    treatment: clip(row.treatment, 2000),
+    request: clip(row.request, 1000),
+    priority,
+  };
+}
+
+/** Validated content of any document kind. */
+export function presentedContent(kind: DocumentKind, value: unknown): DocumentContent | null {
+  if (kind === "prescription") return presentedPrescription(value);
+  if (kind === "exam_request") return presentedExam(value);
+  if (kind === "certificate") return presentedCertificate(value);
+  if (kind === "referral") return presentedReferral(value);
+  return presentedSurgical(value);
+}
+
+export function isDocumentKind(value: unknown): value is DocumentKind {
+  return typeof value === "string" && Object.hasOwn(documentKinds, value);
+}
+
 export function documentTitle(kind: DocumentKind, content: DocumentContent | null) {
-  if (kind === "prescription" && content && "notes" in content) {
+  if (kind === "certificate" && content && isCertificate(content)) {
+    return content.certificate_type === "leave" && content.leave_days
+      ? `Afastamento por ${content.leave_days} ${content.leave_days === "1" ? "dia" : "dias"}`
+      : content.certificate_type ? `Atestado de ${certificateTypeLabels[content.certificate_type].toLocaleLowerCase("pt-BR")}` : documentKinds.certificate.title;
+  }
+  if (kind === "referral" && content && isReferral(content)) {
+    return content.specialty.trim() ? `Encaminhamento para ${content.specialty.trim()}` : documentKinds.referral.title;
+  }
+  if (kind === "prescription" && content && isPrescription(content)) {
     return content.items.find((item) => item.name.trim())?.name.trim() || documentKinds.prescription.title;
   }
-  if (kind === "exam_request" && content && "occurred_at" in content) {
+  if (kind === "exam_request" && content && isExamRequest(content)) {
     return content.items.find((item) => item.name.trim())?.name.trim() || documentKinds.exam_request.title;
   }
   if (kind === "surgical_order" && content && "procedure" in content && content.procedure.trim()) return content.procedure.trim();
@@ -140,11 +213,19 @@ export function documentTitle(kind: DocumentKind, content: DocumentContent | nul
 
 export function documentMissing(kind: DocumentKind, content: DocumentContent | null) {
   if (!content) return [];
-  if (kind === "prescription" && "notes" in content) {
+  if (kind === "certificate" && isCertificate(content)) {
+    const pending = certificatePending(content);
+    return [...pending.blocking, ...pending.groups.flatMap((group) => group.fields)].slice(0, 12);
+  }
+  if (kind === "referral" && isReferral(content)) {
+    const pending = referralPending(content);
+    return [...pending.blocking, ...pending.groups.flatMap((group) => group.fields)].slice(0, 12);
+  }
+  if (kind === "prescription" && isPrescription(content)) {
     const pending = prescriptionPending(content);
     return [...pending.blocking, ...pending.groups.flatMap((group) => group.fields.map((field) => `${group.title}: ${field}`))].slice(0, 12);
   }
-  if (kind === "exam_request" && "occurred_at" in content) {
+  if (kind === "exam_request" && isExamRequest(content)) {
     const pending = examPending(content);
     return [...pending.blocking, ...pending.groups.flatMap((group) => group.fields.map((field) => `${group.title}: ${field}`))].slice(0, 12);
   }
@@ -160,13 +241,13 @@ export function presentedDocument(value: unknown): DocumentDraft | null {
   const row = value as Record<string, unknown>;
   const state = row.state === "saving" ? "proposal" : row.state;
   if (typeof state !== "string" || !states.has(state as DocumentDraftState)) return null;
-  if (row.kind !== "prescription" && row.kind !== "surgical_order" && row.kind !== "exam_request") return null;
+  if (!isDocumentKind(row.kind)) return null;
   if (typeof row.requestId !== "string" || !uuidPattern.test(row.requestId)) return null;
   if (typeof row.athleteId !== "string" || !uuidPattern.test(row.athleteId)) return null;
   const athleteName = clip(row.athleteName, 160);
   const professionalName = clip(row.professionalName, 160);
   if (!athleteName || !professionalName) return null;
-  const content = row.kind === "prescription" ? presentedPrescription(row.content) : row.kind === "exam_request" ? presentedExam(row.content) : presentedSurgical(row.content);
+  const content = presentedContent(row.kind, row.content);
   const title = clip(row.title, 160) || (content ? documentTitle(row.kind, content) : "");
   if (!title) return null;
   if ((state === "proposal" || state === "error") && !content) return null;
@@ -183,7 +264,7 @@ export function presentedDocument(value: unknown): DocumentDraft | null {
   let preview: ReviewMaterial | null = null;
   if (row.preview && typeof row.preview === "object" && content) {
     const material = row.preview as Record<string, unknown>;
-    const previewContent = row.kind === "prescription" ? presentedPrescription(material.content) : row.kind === "exam_request" ? presentedExam(material.content) : presentedSurgical(material.content);
+    const previewContent = presentedContent(row.kind, material.content);
     if (material.id === row.requestId && material.athlete_id === row.athleteId && material.document_type === row.kind &&
       (material.status === "draft" || material.status === "ready_for_review") && typeof material.version === "number" && Number.isInteger(material.version) && material.version > 0 &&
       typeof material.created_at === "string" && Number.isFinite(Date.parse(material.created_at)) && typeof material.updated_at === "string" && Number.isFinite(Date.parse(material.updated_at)) &&

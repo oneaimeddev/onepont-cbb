@@ -1,8 +1,10 @@
 import Image from "next/image";
 import { PrescriptionSheet } from "./prescription-sheet";
+import { LetterSheet } from "./letter-sheet";
+import { certificateLetter, referralLetter } from "./letter-format";
 const eventDate = new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short", timeZone: "America/Sao_Paulo" });
 import {
-  documentKinds, examTypeLabels, isExamRequest, isPrescription, lateralityLabels, prescriptionPending, priorityLabels, statusLabels, surgicalPending, examPending,
+  certificatePending, documentKinds, examTypeLabels, isCertificate, isExamRequest, isPrescription, isReferral, referralPending, lateralityLabels, prescriptionPending, priorityLabels, statusLabels, surgicalPending, examPending,
   type DocumentContent, type DocumentKind, type DocumentStatus,
 } from "./content";
 
@@ -71,6 +73,13 @@ export function DocumentPreview({ document, athleteName, review = false, finaliz
           {document.content.priority ? <p>Prioridade: {priorityLabels[document.content.priority]}</p> : null}
           {document.content.additional.trim() ? <p>Orientações: {document.content.additional}</p> : null}
           <Pending groups={examPending(document.content).groups} />
+        </div>
+      ) : isCertificate(document.content) || isReferral(document.content) ? (
+        <div>
+          <section className="document-medication" aria-label={kind.title}>
+            <LetterSheet letter={isCertificate(document.content) ? certificateLetter(document.content, athleteName) : referralLetter(document.content, athleteName)} />
+          </section>
+          <Pending groups={isCertificate(document.content) ? certificatePending(document.content).groups : referralPending(document.content).groups} />
         </div>
       ) : (
         <div>

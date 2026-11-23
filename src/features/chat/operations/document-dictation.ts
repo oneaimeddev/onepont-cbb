@@ -44,6 +44,8 @@ const openingTerms: Record<DocumentKind, string> = {
   prescription: "receita|prescricao",
   exam_request: "(?:solicitacao|pedido) de exames?",
   surgical_order: "pedido cirurgico",
+  certificate: "atestado",
+  referral: "encaminhamento",
 };
 
 function openingKind(words: string) {

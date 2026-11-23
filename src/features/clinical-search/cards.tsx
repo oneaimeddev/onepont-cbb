@@ -211,7 +211,7 @@ export function ClinicalSearchCards({
         (kind) => kind === "exam_request" || kind === "attachment_result",
       ) && <p className="clinical-search-note">{examNotice}</p>}
       {current.kinds.some((kind) =>
-        ["prescription", "surgical_order", "exam_request"].includes(kind),
+        ["prescription", "surgical_order", "exam_request", "certificate", "referral"].includes(kind),
       ) && (
         <p className="clinical-search-note">
           Os documentos médicos disponíveis são rascunhos; não equivalem a

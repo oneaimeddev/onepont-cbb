@@ -13,22 +13,70 @@ import {
 } from "./profile-dates";
 type RecordEntry = NonNullable<AthleteWorkspace["records"]>[number];
 
+/** Medical document shown in the timeline next to the evolutions, opened in its read-only view. */
+export type TimelineDocument = {
+  id: string;
+  title: string;
+  status: string;
+  finalized: boolean;
+  author: string;
+  occurred_at: string;
+};
+
+type TimelineEntry = { kind: "record"; occurred_at: string; record: RecordEntry } | { kind: "document"; occurred_at: string; document: TimelineDocument };
+
+function DocumentRow({ document, base }: { document: TimelineDocument; base: string }) {
+  return (
+    <li id={`documento-${document.id}`} className="timeline-document">
+      <div className="timeline-head">
+        <time className="timeline-day" dateTime={document.occurred_at}>
+          {recordWhen(document.occurred_at).day}
+        </time>
+        <p className="timeline-document-title"><span className="timeline-document-kind">Documento médico</span> {document.title}</p>
+        <p className="timeline-byline">
+          {document.author}
+          {" · "}
+          <Link className="clinical-link" prefetch={false} href={`${base}/documentos/${document.id}?vista=previa`}>
+            Ver documento
+          </Link>
+        </p>
+        <span className={document.finalized ? "pill pill-success" : "pill pill-draft"}>{document.status}</span>
+      </div>
+    </li>
+  );
+}
+
 function RecordRows({
   records,
+  documents = [],
   target,
   canWrite,
   base,
 }: {
   records: RecordEntry[];
+  documents?: TimelineDocument[];
   target: string | null;
   canWrite: boolean;
   base: string;
 }) {
-  return groupsOf(records).map((group) => (
+  const entries: TimelineEntry[] = [
+    ...records.map((record) => ({ kind: "record" as const, occurred_at: record.occurred_at, record })),
+    ...documents.map((document) => ({ kind: "document" as const, occurred_at: document.occurred_at, document })),
+  ].sort((a, b) => b.occurred_at.localeCompare(a.occurred_at));
+  return groupsOf(entries).map((group) => (
     <section key={group.id} aria-label={group.label}>
       <h3 className="timeline-month">{group.label}</h3>
       <ol className="clinical-list timeline">
-        {group.records.map((record) => (
+        {group.records.map((entry) => entry.kind === "document"
+          ? <DocumentRow key={`documento-${entry.document.id}`} document={entry.document} base={base} />
+          : <RecordRow key={entry.record.id} record={entry.record} target={target} canWrite={canWrite} base={base} />)}
+      </ol>
+    </section>
+  ));
+}
+
+function RecordRow({ record, target, canWrite, base }: { record: RecordEntry; target: string | null; canWrite: boolean; base: string }) {
+  return (
           <li
             id={`registro-${record.id}`}
             key={record.id}
@@ -78,19 +126,18 @@ function RecordRows({
               </span>}
             </div>
           </li>
-        ))}
-      </ol>
-    </section>
-  ));
+  );
 }
 
 export function ProfileTimeline({
   records,
+  documents = [],
   recordId,
   canWrite,
   base,
 }: {
   records: RecordEntry[];
+  documents?: TimelineDocument[];
   recordId: string | null;
   canWrite: boolean;
   base: string;
@@ -107,6 +154,7 @@ export function ProfileTimeline({
   const status = ["draft", "finalized"].includes(query.get("estado") ?? "")
     ? query.get("estado")!
     : "";
+  const scope = ["evolucoes", "documentos"].includes(query.get("registros") ?? "") ? query.get("registros")! : "";
   const [fragment, setFragment] = useState<string | null>(null);
   useEffect(() => {
     const read = () =>
@@ -120,11 +168,19 @@ export function ProfileTimeline({
     return () => window.removeEventListener("hashchange", read);
   }, []);
   const target = recordId ?? fragment;
-  const key = JSON.stringify([from, to, specialty, status]);
+  const key = JSON.stringify([from, to, specialty, status, scope]);
   const [pagination, setPagination] = useState({ key, count: 20 });
   const limit = pagination.key === key ? pagination.count : 20;
   const invalidRange = Boolean(from && to && from > to);
-  const filtered = invalidRange
+  // Specialty and evolution state apply to evolutions only, so they leave documents out.
+  const showDocuments = scope !== "evolucoes" && !specialty && !status;
+  const shownDocuments = invalidRange || !showDocuments
+    ? []
+    : documents.filter((d) => {
+        const date = recordWhen(d.occurred_at).date;
+        return (!from || date >= from) && (!to || date <= to);
+      });
+  const filtered = invalidRange || scope === "documentos"
     ? []
     : records.filter((r) => {
         const date = recordWhen(r.occurred_at).date;
@@ -135,7 +191,13 @@ export function ProfileTimeline({
           (!status || r.status === status)
         );
       });
-  const visible = filtered.slice(0, limit);
+  const merged = [
+    ...filtered.map((record) => ({ at: record.occurred_at, record, document: null })),
+    ...shownDocuments.map((document) => ({ at: document.occurred_at, record: null, document })),
+  ].sort((a, b) => b.at.localeCompare(a.at)).slice(0, limit);
+  const visible = merged.flatMap((entry) => entry.record ? [entry.record] : []);
+  const visibleDocuments = merged.flatMap((entry) => entry.document ? [entry.document] : []);
+  const total = filtered.length + shownDocuments.length;
   const selected = records.find((r) => r.id === target);
   const separate = selected && !visible.some((r) => r.id === selected.id);
   const active = [
@@ -143,16 +205,17 @@ export function ProfileTimeline({
     to && `até ${to}`,
     specialty,
     status && (status === "draft" ? "Rascunho" : "Finalizado"),
+    scope && (scope === "evolucoes" ? "Somente evoluções" : "Somente documentos médicos"),
   ].filter(Boolean);
   const clear = () =>
-    updateProfileQuery({ de: "", ate: "", especialidade: "", estado: "" });
+    updateProfileQuery({ de: "", ate: "", especialidade: "", estado: "", registros: "" });
   return (
     <section aria-labelledby="linha-do-tempo">
       <h2 id="linha-do-tempo">Linha do tempo</h2>
       <form
         className="profile-filters"
         onSubmit={(e) => e.preventDefault()}
-        aria-label="Filtrar evoluções"
+        aria-label="Filtrar a linha do tempo"
       >
         <label>
           De
@@ -203,6 +266,21 @@ export function ProfileTimeline({
             <option value="finalized">Finalizado</option>
           </select>
         </label>
+        {documents.length ? (
+          <label>
+            Registros
+            <select
+              name="registros"
+              aria-label="Registros"
+              value={scope}
+              onChange={(e) => updateProfileQuery({ registros: e.target.value })}
+            >
+              <option value="">Evoluções e documentos médicos</option>
+              <option value="evolucoes">Somente evoluções</option>
+              <option value="documentos">Somente documentos médicos</option>
+            </select>
+          </label>
+        ) : null}
         <button
           className="outline"
           type="button"
@@ -219,8 +297,9 @@ export function ProfileTimeline({
       )}
       <p className="profile-filter-summary" role="status">
         Filtros ativos: {active.length ? active.join(" · ") : "nenhum"}.
-        Mostrando {visible.length} de {filtered.length} evoluções
-        correspondentes · {records.length} atendimentos representados neste perfil.
+        Mostrando {merged.length} de {total} registros correspondentes
+        {documents.length ? ` (${filtered.length} evoluções e ${shownDocuments.length} documentos médicos)` : ""}
+        {" "}· {records.length} atendimentos representados neste perfil.
       </p>
       {separate && (
         <div className="profile-target-record">
@@ -237,9 +316,10 @@ export function ProfileTimeline({
           />
         </div>
       )}
-      {filtered.length ? (
+      {total ? (
         <RecordRows
           records={visible}
+          documents={visibleDocuments}
           target={target}
           canWrite={canWrite}
           base={base}
@@ -248,8 +328,8 @@ export function ProfileTimeline({
         <EmptyState
           icon="records"
           title={
-            records.length
-              ? "Nenhuma evolução autorizada corresponde aos filtros."
+            records.length || documents.length
+              ? "Nenhum registro autorizado corresponde aos filtros."
               : "Nenhum registro disponível para este perfil."
           }
         >
@@ -265,13 +345,13 @@ export function ProfileTimeline({
           )}
         </EmptyState>
       )}
-      {visible.length < filtered.length && (
+      {merged.length < total && (
         <button
           type="button"
           className="outline profile-show-more"
           onClick={() => setPagination({ key, count: limit + 20 })}
         >
-          Mostrar mais 20 evoluções
+          Mostrar mais 20 registros
         </button>
       )}
       <RecordTarget recordId={target} />

@@ -59,6 +59,8 @@ export function parseClinicalSearch(
     kinds.push("evolution");
   if (/\bprescric/.test(text)) kinds.push("prescription");
   if (/\bcirurg/.test(text)) kinds.push("surgical_order");
+  if (/\batestados?\b/.test(text)) kinds.push("certificate");
+  if (/\bencaminhamentos?\b/.test(text)) kinds.push("referral");
   const attached = /\b(resultados?|laudos?|anexados?|anexos?)\b/.test(text);
   const requested = /\b(solicitad\w*|solicitac\w*|pedidos? de exame)\b/.test(
     text,

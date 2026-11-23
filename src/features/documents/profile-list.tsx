@@ -4,7 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { deliveryLabel, signatureLabel } from "./workflow-types";
 import { EmptyState } from "../../components/empty-state";
 import type { DocumentSummary } from "./data";
-import { documentKinds, statusLabels } from "./content";
+import { documentKinds, documentMenu, statusLabels } from "./content";
 import { updateProfileQuery } from "../athletes/profile-dates";
 const date = new Intl.DateTimeFormat("pt-BR", {
   timeZone: "America/Sao_Paulo",
@@ -58,9 +58,9 @@ export function ProfileDocumentList({
             }
           >
             <option value="">Todos os tipos</option>
-            {Object.entries(documentKinds).map(([id, item]) => (
+            {documentMenu.map(({ kind: id }) => (
               <option key={id} value={id}>
-                {item.title}
+                {documentKinds[id].title}
               </option>
             ))}
           </select>

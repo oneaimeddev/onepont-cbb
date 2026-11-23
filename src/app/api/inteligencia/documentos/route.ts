@@ -1,4 +1,5 @@
 import { getAccess } from "../../../../lib/profile";
+import { documentKinds } from "../../../../features/documents/content";
 import { supabaseServer } from "../../../../lib/supabase";
 import { uuidPattern } from "../../../../features/chat/guards";
 
@@ -21,7 +22,7 @@ export async function POST(request: Request) {
   if (typeof record.page !== "number" || !Number.isInteger(record.page) || record.page < 1 || record.page > 40) {
     return Response.json({ error: "invalid" }, { status: 400 });
   }
-  const kind = record.kind === "prescription" || record.kind === "surgical_order" || record.kind === "exam_request" ? record.kind : "";
+  const kind = typeof record.kind === "string" && Object.hasOwn(documentKinds, record.kind) ? record.kind : "";
   const status = record.status === "draft" || record.status === "ready_for_review" ? record.status : "";
   const listed = await client.rpc("chat_document_browse", {
     target: record.athleteId,
@@ -34,7 +35,7 @@ export async function POST(request: Request) {
   const documents = data.documents.flatMap((item) => {
     if (!item || typeof item !== "object") return [];
     const row = item as { id?: unknown; document_type?: unknown };
-    if (typeof row.id !== "string" || (row.document_type !== "prescription" && row.document_type !== "surgical_order" && row.document_type !== "exam_request")) return [];
+    if (typeof row.id !== "string" || typeof row.document_type !== "string" || !Object.hasOwn(documentKinds, row.document_type)) return [];
     return [{ id: row.id, kind: row.document_type }];
   });
   return Response.json({

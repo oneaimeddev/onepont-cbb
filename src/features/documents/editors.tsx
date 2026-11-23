@@ -8,7 +8,9 @@ import { reviewCommand } from "./review-client";
 import { DocumentEditorFrame, DocumentItemNavigation, DocumentTextarea, RemovalNotice, useDocumentItems, useEditorReview } from "./editor-controls";
 import {
   emptyExamItem, emptyMedication, examSuggestions, examTypeLabels, lateralityLabels, prescriptionPending, priorityLabels, surgicalPending, examPending,
-  type ExamContent, type ExamItem, type ExamType, type MedicationItem, type PrescriptionContent, type SurgicalContent,
+  certificatePending, certificateTypeLabels, fitnessLabels, referralPending,
+  type CertificateContent, type CertificateType, type DocumentContent, type DocumentKind, type ExamContent, type ExamItem, type ExamType, type Fitness,
+  type MedicationItem, type PrescriptionContent, type ReferralContent, type SurgicalContent,
 } from "./content";
 
 function PendingList({ blocking, groups }: { blocking: string[]; groups: { title: string; fields: string[] }[] }) {
@@ -32,8 +34,8 @@ function DraftForm({ athleteId, documentId, version, kind, content, returnTo, sa
   athleteId: string;
   documentId: string;
   version: number;
-  kind: "prescription" | "surgical_order" | "exam_request";
-  content: PrescriptionContent | SurgicalContent | ExamContent;
+  kind: DocumentKind;
+  content: DocumentContent;
   returnTo: string;
   saved: boolean;
   dirty: boolean;
@@ -261,6 +263,129 @@ export function ExamEditor({ athleteId, documentId, version, initial, returnTo, 
       <PendingList blocking={pending.blocking} groups={pending.groups} />
     </div>
     <DraftForm athleteId={athleteId} documentId={documentId} version={version} kind="exam_request" content={content} returnTo={returnTo} saved={saved} dirty={dirty} />
+    </DocumentEditorFrame>
+  );
+}
+
+export function CertificateEditor({ athleteId, documentId, version, initial, returnTo, saved }: {
+  athleteId: string;
+  documentId: string;
+  version: number;
+  initial: CertificateContent;
+  returnTo: string;
+  saved: boolean;
+}) {
+  const [content, setContent] = useState(initial);
+  const dirty = JSON.stringify(content) !== JSON.stringify(initial);
+  const pending = certificatePending(content);
+  const type = content.certificate_type;
+
+  function update(patch: Partial<CertificateContent>) {
+    setContent((current) => ({ ...current, ...patch }));
+  }
+
+  return (
+    <DocumentEditorFrame dirty={dirty}>
+    <div className="document-editor">
+      <section className="document-section"><h2>Modalidade e atendimento</h2><div className="document-grid">
+        <label>Modalidade do atestado
+          <select value={type} onChange={(event) => update({ certificate_type: event.target.value as CertificateType })}>
+            {(Object.keys(certificateTypeLabels) as CertificateType[]).map((value) => <option key={value || "empty"} value={value}>{value ? certificateTypeLabels[value] : "Escolha a modalidade"}</option>)}
+          </select>
+        </label>
+        <label>Data do atendimento
+          <input type="date" value={content.occurred_at} onChange={(event) => update({ occurred_at: event.target.value })} />
+        </label>
+      </div></section>
+      {type === "leave" ? (
+        <section className="document-section"><h2>Afastamento</h2><div className="document-grid">
+          <label>Dias de afastamento
+            <input type="number" inputMode="numeric" min={1} max={365} value={content.leave_days} onChange={(event) => update({ leave_days: event.target.value.replace(/\D/g, "").slice(0, 3) })} />
+          </label>
+          <label>Início do afastamento
+            <input type="date" value={content.leave_start} onChange={(event) => update({ leave_start: event.target.value })} />
+          </label>
+          <label className="is-wide">Atividades das quais o atleta fica afastado
+            <input value={content.activities} maxLength={500} placeholder="Ex.: treinos e competições" onChange={(event) => update({ activities: event.target.value })} />
+          </label>
+        </div></section>
+      ) : null}
+      {type === "attendance" ? (
+        <section className="document-section"><h2>Comparecimento</h2><div className="document-grid">
+          <label>Horário de chegada<input type="time" value={content.start_time} onChange={(event) => update({ start_time: event.target.value })} /></label>
+          <label>Horário de saída<input type="time" value={content.end_time} onChange={(event) => update({ end_time: event.target.value })} /></label>
+        </div></section>
+      ) : null}
+      {type === "fitness" ? (
+        <section className="document-section"><h2>Aptidão esportiva</h2><div className="document-grid">
+          <label>Conclusão
+            <select value={content.fitness} onChange={(event) => update({ fitness: event.target.value as Fitness })}>
+              {(Object.keys(fitnessLabels) as Fitness[]).map((value) => <option key={value || "empty"} value={value}>{fitnessLabels[value]}</option>)}
+            </select>
+          </label>
+          <label className="is-wide">Atividade avaliada
+            <input value={content.activities} maxLength={500} placeholder="Ex.: treinos e competições de basquete" onChange={(event) => update({ activities: event.target.value })} />
+          </label>
+          {content.fitness === "fit_with_restrictions" ? (
+            <label className="is-wide">Restrições<DocumentTextarea rows={3} maxLength={1000} value={content.restrictions} onChange={(event) => update({ restrictions: event.target.value })} /></label>
+          ) : null}
+        </div></section>
+      ) : null}
+      <section className="document-section"><h2>Diagnóstico e observações</h2><div className="document-grid">
+        <label>CID-10 (opcional)<input value={content.cid} maxLength={20} onChange={(event) => update({ cid: event.target.value })} /></label>
+        <label className="check-label">
+          <input type="checkbox" checked={content.cid_authorized} onChange={(event) => update({ cid_authorized: event.target.checked })} />
+          <span>O paciente autorizou expressamente a inclusão do CID</span>
+        </label>
+        <label className="is-wide">Observações<DocumentTextarea rows={3} maxLength={2000} value={content.notes} onChange={(event) => update({ notes: event.target.value })} /></label>
+      </div></section>
+      <PendingList blocking={pending.blocking} groups={pending.groups} />
+    </div>
+    <DraftForm athleteId={athleteId} documentId={documentId} version={version} kind="certificate" content={content} returnTo={returnTo} saved={saved} dirty={dirty} />
+    </DocumentEditorFrame>
+  );
+}
+
+export function ReferralEditor({ athleteId, documentId, version, initial, returnTo, saved }: {
+  athleteId: string;
+  documentId: string;
+  version: number;
+  initial: ReferralContent;
+  returnTo: string;
+  saved: boolean;
+}) {
+  const [content, setContent] = useState(initial);
+  const dirty = JSON.stringify(content) !== JSON.stringify(initial);
+  const pending = referralPending(content);
+
+  function update(patch: Partial<ReferralContent>) {
+    setContent((current) => ({ ...current, ...patch }));
+  }
+
+  return (
+    <DocumentEditorFrame dirty={dirty}>
+    <div className="document-editor">
+      <section className="document-section"><h2>Destino</h2><div className="document-grid">
+        <label>Especialidade ou serviço<input value={content.specialty} maxLength={160} placeholder="Ex.: Ortopedia" onChange={(event) => update({ specialty: event.target.value })} /></label>
+        <label>Profissional de destino (opcional)<input value={content.professional} maxLength={160} onChange={(event) => update({ professional: event.target.value })} /></label>
+        <label>Prioridade
+          <select value={content.priority} onChange={(event) => update({ priority: event.target.value as ReferralContent["priority"] })}>
+            {(Object.keys(priorityLabels) as ReferralContent["priority"][]).map((value) => <option key={value || "empty"} value={value}>{priorityLabels[value]}</option>)}
+          </select>
+        </label>
+      </div></section>
+      <section className="document-section"><h2>Motivo e contexto clínico</h2><div className="document-grid">
+        <label className="is-wide">Motivo do encaminhamento<DocumentTextarea rows={2} maxLength={2000} value={content.reason} onChange={(event) => update({ reason: event.target.value })} /></label>
+        <label className="is-wide">Resumo clínico<DocumentTextarea rows={4} maxLength={2000} value={content.clinical_summary} onChange={(event) => update({ clinical_summary: event.target.value })} /></label>
+        <label className="is-wide">Hipótese diagnóstica<DocumentTextarea rows={2} maxLength={500} value={content.diagnosis} onChange={(event) => update({ diagnosis: event.target.value })} /></label>
+        <label>CID-10<input value={content.cid} maxLength={20} onChange={(event) => update({ cid: event.target.value })} /></label>
+        <label className="is-wide">Exames realizados<DocumentTextarea rows={2} maxLength={2000} value={content.exams} onChange={(event) => update({ exams: event.target.value })} /></label>
+        <label className="is-wide">Tratamentos realizados<DocumentTextarea rows={2} maxLength={2000} value={content.treatment} onChange={(event) => update({ treatment: event.target.value })} /></label>
+        <label className="is-wide">Solicitação ao profissional de destino<DocumentTextarea rows={2} maxLength={1000} placeholder="Ex.: avaliação e conduta" value={content.request} onChange={(event) => update({ request: event.target.value })} /></label>
+      </div></section>
+      <PendingList blocking={pending.blocking} groups={pending.groups} />
+    </div>
+    <DraftForm athleteId={athleteId} documentId={documentId} version={version} kind="referral" content={content} returnTo={returnTo} saved={saved} dirty={dirty} />
     </DocumentEditorFrame>
   );
 }

@@ -293,6 +293,9 @@ button.ghost-link { border: 0; background: transparent; cursor: pointer; font: i
 .timeline > li { padding: 0; border: 0; }
 .timeline-month { margin: 1.15rem 0 .15rem; color: #3a4660; font-size: .8125rem; font-weight: 500; letter-spacing: -.011em; }
 .timeline-head { display: grid; grid-template-columns: 2.25rem minmax(0, 1fr) minmax(9rem, 16rem) auto; gap: .2rem 1rem; align-items: baseline; padding: .45rem 0; border-bottom: 1px solid #e4e9f1; }
+/* Medical documents listed in the athlete timeline next to the evolutions. */
+.timeline-document-title { margin: 0; font-weight: 500; }
+.timeline-document-kind { display: inline-block; margin-right: .35rem; padding: .05rem .45rem; border-radius: 999px; background: #eef2f7; color: #3a4660; font-size: .75rem; font-weight: 500; letter-spacing: .01em; vertical-align: .1em; }
 .timeline-day { color: var(--cbb-navy); font-size: .9375rem; font-weight: 500; font-variant-numeric: tabular-nums; text-align: right; }
 .timeline summary { color: var(--cbb-navy); font-weight: 500; letter-spacing: -.014em; cursor: pointer; list-style: none; }
 .timeline summary::-webkit-details-marker { display: none; }

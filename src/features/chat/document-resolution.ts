@@ -1,7 +1,12 @@
 import { foldName, nameMatches } from "./athlete-resolution";
 import { uuidPattern } from "./guards";
+import { documentKinds, type DocumentKind } from "../documents/content";
 
-export type ReadingKind = "prescription" | "surgical_order" | "exam_request" | "evolution";
+function asDocumentKind(value: unknown): DocumentKind | null {
+  return typeof value === "string" && Object.hasOwn(documentKinds, value) ? value as DocumentKind : null;
+}
+
+export type ReadingKind = DocumentKind | "evolution";
 export type ReadingSource = "document" | "evolution";
 
 export type ReadingRef = {
@@ -17,14 +22,14 @@ export type ReadingBoard = {
   total: number;
   page: number;
   pageSize: number;
-  kind: "prescription" | "surgical_order" | "exam_request" | "";
+  kind: DocumentKind | "";
   status: "draft" | "ready_for_review" | "";
   items: ReadingRef[];
 };
 
 export type DocumentSlot = {
   id: string;
-  kind: "prescription" | "surgical_order" | "exam_request";
+  kind: DocumentKind;
   label: string;
   status: "draft" | "ready_for_review";
   updatedAt: string;
@@ -32,7 +37,7 @@ export type DocumentSlot = {
 
 export type DocumentQuery = {
   ordinal?: number;
-  kind?: "prescription" | "surgical_order" | "exam_request";
+  kind?: DocumentKind;
   months?: number;
   latest?: boolean;
   reference?: "previous" | "created";
@@ -61,15 +66,19 @@ export function documentRequest(utterance: string): DocumentRequest {
   const previous = /\b(dele|dela)\b/.test(text) || /\b(esse|essa|este|esta|desse|dessa)\b(?! atleta)/.test(text);
   const prescription = /\bprescric/.test(text);
   const exam = /\bexames?\b|\bhemograma\b|\bressonancia\b|\bradiografia\b|\bultrasson|\bsolicitac/.test(text);
-  const surgical = /\bcirurg/.test(text) || (!exam && /\bpedidos?\b/.test(text));
-  const named = [prescription, surgical, exam].filter(Boolean).length;
-  const kind = named === 1 ? prescription ? "prescription" as const : surgical ? "surgical_order" as const : "exam_request" as const : undefined;
+  const certificate = /\batestados?\b/.test(text);
+  const referral = /\bencaminhamentos?\b/.test(text);
+  const surgical = /\bcirurg/.test(text) || (!exam && !certificate && !referral && /\bpedidos?\b/.test(text));
+  const named = [prescription, surgical, exam, certificate, referral].filter(Boolean).length;
+  const kind: DocumentKind | undefined = named === 1
+    ? prescription ? "prescription" : surgical ? "surgical_order" : exam ? "exam_request" : certificate ? "certificate" : "referral"
+    : undefined;
   const months = /\bultim[oa]s? (tres|3) meses\b/.test(text) ? 3 : undefined;
-  const plural = /\b(documentos|prescricoes|pedidos|exames)\b/.test(text);
+  const plural = /\b(documentos|prescricoes|pedidos|exames|atestados|encaminhamentos)\b/.test(text);
   const asksList = /\b(quais|liste|listar|lista|busque|buscar)\b/.test(text);
   const asksRead = /\b(abra|abrir|abre|leia|ler|traga|trazer)\b/.test(text) || /\bquero ler\b/.test(text) || /\bjustificativa\b/.test(text);
   let command: DocumentRequest["command"] = "unknown";
-  if (asksRead || latest || ordinal || created || (previous && (kind || /\b(documento|pedido|prescricao)\b/.test(text)))) command = "read";
+  if (asksRead || latest || ordinal || created || (previous && (kind || /\b(documento|pedido|prescricao|atestado|encaminhamento)\b/.test(text)))) command = "read";
   else if ((asksList || (/\b(mostre|mostra|mostrar)\b/.test(text) && plural)) && !ordinal && !latest) command = "list";
   else if (/\b(mostre|mostra|mostrar)\b/.test(text) && kind) command = "read";
   return {
@@ -146,7 +155,7 @@ export function presentedReadings(value: unknown): ReadingBoard | null {
     const entry = item as Record<string, unknown>;
     if (typeof entry.id !== "string" || !uuidPattern.test(entry.id)) return [];
     if (typeof entry.athleteId !== "string" || !uuidPattern.test(entry.athleteId)) return [];
-    const kind = entry.kind === "evolution" ? "evolution" : entry.kind === "exam_request" ? "exam_request" : entry.kind === "surgical_order" ? "surgical_order" : entry.kind === "prescription" ? "prescription" : null;
+    const kind: ReadingKind | null = entry.kind === "evolution" ? "evolution" : asDocumentKind(entry.kind);
     if (!kind) return [];
     if (row.source === "document" && kind === "evolution") return [];
     if (row.source === "evolution" && kind !== "evolution") return [];
@@ -154,7 +163,7 @@ export function presentedReadings(value: unknown): ReadingBoard | null {
     return [ref];
   }).slice(0, 8);
   if (items.length === 0) return null;
-  const kind = row.kind === "exam_request" ? "exam_request" : row.kind === "surgical_order" ? "surgical_order" : row.kind === "prescription" ? "prescription" : "";
+  const kind = asDocumentKind(row.kind) ?? "";
   const status = row.status === "draft" || row.status === "ready_for_review" ? row.status : "";
   return {
     source: row.source,

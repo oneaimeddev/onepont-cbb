@@ -1,8 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { documentKinds, examTypeLabels, lateralityLabels, priorityLabels, type ExamType, type Laterality, type Priority } from "../documents/content";
+import { documentKinds, examTypeLabels, lateralityLabels, priorityLabels, type CertificateContent, type ExamType, type Laterality, type Priority, type ReferralContent } from "../documents/content";
 import { PrescriptionSheet } from "../documents/prescription-sheet";
+import { LetterSheet } from "../documents/letter-sheet";
+import { certificateLetter, referralLetter } from "../documents/letter-format";
+import { isDocumentKind, presentedCertificate, presentedReferral } from "./document-draft";
 import type { ReadingBoard, ReadingKind } from "./document-resolution";
 
 type MedicationView = {
@@ -27,6 +30,8 @@ type ExamView = {
 };
 
 type ReadingView = {
+  letter: CertificateContent | ReferralContent | null;
+  patientName: string;
   id: string;
   kind: ReadingKind;
   title: string;
@@ -54,6 +59,7 @@ type ReadingView = {
 };
 
 const emptyView: ReadingView = {
+  letter: null, patientName: "",
   id: "", kind: "prescription", title: "", authorName: "", credentialLabel: null, statusLabel: "", unsigned: false,
   occurredAt: "", notes: "", medications: [], exams: [], procedure: "", region: "", laterality: "", indication: "", diagnosis: "",
   justification: "", priority: "", additional: "", materials: "", specialty: "", body: "", restricted: false, truncated: false,
@@ -85,7 +91,7 @@ export function readingView(value: unknown): ReadingView | null {
   if (!value || typeof value !== "object") return null;
   const row = value as Record<string, unknown>;
   if (row.unavailable === true) return null;
-  if (row.kind !== "prescription" && row.kind !== "surgical_order" && row.kind !== "exam_request" && row.kind !== "evolution") return null;
+  if (row.kind !== "evolution" && !isDocumentKind(row.kind)) return null;
   if (typeof row.id !== "string") return null;
   const laterality = text(row.laterality, 20) as Laterality;
   const priority = text(row.priority, 20) as Priority;
@@ -112,6 +118,8 @@ export function readingView(value: unknown): ReadingView | null {
   }).slice(0, 12) : [];
   return {
     ...emptyView,
+    letter: row.kind === "certificate" ? presentedCertificate(row.letter) : row.kind === "referral" ? presentedReferral(row.letter) : null,
+    patientName: text(row.patientName, 160),
     id: row.id,
     kind: row.kind,
     title: text(row.title, 160),
@@ -262,6 +270,9 @@ export function ClinicalReadings({ board, onMore, morePending }: {
                         <Field label="Orientações" value={view.additional} />
                       </dl>
                     </>
+                  ) : null}
+                  {view.letter && (item.kind === "certificate" || item.kind === "referral") ? (
+                    <LetterSheet letter={"certificate_type" in view.letter ? certificateLetter(view.letter, view.patientName) : referralLetter(view.letter, view.patientName)} />
                   ) : null}
                   {item.kind === "surgical_order" ? (
                     <dl>

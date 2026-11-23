@@ -1,4 +1,4 @@
-export type DocumentKind = "prescription" | "surgical_order" | "exam_request";
+export type DocumentKind = "prescription" | "surgical_order" | "exam_request" | "certificate" | "referral";
 export type DocumentStatus = "draft" | "ready_for_review";
 export type Laterality = "" | "left" | "right" | "bilateral" | "not_applicable";
 export type Priority = "" | "elective" | "priority" | "urgent";
@@ -51,13 +51,72 @@ export type ExamContent = {
   items: ExamItem[];
 };
 
-export type DocumentContent = PrescriptionContent | SurgicalContent | ExamContent;
+// Medical certificate (CFM Resolutions 1.658/2002 and 1.851/2008): leave, attendance or sports
+// fitness. The ICD-10 code is printed only with the patient's explicit authorization.
+export type CertificateType = "" | "leave" | "attendance" | "fitness";
+export type Fitness = "" | "fit" | "fit_with_restrictions" | "unfit";
+
+export type CertificateContent = {
+  certificate_type: CertificateType;
+  occurred_at: string;
+  start_time: string;
+  end_time: string;
+  leave_days: string;
+  leave_start: string;
+  activities: string;
+  fitness: Fitness;
+  restrictions: string;
+  cid: string;
+  cid_authorized: boolean;
+  notes: string;
+};
+
+// Referral letter: destination, reason, clinical summary, hypothesis, exams, treatments and request.
+export type ReferralContent = {
+  specialty: string;
+  professional: string;
+  reason: string;
+  clinical_summary: string;
+  diagnosis: string;
+  cid: string;
+  exams: string;
+  treatment: string;
+  request: string;
+  priority: Priority;
+};
+
+export type DocumentContent = PrescriptionContent | SurgicalContent | ExamContent | CertificateContent | ReferralContent;
 
 export const documentKinds = {
   prescription: { slug: "prescricao", title: "Prescrição", draftTitle: "Nova prescrição" },
   surgical_order: { slug: "cirurgia", title: "Pedido cirúrgico", draftTitle: "Novo pedido cirúrgico" },
   exam_request: { slug: "exames", title: "Solicitação de exames", draftTitle: "Nova solicitação de exames" },
+  certificate: { slug: "atestado", title: "Atestado", draftTitle: "Novo atestado" },
+  referral: { slug: "encaminhamento", title: "Encaminhamento", draftTitle: "Novo encaminhamento" },
 } as const;
+
+/** Order of the creation menu: prescription and exams first, then the other medical documents. */
+export const documentMenu: { kind: DocumentKind; group: "main" | "documents" }[] = [
+  { kind: "prescription", group: "main" },
+  { kind: "exam_request", group: "main" },
+  { kind: "certificate", group: "documents" },
+  { kind: "referral", group: "documents" },
+  { kind: "surgical_order", group: "documents" },
+];
+
+export const certificateTypeLabels: Record<CertificateType, string> = {
+  "": "Não informado",
+  leave: "Afastamento",
+  attendance: "Comparecimento",
+  fitness: "Aptidão esportiva",
+};
+
+export const fitnessLabels: Record<Fitness, string> = {
+  "": "Não informada",
+  fit: "Apto(a)",
+  fit_with_restrictions: "Apto(a) com restrições",
+  unfit: "Inapto(a) temporariamente",
+};
 
 export const examTypeLabels: Record<ExamType, string> = {
   "": "Não informado",
@@ -109,6 +168,8 @@ export function kindFromSlug(slug: string): DocumentKind | null {
   if (slug === "prescricao") return "prescription";
   if (slug === "cirurgia") return "surgical_order";
   if (slug === "exames") return "exam_request";
+  if (slug === "atestado") return "certificate";
+  if (slug === "encaminhamento") return "referral";
   return null;
 }
 
@@ -218,6 +279,72 @@ export function examPending(content: ExamContent) {
   const header = examLabels.filter((entry) => !content[entry.key].trim()).map((entry) => entry.label);
   if (header.length) groups.push({ title: "Solicitação", fields: header });
   return { blocking, groups };
+}
+
+export function emptyCertificate(): CertificateContent {
+  return {
+    certificate_type: "", occurred_at: "", start_time: "", end_time: "", leave_days: "", leave_start: "",
+    activities: "", fitness: "", restrictions: "", cid: "", cid_authorized: false, notes: "",
+  };
+}
+
+export function emptyReferral(): ReferralContent {
+  return { specialty: "", professional: "", reason: "", clinical_summary: "", diagnosis: "", cid: "", exams: "", treatment: "", request: "", priority: "" };
+}
+
+export function emptyContent(kind: DocumentKind): DocumentContent {
+  if (kind === "prescription") return emptyPrescription();
+  if (kind === "exam_request") return emptyExam();
+  if (kind === "certificate") return emptyCertificate();
+  if (kind === "referral") return emptyReferral();
+  return emptySurgical();
+}
+
+/** Mirrors clinical.document_pending / document_ready for certificates. */
+export function certificatePending(content: CertificateContent) {
+  const blocking: string[] = [];
+  const fields: string[] = [];
+  if (!content.certificate_type) blocking.push("Escolha a modalidade do atestado.");
+  if (!content.occurred_at) blocking.push("Informe a data do atendimento.");
+  if (content.certificate_type === "leave") {
+    if (!content.leave_days) blocking.push("Informe os dias de afastamento.");
+    if (!content.leave_start) fields.push("Início do afastamento");
+    if (!content.activities.trim()) fields.push("Atividades afastadas");
+  }
+  if (content.certificate_type === "attendance") {
+    if (!content.start_time) blocking.push("Informe o horário de chegada.");
+    if (!content.end_time) fields.push("Horário de saída");
+  }
+  if (content.certificate_type === "fitness") {
+    if (!content.fitness) blocking.push("Informe a conclusão da avaliação.");
+    if (!content.activities.trim()) fields.push("Atividade avaliada");
+    if (content.fitness === "fit_with_restrictions" && !content.restrictions.trim()) fields.push("Restrições");
+  }
+  if (content.cid.trim() && !content.cid_authorized) blocking.push("O CID só pode constar com autorização expressa do paciente.");
+  return { blocking, groups: fields.length ? [{ title: "Atestado", fields }] : [] };
+}
+
+const referralLabels: { key: keyof Omit<ReferralContent, "priority">; label: string }[] = [
+  { key: "clinical_summary", label: "Resumo clínico" },
+  { key: "diagnosis", label: "Hipótese diagnóstica" },
+  { key: "request", label: "Solicitação ao profissional de destino" },
+];
+
+export function referralPending(content: ReferralContent) {
+  const blocking: string[] = [];
+  if (!content.specialty.trim()) blocking.push("Informe a especialidade ou o serviço de destino.");
+  if (!content.reason.trim()) blocking.push("Informe o motivo do encaminhamento.");
+  const fields = referralLabels.filter((entry) => !content[entry.key].trim()).map((entry) => entry.label);
+  if (!content.priority) fields.push("Prioridade");
+  return { blocking, groups: fields.length ? [{ title: "Encaminhamento", fields }] : [] };
+}
+
+export function isCertificate(content: DocumentContent): content is CertificateContent {
+  return "certificate_type" in content;
+}
+
+export function isReferral(content: DocumentContent): content is ReferralContent {
+  return "specialty" in content && "reason" in content;
 }
 
 export function isPrescription(content: DocumentContent): content is PrescriptionContent {

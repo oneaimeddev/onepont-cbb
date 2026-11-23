@@ -2,7 +2,7 @@
 
 import { requireProfile } from "../../lib/profile";
 import { supabaseServer } from "../../lib/supabase";
-import type { DocumentContent, DocumentKind } from "../documents/content";
+import { documentKinds, type DocumentContent, type DocumentKind } from "../documents/content";
 import type { DocumentReviewRecord } from "../documents/review-types";
 import { presentedDocument, type DocumentDraft } from "./document-draft";
 import { uuidPattern } from "./guards";
@@ -37,7 +37,7 @@ export async function saveDocumentDraft(input: {
 }): Promise<DocumentSaveResult> {
   await requireProfile();
   if (input.confirm !== "yes") return { ok: false, error: "unapproved" };
-  if (!uuidPattern.test(input.requestId) || (input.kind !== "prescription" && input.kind !== "surgical_order" && input.kind !== "exam_request")) return { ok: false, error: "invalid" };
+  if (!uuidPattern.test(input.requestId) || !Object.hasOwn(documentKinds, input.kind)) return { ok: false, error: "invalid" };
   const client = await supabaseServer();
   if (!input.version || !input.contentHash || !/^[a-f0-9]{32}$/.test(input.contentHash) || !uuidPattern.test(input.idempotencyKey)) return { ok: false, error: "invalid" };
   const confirmed = await client.rpc("chat_document_card", {

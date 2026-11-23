@@ -2,6 +2,7 @@ import { getAccess } from "../../../../lib/profile";
 import { supabaseServer } from "../../../../lib/supabase";
 import { uuidPattern } from "../../../../features/chat/guards";
 import type { ReadingKind } from "../../../../features/chat/document-resolution";
+import { documentTitle, isDocumentKind, presentedContent } from "../../../../features/chat/document-draft";
 
 const limit = 8;
 
@@ -27,7 +28,11 @@ function documentSummary(row: Record<string, unknown>, kind: ReadingKind) {
   };
 }
 
-function documentDetail(row: Record<string, unknown>, kind: ReadingKind) {
+function documentDetail(row: Record<string, unknown>, kind: ReadingKind, patientName = "") {
+  if (kind === "certificate" || kind === "referral") {
+    const letter = presentedContent(kind, row.content);
+    return { ...documentSummary({ ...row, label: documentTitle(kind, letter) }, kind), letter, patientName };
+  }
   const summary = documentSummary({ ...row, label: kind === "surgical_order" ? text((row.content as { procedure?: unknown } | null)?.procedure, 160) : firstMedication(row.content) }, kind);
   const content = row.content;
   if (!content || typeof content !== "object") return summary;
@@ -126,7 +131,7 @@ export async function POST(request: Request) {
     if (!item || typeof item !== "object") return [];
     const entry = item as { id?: unknown; kind?: unknown; detail?: unknown };
     if (typeof entry.id !== "string" || !uuidPattern.test(entry.id)) return [];
-    if (entry.kind !== "prescription" && entry.kind !== "surgical_order" && entry.kind !== "exam_request" && entry.kind !== "evolution") return [];
+    if (entry.kind !== "evolution" && !isDocumentKind(entry.kind)) return [];
     return [{ id: entry.id, kind: entry.kind as ReadingKind, detail: entry.detail === true }];
   });
   if (items.length !== record.items.length) return Response.json({ error: "invalid" }, { status: 400 });
@@ -155,6 +160,14 @@ export async function POST(request: Request) {
     records = !timeline.error && data && Array.isArray(data.records) ? data.records as Record<string, unknown>[] : [];
   }
 
+  let patient: string | null = null;
+  async function patientName() {
+    if (patient !== null) return patient;
+    const presented = await client.rpc("agent_presented_athletes", { ids: [record.athleteId] });
+    const row = Array.isArray(presented.data) ? presented.data[0] as { social_name?: unknown; full_name?: unknown } | undefined : undefined;
+    patient = text(row?.social_name, 160) || text(row?.full_name, 160);
+    return patient;
+  }
   const readings = [];
   for (const item of items) {
     if (item.kind === "evolution") {
@@ -194,7 +207,7 @@ export async function POST(request: Request) {
       readings.push(unavailable(item.id));
       continue;
     }
-    readings.push(documentDetail(data, item.kind));
+    readings.push(documentDetail(data, item.kind, item.kind === "certificate" || item.kind === "referral" ? await patientName() : ""));
   }
   return Response.json({ readings });
 }

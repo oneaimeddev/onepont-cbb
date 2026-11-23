@@ -6,3 +6,5 @@
   .document-create, .document-create > button { width: 100%; }
   .document-create-options { position: static; margin-top: .5rem; min-width: 0; max-width: none; }
 }
+.document-create-entry { display: contents; }
+.document-create-group { display: block; margin: .35rem .75rem .15rem; padding-top: .45rem; border-top: 1px solid var(--line); color: var(--muted); font-size: .75rem; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }

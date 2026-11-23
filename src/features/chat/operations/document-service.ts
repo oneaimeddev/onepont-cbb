@@ -13,10 +13,12 @@ import {
   type ProposalPatch,
 } from "./document-intent";
 
-const spokenDocument = {
+const spokenDocument: Record<DocumentKind, string> = {
   prescription: "a prescrição",
   exam_request: "o pedido de exames",
   surgical_order: "o pedido cirúrgico",
+  certificate: "o atestado",
+  referral: "o encaminhamento",
 };
 
 export async function resumeDocumentProposal(athleteId: string | null, proposals: DisplayedProposal[], kind?: DocumentKind) {

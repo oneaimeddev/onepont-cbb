@@ -43,7 +43,9 @@ const exams: Field[] = [
   "technical_details",
   "notes",
 ];
-const rootFields: Record<DocumentKind, Field[]> = {
+// Certificates and referrals are grounded by letter-documents.ts, not by these labelled fields.
+export type CreationKind = Exclude<DocumentKind, "certificate" | "referral">;
+const rootFields: Record<CreationKind, Field[]> = {
   prescription: ["notes"],
   exam_request: [
     "occurred_at",
@@ -255,7 +257,7 @@ type Grounded =
 // ORIGINAL human text. Prior assistant replies/records are never evidence.
 // Structured item labels prevent a dose for item B being applied to item A.
 export function groundDocumentCreation(
-  kind: DocumentKind,
+  kind: CreationKind,
   content: DocumentContent,
   message: string,
   itemId: (index: number) => string,

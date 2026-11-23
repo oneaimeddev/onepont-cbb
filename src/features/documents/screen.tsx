@@ -1,8 +1,8 @@
 import Link from "next/link";
 import "./documents.css";
 import { DocumentPreview } from "./preview";
-import { ExamEditor, PrescriptionEditor, SurgicalEditor } from "./editors";
-import { documentKinds, statusLabels, type DocumentContent, type DocumentKind, type DocumentStatus } from "./content";
+import { CertificateEditor, ExamEditor, PrescriptionEditor, ReferralEditor, SurgicalEditor } from "./editors";
+import { documentKinds, isCertificate, isExamRequest, isPrescription, isReferral, statusLabels, type DocumentContent, type DocumentKind, type DocumentStatus } from "./content";
 
 export function documentNotice(erro?: string, salvo?: string) {
   if (erro === "conflito") return { tone: "alert" as const, text: "Este rascunho foi atualizado em outro envio. Os dados abaixo são a versão salva." };
@@ -52,10 +52,14 @@ export function DocumentScreen({
       {notice && <p role={notice.tone}>{notice.text}</p>}
       {preview && saved ? (
         <DocumentPreview document={{ document_type: kind, status, author_name: authorName, credential_label: credential, created_at: createdAt, updated_at: updatedAt, content }} athleteName={athleteName} />
-      ) : kind === "prescription" && "notes" in content ? (
+      ) : kind === "prescription" && isPrescription(content) ? (
         <PrescriptionEditor key={`${documentId}:${version}`} athleteId={athleteId} documentId={documentId} version={version} initial={content} returnTo={editorPath} saved={saved} />
-      ) : kind === "exam_request" && "occurred_at" in content ? (
+      ) : kind === "exam_request" && isExamRequest(content) ? (
         <ExamEditor key={`${documentId}:${version}`} athleteId={athleteId} documentId={documentId} version={version} initial={content} returnTo={editorPath} saved={saved} />
+      ) : kind === "certificate" && isCertificate(content) ? (
+        <CertificateEditor key={`${documentId}:${version}`} athleteId={athleteId} documentId={documentId} version={version} initial={content} returnTo={editorPath} saved={saved} />
+      ) : kind === "referral" && isReferral(content) ? (
+        <ReferralEditor key={`${documentId}:${version}`} athleteId={athleteId} documentId={documentId} version={version} initial={content} returnTo={editorPath} saved={saved} />
       ) : kind === "surgical_order" && "procedure" in content ? (
         <SurgicalEditor key={`${documentId}:${version}`} athleteId={athleteId} documentId={documentId} version={version} initial={content} returnTo={editorPath} saved={saved} />
       ) : null}

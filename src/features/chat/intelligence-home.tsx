@@ -17,7 +17,7 @@ import { conversationFailure, parseConversation, parseHistory, postConversation,
 import { ClinicalDraftCard } from "./clinical-draft-card";
 import { draftSaveMessage, presentedDraft } from "./clinical-draft";
 import { DocumentDraftCard } from "./document-draft-card";
-import { displayedDocumentProposals, presentedDocument, type DocumentDraft } from "./document-draft";
+import { displayedDocumentProposals, isDocumentKind, presentedDocument, type DocumentDraft } from "./document-draft";
 import { confirmSpokenDraft } from "./clinical-draft-actions";
 import { athleteCardLine, compactDirectoryReply, presentedAthletes, presentedContext, presentedNavigation, presentedSearch, uuidPattern, type PresentedAthlete, type PresentedSearch } from "./guards";
 import { HomeGreeting } from "./home-greeting";
@@ -641,7 +641,7 @@ export function IntelligenceHome({
       if (!response.ok) throw new Error("Não foi possível carregar mais documentos.");
       const body = await response.json() as { documents?: { id?: string; kind?: string }[]; total?: number };
       const incoming: ReadingRef[] = Array.isArray(body.documents) ? body.documents.flatMap((item) => {
-        const kind = item.kind === "exam_request" ? "exam_request" as const : item.kind === "surgical_order" ? "surgical_order" as const : item.kind === "prescription" ? "prescription" as const : null;
+        const kind = isDocumentKind(item.kind) ? item.kind : null;
         if (!item.id || !kind) return [];
         const ref: ReadingRef = { id: item.id, athleteId: turn.readings?.athleteId ?? "", kind, open: false };
         return [ref];

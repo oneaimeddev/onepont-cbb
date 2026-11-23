@@ -16,7 +16,9 @@ import type { AttachmentBoard } from "../attachments/types";
 import { supabaseServer } from "../../lib/supabase";
 import { intelligenceModel } from "./config";
 import { presentedDraft, type ClinicalDraft } from "./clinical-draft";
-import { documentTitle, examPayload, prescriptionPayload, presentedDocument, surgicalPayload, type DocumentDraft } from "./document-draft";
+import { groundCertificate, groundReferral, letterDocumentRequested, letterPatientMatches } from "./operations/letter-documents";
+import type { CertificateContent, ReferralContent } from "../documents/content";
+import { documentTitle, examPayload, isDocumentKind, prescriptionPayload, presentedContent, presentedDocument, surgicalPayload, type DocumentDraft } from "./document-draft";
 import { athleteCommand, rosterChoice, rosterPrompt, type AthleteCommand } from "./athlete-resolution";
 import { documentChoice, documentRequest, modelDocumentSummary, type DocumentSlot, type ReadingBoard } from "./document-resolution";
 import { athleteProfilePath, athletesFromDirectory, compactDirectoryReply, decideAthleteAccess, directoryFilters, directoryPageSize, presentedAthletes, presentedContext, presentedNavigation, presentedSearch, uuidPattern, type AthleteSearch, type PresentedAthlete, type PresentedSearch } from "./guards";
@@ -139,7 +141,7 @@ function presentationFrom(steps: ReadonlyArray<{ toolResults: ReadonlyArray<{ to
         document = null;
         kind = "search";
       }
-      if ((item.toolName === "preparePrescription" || item.toolName === "prepareSurgicalOrder" || item.toolName === "prepareExamRequest" || item.toolName === "openClinicalDocument" || item.toolName === "resumeDocumentProposal" || item.toolName === "editDocumentProposal") && (output.status === "proposal" || output.status === "saved")) {
+      if ((item.toolName === "preparePrescription" || item.toolName === "prepareSurgicalOrder" || item.toolName === "prepareExamRequest" || item.toolName === "prepareCertificate" || item.toolName === "prepareReferral" || item.toolName === "openClinicalDocument" || item.toolName === "resumeDocumentProposal" || item.toolName === "editDocumentProposal") && (output.status === "proposal" || output.status === "saved")) {
         const proposal = presentedDocument(output);
         if (proposal) {
           document = proposal;
@@ -185,7 +187,7 @@ function presentationFrom(steps: ReadonlyArray<{ toolResults: ReadonlyArray<{ to
         contextCleared = true;
         kind = "narrative";
       }
-      if ((item.toolName === "prepareClinicalDraft" || item.toolName === "preparePrescription" || item.toolName === "prepareSurgicalOrder" || item.toolName === "prepareExamRequest") && output.status === "proposal" && typeof (output as { sessionId?: unknown }).sessionId === "string") {
+      if ((item.toolName === "prepareClinicalDraft" || item.toolName === "preparePrescription" || item.toolName === "prepareSurgicalOrder" || item.toolName === "prepareExamRequest" || item.toolName === "prepareCertificate" || item.toolName === "prepareReferral") && output.status === "proposal" && typeof (output as { sessionId?: unknown }).sessionId === "string") {
         const candidate = (output as { sessionId: string }).sessionId;
         if (uuidPattern.test(candidate)) sessionId = candidate;
       }
@@ -235,7 +237,7 @@ async function prepareConversation(input: unknown) {
   const sentByProfessional = parsed.data.messages.filter((message) => message.role === "user").map((message) => message.content.trim());
   const displayedProposals = parsed.data.displayedProposals ?? [];
   const creationTurnKey = parsed.data.messageId ?? crypto.randomUUID();
-  const documentPreparation = { spoken: false, attempted: false, requested: (["prescription", "exam_request", "surgical_order"] as const).some((kind) => documentCreationRequested(kind, utterance)), notice: "" };
+  const documentPreparation = { spoken: false, attempted: false, requested: (["prescription", "exam_request", "surgical_order"] as const).some((kind) => documentCreationRequested(kind, utterance)) || letterDocumentRequested("certificate", utterance) || letterDocumentRequested("referral", utterance), notice: "" };
   if (documentPreparation.requested && !canAuthorDocuments) documentPreparation.notice = "Seu perfil não tem autorização para preparar documentos médicos. Não preparei nem salvei um documento.";
   const command = athleteCommand(utterance);
   const speech = documentRequest(utterance);
@@ -703,6 +705,72 @@ async function prepareConversation(input: unknown) {
     execute: async (input) => registerDocument(input.athleteId, "exam_request", examPayload(input), input.source),
   });
 
+  // Certificates and referrals: every value is kept only if the professional said it in this
+  // message (letter-documents.ts); the rest stays blank and pending in the card.
+  async function registerLetter(athleteId: string, kind: "certificate" | "referral", content: CertificateContent | ReferralContent) {
+    documentPreparation.attempted = true;
+    const decision = decideAthleteAccess(athleteId, contextAthleteId, searches);
+    if (decision !== "allow") {
+      const search = searches.findLast((item) => item.ids.includes(athleteId) || item.total > 1);
+      documentPreparation.notice = "Não preparei o documento. Confirme o atleta autorizado antes de continuar.";
+      return { ...unavailable(decision), athletes: decision === "confirm" ? search?.athletes ?? [] : [] };
+    }
+    const roster = await client.rpc("agent_presented_athletes", { ids: [athleteId] });
+    const intended = athletesFromDirectory(roster.error ? [] : roster.data).find((p) => p.id === athleteId);
+    if (!intended || !letterPatientMatches(kind, utterance, intended.name)) {
+      documentPreparation.notice = kind === "certificate" ? "Para qual atleta você quer o atestado?" : "Para qual atleta você quer o encaminhamento?";
+      return { status: "needs_source" as const, fields: ["athlete_context"] };
+    }
+    const registered = await client.rpc("chat_document_proposal_create", { target: athleteId, kind, payload: content, message_key: creationTurnKey });
+    const document = presentedDocument(registered.data?.document);
+    if (registered.error || !document || registered.data?.error) {
+      documentPreparation.notice = "Não consegui preparar o documento com esses dados. Pode confirmar o que deseja incluir?";
+      return { status: "needs_source" as const, fields: [registered.data?.error ?? "unavailable"] };
+    }
+    return { ...document, status: document.state === "saved" ? "saved" as const : "proposal" as const, sessionId: registered.data.sessionId };
+  }
+
+  const prepareCertificate = tool({
+    description: "Prepara uma proposta de atestado médico (afastamento, comparecimento ou aptidão esportiva) ainda não gravada, só com o que o médico disse nesta mensagem. Copie os trechos literais. Não invente dias, horários, CID nem atividades. Não grava, não assina e não emite.",
+    inputSchema: z.object({
+      athleteId: z.string(),
+      occurredAt: z.string().max(10).optional().describe("Data do atendimento AAAA-MM-DD, só se dita"),
+      leaveDays: z.number().int().min(1).max(365).optional(),
+      leaveStart: z.string().max(10).optional(),
+      startTime: z.string().max(5).optional().describe("HH:MM"),
+      endTime: z.string().max(5).optional().describe("HH:MM"),
+      activities: z.string().max(500).optional().describe("Trecho literal: atividades afastadas ou avaliadas"),
+      restrictions: z.string().max(1000).optional(),
+      cid: z.string().max(20).optional(),
+      notes: z.string().max(2000).optional(),
+    }).strict(),
+    execute: async (input) => registerLetter(input.athleteId, "certificate", groundCertificate({
+      occurred_at: input.occurredAt, leave_days: input.leaveDays ? String(input.leaveDays) : "", leave_start: input.leaveStart,
+      start_time: input.startTime, end_time: input.endTime, activities: input.activities, restrictions: input.restrictions,
+      cid: input.cid, notes: input.notes,
+    }, utterance)),
+  });
+
+  const prepareReferral = tool({
+    description: "Prepara uma proposta de encaminhamento a outra especialidade ou profissional, ainda não gravada, só com o que o profissional disse nesta mensagem. Copie os trechos literais. Não invente motivo, resumo, hipótese, CID, exames ou tratamentos. Não grava, não assina e não emite.",
+    inputSchema: z.object({
+      athleteId: z.string(),
+      specialty: z.string().max(160).describe("Especialidade ou serviço de destino, como dito"),
+      professional: z.string().max(160).optional(),
+      reason: z.string().max(2000).optional(),
+      clinicalSummary: z.string().max(2000).optional(),
+      diagnosis: z.string().max(500).optional(),
+      cid: z.string().max(20).optional(),
+      exams: z.string().max(2000).optional(),
+      treatment: z.string().max(2000).optional(),
+      request: z.string().max(1000).optional().describe("O que se pede ao destino, como avaliação e conduta"),
+    }).strict(),
+    execute: async (input) => registerLetter(input.athleteId, "referral", groundReferral({
+      specialty: input.specialty, professional: input.professional, reason: input.reason, clinical_summary: input.clinicalSummary,
+      diagnosis: input.diagnosis, cid: input.cid, exams: input.exams, treatment: input.treatment, request: input.request,
+    }, utterance)),
+  });
+
   const listDocumentDrafts = tool({
     description: "Lista os rascunhos de prescrição e pedido cirúrgico que este médico já gravou para um atleta. Não inclui documentos de outros profissionais e não significa emissão.",
     inputSchema: z.object({ athleteId: z.string() }),
@@ -715,7 +783,7 @@ async function prepareConversation(input: unknown) {
       const documents = data.documents.flatMap((item) => {
         if (!item || typeof item !== "object") return [];
         const row = item as Record<string, unknown>;
-        if (typeof row.id !== "string" || (row.document_type !== "prescription" && row.document_type !== "surgical_order" && row.document_type !== "exam_request")) return [];
+        if (typeof row.id !== "string" || !isDocumentKind(row.document_type)) return [];
         return [{
           id: row.id,
           kind: row.document_type,
@@ -742,7 +810,7 @@ async function prepareConversation(input: unknown) {
 
   const resumeProposal = tool({
     description: "Retoma o cartão já trabalhado nesta conversa, inclusive uma proposta ainda não salva. Informe o tipo se o profissional o indicou. O servidor resolve a referência e devolve o mesmo cartão.",
-    inputSchema: z.object({ kind: z.enum(["prescription", "exam_request", "surgical_order"]).optional() }).strict(),
+    inputSchema: z.object({ kind: z.enum(["prescription", "exam_request", "surgical_order", "certificate", "referral"]).optional() }).strict(),
     execute: async ({ kind }) => {
       const reply = await resumeDocumentProposal(contextAthleteId, displayedProposals, kind);
       documentActionReply = reply.text;
@@ -758,7 +826,7 @@ async function prepareConversation(input: unknown) {
       if (decision !== "allow" || !uuidPattern.test(documentId)) return unavailable(decision === "allow" ? "reject" : decision);
       const opened = await client.rpc("document_open", { target: athleteId, document_id: documentId });
       const data = opened.data as { error?: string; id?: string; document_type?: string; content?: unknown; author_name?: string; credential_label?: string | null; version?: number } | null;
-      if (opened.error || !data || data.error || (data.document_type !== "prescription" && data.document_type !== "surgical_order" && data.document_type !== "exam_request") || typeof data.author_name !== "string" || typeof data.id !== "string") {
+      if (opened.error || !data || data.error || !isDocumentKind(data.document_type) || typeof data.author_name !== "string" || typeof data.id !== "string") {
         return unavailable("denied");
       }
       const profile = await client.rpc("agent_athlete_workspace", { target: athleteId, view_name: "chat" });
@@ -774,7 +842,7 @@ async function prepareConversation(input: unknown) {
         professionalName: data.author_name,
         credentialLabel: typeof data.credential_label === "string" ? data.credential_label : null,
         kind: data.document_type,
-        title: documentTitle(data.document_type, content as ReturnType<typeof prescriptionPayload>),
+        title: documentTitle(data.document_type, presentedContent(data.document_type, content)),
         content,
         missing: [],
         documentId: data.id,
@@ -800,7 +868,7 @@ async function prepareConversation(input: unknown) {
     return data.documents.flatMap((item) => {
       if (!item || typeof item !== "object") return [];
       const row = item as Record<string, unknown>;
-      const kind = row.document_type === "exam_request" ? "exam_request" : row.document_type === "surgical_order" ? "surgical_order" : row.document_type === "prescription" ? "prescription" : null;
+      const kind = isDocumentKind(row.document_type) ? row.document_type : null;
       if (typeof row.id !== "string" || !kind) return [];
       return [{
         id: row.id,
@@ -849,7 +917,7 @@ async function prepareConversation(input: unknown) {
     description: "Lista prescrições e pedidos cirúrgicos gravados por este médico para o atleta. Não inclui documentos de outros profissionais. Não descreva doses, quantidades, indicação ou justificativa: o cartão mostra o original. Se houver mais de um, não escolha.",
     inputSchema: z.object({
       athleteId: z.string(),
-      kind: z.enum(["prescription", "surgical_order", "exam_request"]).optional(),
+      kind: z.enum(["prescription", "surgical_order", "exam_request", "certificate", "referral"]).optional(),
       status: z.enum(["draft", "ready_for_review"]).optional(),
       name: z.string().max(160).optional(),
       page: z.number().int().min(1).max(20).optional(),
@@ -885,7 +953,7 @@ async function prepareConversation(input: unknown) {
     inputSchema: z.object({
       athleteId: z.string(),
       ordinal: z.number().int().min(1).max(8).optional(),
-      kind: z.enum(["prescription", "surgical_order", "exam_request"]).optional(),
+      kind: z.enum(["prescription", "surgical_order", "exam_request", "certificate", "referral"]).optional(),
       latest: z.boolean().optional(),
       reference: z.enum(["previous", "created"]).optional(),
       name: z.string().max(160).optional(),
@@ -1045,6 +1113,9 @@ async function prepareConversation(input: unknown) {
           ? "Interprete a intenção no contexto da conversa, inclusive respostas curtas, mudança de documento e pedidos de vários itens. Use prepareExamRequest para exames. Nas três ferramentas prepare, para linguagem livre, sempre envie source. Use action open se o profissional escolheu o tipo sem ditar dados, create se pede uma nova proposta com dados, fill se está respondendo para preencher um cartão vazio existente daquele tipo. itemQuotes contém um trecho literal contínuo da última mensagem do profissional por item, na mesma ordem, incluindo todos os detalhes daquele item. Para cirurgia ou cartão vazio envie []. Transcreva todos os valores literalmente, inclusive o nome completo do exame com região e lado. Omita campos desconhecidos. Se houver nome de paciente explícito envie patientName exatamente como foi dito. Em formato rotulado (Medicamento:, Exame:, Procedimento:) omita source. Perguntas sobre condutas, relatos passados e hipóteses não autorizam preparar documentos. Se o destinatário ou a intenção estiverem ambíguos, peça esclarecimento. Use a conversa para resolver o tipo do documento, nunca como fonte de dados clínicos."
           : "",
         canAuthorDocuments
+          ? "Para atestados use prepareCertificate e para encaminhamentos use prepareReferral, para o atleta em contexto ou o único identificado. Envie em cada campo o trecho literal da última mensagem do profissional; omita o que ele não disse. O cartão mostra o que falta. Não invente dias de afastamento, horários, CID, motivo, resumo, exames ou tratamentos. O CID só aparece no atestado com autorização expressa do paciente."
+          : "",
+        canAuthorDocuments
           ? "Para consultar prescrições, pedidos cirúrgicos ou solicitações de exames já gravados, use browseClinicalDocuments ou readClinicalDocument. O cartão mostra o original. Não descreva dose, exame, indicação ou justificativa. Não diga que o documento foi emitido ou assinado. Se houver mais de um, peça para o profissional escolher."
           : "Este profissional não consulta prescrições nem pedidos cirúrgicos de outros autores.",
         canAuthorDocuments
@@ -1070,7 +1141,7 @@ async function prepareConversation(input: unknown) {
       messages: parsed.data.messages,
       tools: {
         searchClinicalActivity, listClinicalAttachments, searchAthletes, recallAthlete, getAthleteSummary, navigateToAthlete, openConsultationVoice, selectAthleteContext, clearAthleteContext, prepareClinicalDraft, offerConsultationReport, saveClinicalDraft, readClinicalEvolutions, analyzeAthleteHistory,
-        ...(canAuthorDocuments ? { editDocumentProposal: editProposal, resumeDocumentProposal: resumeProposal, preparePrescription, prepareSurgicalOrder, prepareExamRequest, listDocumentDrafts, openClinicalDocument, saveClinicalDocument, browseClinicalDocuments, readClinicalDocument } : {}),
+        ...(canAuthorDocuments ? { editDocumentProposal: editProposal, resumeDocumentProposal: resumeProposal, preparePrescription, prepareSurgicalOrder, prepareExamRequest, prepareCertificate, prepareReferral, listDocumentDrafts, openClinicalDocument, saveClinicalDocument, browseClinicalDocuments, readClinicalDocument } : {}),
       },
       stopWhen: [stepCountIs(6), hasToolCall("resumeDocumentProposal", "editDocumentProposal", "offerConsultationReport")],
       maxRetries: 1,
@@ -1137,7 +1208,7 @@ export async function openIntelligenceStream(input: unknown): Promise<{ stream: 
         const view = presentationFrom(steps);
         const modelText = (await result.text).trim();
         const preparation = prepared.documentView();
-        const medicalDocumentTool = steps.some((step) => step.toolCalls.some((call) => ["preparePrescription", "prepareSurgicalOrder", "prepareExamRequest", "saveClinicalDocument"].includes(call.toolName)));
+        const medicalDocumentTool = steps.some((step) => step.toolCalls.some((call) => ["preparePrescription", "prepareSurgicalOrder", "prepareExamRequest", "prepareCertificate", "prepareReferral", "saveClinicalDocument"].includes(call.toolName)));
         const saveOnly = !preparation.attempted && !preparation.requested && steps.some((step) => step.toolCalls.some((call) => call.toolName === "saveClinicalDocument"));
         const content = view.document?.content;
         const blankDocument = content && Object.values(content).every((value) => Array.isArray(value) ? value.length === 0 : value === "");

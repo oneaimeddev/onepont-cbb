@@ -7,10 +7,12 @@ import { DocumentPreview } from "../documents/preview";
 import type { ReviewMaterial } from "../documents/review-types";
 import "../documents/documents.css";
 import { PrescriptionSheet } from "../documents/prescription-sheet";
+import { LetterSheet } from "../documents/letter-sheet";
+import { certificateLetter, referralLetter } from "../documents/letter-format";
 import { setUnsavedClinicalDraft } from "../clinical/unsaved";
 import {
-  documentKinds, emptyMedication, examTypeLabels, lateralityLabels, priorityLabels,
-  type ExamContent, type Laterality, type MedicationItem, type PrescriptionContent, type Priority, type SurgicalContent,
+  certificateTypeLabels, documentKinds, emptyMedication, fitnessLabels, isCertificate, isExamRequest, isPrescription, isReferral, examTypeLabels, lateralityLabels, priorityLabels,
+  type CertificateContent, type CertificateType, type DocumentKind, type ExamContent, type Fitness, type ReferralContent, type Laterality, type MedicationItem, type PrescriptionContent, type Priority, type SurgicalContent,
 } from "../documents/content";
 import { discardDocumentDraft, saveDocumentDraft, reviewDocumentDraft } from "./document-draft-actions";
 import { documentMissing, documentSaveMessage, documentTitle, type DocumentDraft } from "./document-draft";
@@ -43,6 +45,77 @@ function MedicationFields({ item, onChange }: { item: MedicationItem; onChange: 
       ))}
       <label>Instruções
         <textarea value={item.instructions} maxLength={500} rows={3} onChange={(event) => onChange({ ...item, instructions: event.target.value })} />
+      </label>
+    </div>
+  );
+}
+
+const proposalLabels: Record<DocumentKind, string> = {
+  prescription: "Proposta de prescrição",
+  exam_request: "Proposta de solicitação de exames",
+  surgical_order: "Proposta de pedido cirúrgico",
+  certificate: "Proposta de atestado",
+  referral: "Proposta de encaminhamento",
+};
+
+function CertificateFields({ content, onChange }: { content: CertificateContent; onChange: (next: CertificateContent) => void }) {
+  const set = (patch: Partial<CertificateContent>) => onChange({ ...content, ...patch });
+  return (
+    <div className="ia-draft-fields">
+      <label>Modalidade
+        <select value={content.certificate_type} onChange={(event) => set({ certificate_type: event.target.value as CertificateType })}>
+          {(Object.keys(certificateTypeLabels) as CertificateType[]).map((key) => <option key={key || "empty"} value={key}>{key ? certificateTypeLabels[key] : "Escolha a modalidade"}</option>)}
+        </select>
+      </label>
+      <label>Data do atendimento<input type="date" value={content.occurred_at} onChange={(event) => set({ occurred_at: event.target.value })} /></label>
+      {content.certificate_type === "leave" ? <>
+        <label>Dias de afastamento<input inputMode="numeric" value={content.leave_days} maxLength={3} onChange={(event) => set({ leave_days: event.target.value.replace(/\D/g, "").slice(0, 3) })} /></label>
+        <label>Início do afastamento<input type="date" value={content.leave_start} onChange={(event) => set({ leave_start: event.target.value })} /></label>
+      </> : null}
+      {content.certificate_type === "attendance" ? <>
+        <label>Horário de chegada<input type="time" value={content.start_time} onChange={(event) => set({ start_time: event.target.value })} /></label>
+        <label>Horário de saída<input type="time" value={content.end_time} onChange={(event) => set({ end_time: event.target.value })} /></label>
+      </> : null}
+      {content.certificate_type === "fitness" ? (
+        <label>Conclusão
+          <select value={content.fitness} onChange={(event) => set({ fitness: event.target.value as Fitness })}>
+            {(Object.keys(fitnessLabels) as Fitness[]).map((key) => <option key={key || "empty"} value={key}>{fitnessLabels[key]}</option>)}
+          </select>
+        </label>
+      ) : null}
+      {content.certificate_type === "leave" || content.certificate_type === "fitness" ? (
+        <label>{content.certificate_type === "leave" ? "Atividades afastadas" : "Atividade avaliada"}<input value={content.activities} maxLength={500} onChange={(event) => set({ activities: event.target.value })} /></label>
+      ) : null}
+      {content.fitness === "fit_with_restrictions" ? <label>Restrições<textarea value={content.restrictions} maxLength={1000} rows={3} onChange={(event) => set({ restrictions: event.target.value })} /></label> : null}
+      <label>CID-10 (opcional)<input value={content.cid} maxLength={20} onChange={(event) => set({ cid: event.target.value })} /></label>
+      <label className="check-label"><input type="checkbox" checked={content.cid_authorized} onChange={(event) => set({ cid_authorized: event.target.checked })} /><span>O paciente autorizou a inclusão do CID</span></label>
+      <label>Observações<textarea value={content.notes} maxLength={2000} rows={3} onChange={(event) => set({ notes: event.target.value })} /></label>
+    </div>
+  );
+}
+
+function ReferralFields({ content, onChange }: { content: ReferralContent; onChange: (next: ReferralContent) => void }) {
+  const set = (patch: Partial<ReferralContent>) => onChange({ ...content, ...patch });
+  const text = (key: keyof Omit<ReferralContent, "priority">, label: string, max: number, rows = 0) => (
+    <label key={key}>{label}{rows
+      ? <textarea value={content[key]} maxLength={max} rows={rows} onChange={(event) => set({ [key]: event.target.value } as Partial<ReferralContent>)} />
+      : <input value={content[key]} maxLength={max} onChange={(event) => set({ [key]: event.target.value } as Partial<ReferralContent>)} />}</label>
+  );
+  return (
+    <div className="ia-draft-fields">
+      {text("specialty", "Especialidade ou serviço", 160)}
+      {text("professional", "Profissional de destino (opcional)", 160)}
+      {text("reason", "Motivo do encaminhamento", 2000, 2)}
+      {text("clinical_summary", "Resumo clínico", 2000, 3)}
+      {text("diagnosis", "Hipótese diagnóstica", 500, 2)}
+      {text("cid", "CID-10", 20)}
+      {text("exams", "Exames realizados", 2000, 2)}
+      {text("treatment", "Tratamentos realizados", 2000, 2)}
+      {text("request", "Solicitação ao profissional de destino", 1000, 2)}
+      <label>Prioridade
+        <select value={content.priority} onChange={(event) => set({ priority: event.target.value as Priority })}>
+          {(Object.keys(priorityLabels) as Priority[]).map((key) => <option key={key || "empty"} value={key}>{priorityLabels[key]}</option>)}
+        </select>
       </label>
     </div>
   );
@@ -129,7 +202,7 @@ export function DocumentDraftCard({ draft, onChange, onSelect, onSend, selected 
   const busy = pending || draft.state === "saving";
   const open = !draft.readOnlyReason && (draft.state === "proposal" || draft.state === "error") && draft.content !== null;
   const copy = documentKinds[draft.kind];
-  const label = draft.kind === "prescription" ? "Proposta de prescrição" : draft.kind === "exam_request" ? "Proposta de solicitação de exames" : "Proposta de pedido cirúrgico";
+  const label = proposalLabels[draft.kind];
 
   useEffect(() => {
     const unsaved = !draft.readOnlyReason && (draft.state === "proposal" || draft.state === "saving" || draft.state === "error");
@@ -175,19 +248,19 @@ export function DocumentDraftCard({ draft, onChange, onSelect, onSend, selected 
         <div><dt>Médico responsável</dt><dd>{draft.professionalName}</dd></div>
         <div><dt>Identificação profissional</dt><dd>{draft.credentialLabel ?? "Não registrada neste rascunho"}</dd></div>
       </dl>
-      {draft.state === "discarded" ? null : activePreview && !editing ? <details className="ia-document-preview" open onToggle={(event) => setPreviewExpanded(event.currentTarget.open)}><summary>Visualizar documento completo</summary><DocumentPreview document={activePreview} athleteName={activePreview.athlete_name} review finalized={finalized ? {provenance: finalized.provenance, verified: journey.view?.workflow?.workflow.signature?.cryptographicallyVerified ?? false} : undefined} /></details> : editing && open && draft.kind === "prescription" && draft.content && "notes" in draft.content ? (
+      {draft.state === "discarded" ? null : activePreview && !editing ? <details className="ia-document-preview" open onToggle={(event) => setPreviewExpanded(event.currentTarget.open)}><summary>Visualizar documento completo</summary><DocumentPreview document={activePreview} athleteName={activePreview.athlete_name} review finalized={finalized ? {provenance: finalized.provenance, verified: journey.view?.workflow?.workflow.signature?.cryptographicallyVerified ?? false} : undefined} /></details> : editing && open && draft.kind === "prescription" && draft.content && isPrescription(draft.content) ? (
         <div className="ia-draft-fields">
           {draft.content.items.map((item) => (
             <MedicationFields key={item.id} item={item} onChange={(next) => replace({ ...draft.content as PrescriptionContent, items: (draft.content as PrescriptionContent).items.map((entry) => entry.id === item.id ? next : entry) })} />
           ))}
           {draft.content.items.length === 0 ? (
-            <MedicationFields item={blankItem} onChange={(next) => replace({ notes: draft.content && "notes" in draft.content ? draft.content.notes : "", items: [next] })} />
+            <MedicationFields item={blankItem} onChange={(next) => replace({ notes: draft.content && isPrescription(draft.content) ? draft.content.notes : "", items: [next] })} />
           ) : null}
           <label>Observações
             <textarea value={draft.content.notes} maxLength={2000} rows={3} onChange={(event) => replace({ ...(draft.content as PrescriptionContent), notes: event.target.value })} />
           </label>
         </div>
-      ) : editing && open && draft.kind === "exam_request" && draft.content && "occurred_at" in draft.content ? (
+      ) : editing && open && draft.kind === "exam_request" && draft.content && isExamRequest(draft.content) ? (
         <div className="ia-draft-fields">
           {draft.content.items.map((item) => (
             <label key={item.id}>Exame
@@ -201,6 +274,10 @@ export function DocumentDraftCard({ draft, onChange, onSelect, onSend, selected 
             <textarea value={draft.content.additional} maxLength={2000} rows={3} onChange={(event) => replace({ ...(draft.content as ExamContent), additional: event.target.value })} />
           </label>
         </div>
+      ) : editing && open && draft.kind === "certificate" && draft.content && isCertificate(draft.content) ? (
+        <CertificateFields content={draft.content} onChange={replace} />
+      ) : editing && open && draft.kind === "referral" && draft.content && isReferral(draft.content) ? (
+        <ReferralFields content={draft.content} onChange={replace} />
       ) : editing && open && draft.content && "procedure" in draft.content ? (
         <div className="ia-draft-fields">
           <label>Procedimento<input value={draft.content.procedure} maxLength={200} onChange={(event) => replace({ ...(draft.content as SurgicalContent), procedure: event.target.value })} /></label>
@@ -221,9 +298,13 @@ export function DocumentDraftCard({ draft, onChange, onSelect, onSend, selected 
           <label>Materiais<textarea value={draft.content.materials} maxLength={1000} rows={3} onChange={(event) => replace({ ...(draft.content as SurgicalContent), materials: event.target.value })} /></label>
           <label>Informações complementares<textarea value={draft.content.additional} maxLength={2000} rows={3} onChange={(event) => replace({ ...(draft.content as SurgicalContent), additional: event.target.value })} /></label>
         </div>
-      ) : draft.kind === "exam_request" && draft.content && "occurred_at" in draft.content ? (
+      ) : draft.kind === "exam_request" && draft.content && isExamRequest(draft.content) ? (
         <ExamRead content={draft.content} />
-      ) : draft.kind === "prescription" && draft.content && "notes" in draft.content ? (
+      ) : draft.kind === "certificate" && draft.content && isCertificate(draft.content) ? (
+        <div className="ia-draft-read"><LetterSheet letter={certificateLetter(draft.content, draft.athleteName)} /></div>
+      ) : draft.kind === "referral" && draft.content && isReferral(draft.content) ? (
+        <div className="ia-draft-read"><LetterSheet letter={referralLetter(draft.content, draft.athleteName)} /></div>
+      ) : draft.kind === "prescription" && draft.content && isPrescription(draft.content) ? (
         <PrescriptionRead content={draft.content} />
       ) : draft.content && "procedure" in draft.content ? (
         <SurgicalRead content={draft.content} />

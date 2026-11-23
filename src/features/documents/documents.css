@@ -158,3 +158,14 @@
 .rx-quantity { flex: 0 0 auto; white-space: nowrap; }
 .rx-directions { margin: .2rem 0 0 1.25rem; line-height: 1.5; }
 .rx-notes { margin: 0; }
+
+/* Certificates and referrals in letter form (see letter-format.ts). */
+.letter { display: grid; gap: .75rem; }
+.letter-title { margin: 0; font-weight: 700; letter-spacing: .06em; text-align: center; }
+.letter-recipient { margin: 0; font-weight: 600; }
+.letter-text { margin: 0; line-height: 1.6; text-align: justify; }
+.letter-sections { display: grid; gap: .6rem; margin: 0; }
+.letter-sections div { display: grid; gap: .15rem; }
+.letter-sections dt { font-size: .8125rem; font-weight: 600; }
+.letter-sections dd { margin: 0; line-height: 1.5; white-space: pre-wrap; }
+.letter-closing { margin: .25rem 0 0; }

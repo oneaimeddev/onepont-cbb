@@ -3,7 +3,7 @@ import { displayedProposalSchema } from "./document-intent";
 
 const id = z.string().uuid();
 const revision = z.number().int().min(0).max(2147483647);
-const kind = z.enum(["prescription", "surgical_order", "exam_request"]);
+const kind = z.enum(["prescription", "surgical_order", "exam_request", "certificate", "referral"]);
 const workspace = z.object({ workspaceId: id, revision }).strict();
 const session = z.object({ sessionId: id }).strict();
 const proposal = displayedProposalSchema.omit({ dirty: true });
