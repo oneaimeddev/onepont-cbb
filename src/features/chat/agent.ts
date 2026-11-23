@@ -97,7 +97,7 @@ function presentationFrom(steps: ReadonlyArray<{ toolResults: ReadonlyArray<{ to
   for (const step of steps) {
     for (const item of step.toolResults) {
       const output = item.output as { status?: string; athletes?: unknown; athlete?: unknown; href?: unknown; context?: unknown; repeatCard?: boolean; total?: unknown; page?: unknown; pageSize?: unknown; filters?: unknown };
-      if ((item.toolName === "searchAthletes" || item.toolName === "recallAthlete") && output.status === "ok") {
+      if ((item.toolName === "searchAthletes" || item.toolName === "listAthletes" || item.toolName === "recallAthlete") && output.status === "ok") {
         athletes = presentedAthletes(output.athletes);
         search = presentedSearch({ total: output.total, page: output.page, pageSize: output.pageSize, filters: output.filters });
         kind = "search";
@@ -361,7 +361,17 @@ async function prepareConversation(input: unknown) {
       status: z.enum(["active", "inactive"]).optional(),
       page: z.number().int().min(1).max(20).optional(),
     }),
-    execute: async (filters) => {
+    execute: async (filters) => runDirectorySearch(filters),
+  });
+
+  // Listing everyone is the most common first step; a dedicated tool avoids the model looking for one.
+  const listAthletes = tool({
+    description: "Lista os atletas autorizados do profissional, sem filtros, para ele escolher com quem continuar. Use para pedidos como listar os atletas, ver a lista, quais atletas tenho.",
+    inputSchema: z.object({ page: z.number().int().min(1).max(20).optional() }),
+    execute: async ({ page }) => runDirectorySearch({ page }),
+  });
+
+  async function runDirectorySearch(filters: { q?: string; category?: string; division?: string; modality?: string; club?: string; gender?: (typeof genders)[number]; status?: "active" | "inactive"; page?: number }) {
       const payload: Record<string, string> = {};
       for (const key of ["q", "category", "division", "modality", "club", "gender", "status"] as const) {
         const value = filters[key]?.trim();
@@ -397,8 +407,7 @@ async function prepareConversation(input: unknown) {
         athletes,
         options,
       };
-    },
-  });
+  }
 
   const getAthleteSummary = tool({
     description: "Consulta o cadastro e, se autorizado, o histórico clínico de um atleta. Não chame se a busca anterior tiver mais de uma pessoa possível.",
@@ -1190,7 +1199,7 @@ async function prepareConversation(input: unknown) {
       ].filter((line) => line.trim()).join("\n"),
       messages: parsed.data.messages,
       tools: {
-        offerReplies, openAttachmentUpload, searchClinicalActivity, listClinicalAttachments, searchAthletes, recallAthlete, getAthleteSummary, navigateToAthlete, openConsultationVoice, selectAthleteContext, clearAthleteContext, prepareClinicalDraft, offerConsultationReport, saveClinicalDraft, readClinicalEvolutions, analyzeAthleteHistory,
+        offerReplies, openAttachmentUpload, listAthletes, searchClinicalActivity, listClinicalAttachments, searchAthletes, recallAthlete, getAthleteSummary, navigateToAthlete, openConsultationVoice, selectAthleteContext, clearAthleteContext, prepareClinicalDraft, offerConsultationReport, saveClinicalDraft, readClinicalEvolutions, analyzeAthleteHistory,
         ...(canAuthorDocuments ? { editDocumentProposal: editProposal, resumeDocumentProposal: resumeProposal, preparePrescription, prepareSurgicalOrder, prepareExamRequest, prepareCertificate, prepareReferral, listDocumentDrafts, openClinicalDocument, saveClinicalDocument, browseClinicalDocuments, readClinicalDocument } : {}),
       },
       stopWhen: [stepCountIs(6), hasToolCall("resumeDocumentProposal", "editDocumentProposal", "offerConsultationReport", "offerReplies")],
@@ -1249,11 +1258,11 @@ export async function openIntelligenceStream(input: unknown): Promise<{ stream: 
         if (empty) {
           // The model returned neither text nor a tool call. Ask once more, with an explicit nudge,
           // instead of falling back to a fixed text.
-          console.warn(JSON.stringify({ event: "intelligence_empty_turn", finish: steps.map((step) => step.finishReason), ms: Date.now() - started }));
+          console.warn(JSON.stringify({ event: "intelligence_empty_turn", finish: steps.map((step) => step.finishReason), raw: steps.map((step) => step.rawFinishReason ?? null), ms: Date.now() - started }));
           ({ result, steps } = await run({ ...prepared.request, system: `${prepared.request.system}\nA tentativa anterior desta resposta não produziu conteúdo. Responda agora: use as ferramentas necessárias para atender o pedido e escreva a resposta ao profissional.` }));
         }
         // Per-turn diagnostics without clinical content: how the model finished, which tools it used.
-        console.info(JSON.stringify({ event: "intelligence_turn", retried: empty, ms: Date.now() - started, steps: steps.length, finish: steps.map((step) => step.finishReason), tools: steps.flatMap((step) => step.toolCalls.map((call) => call.toolName)) }));
+        console.info(JSON.stringify({ event: "intelligence_turn", retried: empty, ms: Date.now() - started, steps: steps.length, finish: steps.map((step) => step.finishReason), raw: steps.map((step) => step.rawFinishReason ?? null), tools: steps.flatMap((step) => step.toolCalls.map((call) => call.toolName)) }));
         const view = presentationFrom(steps);
         // The guidance written through offerReplies replaces an empty model text; without either,
         // a missing athlete is the usual cause, so the fallback points to the right first step.
