@@ -128,7 +128,7 @@ test("cadastro protege saída, recarga e descarte; salvar usa confirmação do s
     .getByText("Registrar novo vínculo esportivo", { exact: true })
     .click();
   await page
-    .getByRole("combobox", { name: "Categoria", exact: true })
+    .getByRole("combobox", { name: "Categoria atual", exact: true })
     .fill("Sub-19");
   await page.getByRole("option", { name: "Sub-19", exact: true }).click();
   await expect(
@@ -139,7 +139,7 @@ test("cadastro protege saída, recarga e descarte; salvar usa confirmação do s
   page.once("dialog", (d) => d.dismiss());
   await page.getByRole("link", { name: "Trocar atleta", exact: true }).click();
   await expect(
-    page.getByRole("combobox", { name: "Categoria", exact: true }),
+    page.getByRole("combobox", { name: "Categoria atual", exact: true }),
   ).toHaveValue("Sub-19");
   page.once("dialog", (d) => d.accept());
   await page.getByRole("link", { name: "Linha do tempo", exact: true }).click();

@@ -25,7 +25,7 @@ const genderOptions = [
 
 const fieldSection: Record<string, (typeof sections)[number][0]> = {
   name: "pessoais", birth: "pessoais", gender_identity: "pessoais", document: "pessoais",
-  category_id: "esportivos", division: "esportivos", modality: "esportivos", shirt: "esportivos", club_id: "esportivos",
+  category_id: "esportivos", division: "esportivos", modality: "esportivos", shirt: "esportivos", club_id: "esportivos", national_team_id: "esportivos",
   phone: "contatos", email: "contatos", guardian_name: "contatos", guardian_relation: "contatos",
   guardian_contact: "contatos", emergency_contact: "contatos",
 };
@@ -40,7 +40,8 @@ const fieldMessage: Record<string, string> = {
   category_id: "Para registrar o vínculo, escolha categoria, feminino ou masculino e modalidade.",
   division: "Escolha feminino ou masculino.",
   modality: "Escolha a modalidade.",
-  club_id: "Escolha um clube ou equipe cadastrado.",
+  club_id: "Escolha um clube cadastrado ou adicione o nome do clube de origem.",
+  national_team_id: "Escolha uma seleção da lista.",
   shirt: "O número da camisa usa até três dígitos.",
   phone: "Informe um telefone fictício com 8 a 20 caracteres.",
   email: "Informe um e-mail fictício válido.",
@@ -68,6 +69,21 @@ function DivisionField({ divisions }: { divisions: string[] }) {
   );
 }
 
+function NationalTeamField({ teams }: { teams: CatalogOption[] }) {
+  if (teams.length === 0) return null;
+  return (
+    <div>
+      <label>Convocação para seleção<Optional />
+        <select name="national_team_id" defaultValue="">
+          <option value="">Sem convocação</option>
+          {teams.map((team) => <option key={team.id} value={team.id}>{team.name}</option>)}
+        </select>
+      </label>
+      <p className="field-hint">Marque quando o atleta integra a lista de convocação. O clube de origem continua sendo o clube acima.</p>
+    </div>
+  );
+}
+
 function PositionField() {
   return (
     <label>Posição esportiva<Optional />
@@ -79,9 +95,10 @@ function PositionField() {
   );
 }
 
-function CatalogCombobox({ name, label, optional = true, options, value, onChange, onCreate, notice }: {
+function CatalogCombobox({ name, label, hint, optional = true, options, value, onChange, onCreate, notice }: {
   name: "category_id" | "club_id";
   label: string;
+  hint?: string;
   optional?: boolean;
   options: CatalogOption[];
   value: string;
@@ -140,6 +157,7 @@ function CatalogCombobox({ name, label, optional = true, options, value, onChang
           onBlur={() => { cancelClose(); blurTimer.current = setTimeout(() => setOpen(false), 150); }}
         />
       </label>
+      {hint ? <p className="field-hint">{hint}</p> : null}
       <input type="hidden" name={name} value={value} />
       {open && (
         <div className="catalog-menu" id={listId} role="listbox">
@@ -256,7 +274,7 @@ export function RegistrationForm({ catalog, initialToday, onDone }: { catalog: R
 
       <fieldset inert={section !== "esportivos"}>
         <legend className="sr-only">Dados esportivos</legend>
-        <CatalogCombobox name="category_id" label="Categoria" optional={false} options={categories} value={categoryId} onChange={setCategoryId} onCreate={async (name) => {
+        <CatalogCombobox name="category_id" label="Categoria atual" hint="A categoria em que o atleta compete hoje, como Sub-16, Sub-18 ou Profissional." optional={false} options={categories} value={categoryId} onChange={setCategoryId} onCreate={async (name) => {
           const result = await createCategory(name);
           if (result.ok && result.id && result.name) remember({ id: result.id, name: result.name }, categories, setCategories);
           if (!result.ok && result.error === "duplicate" && result.id && result.name) remember({ id: result.id, name: result.name }, categories, setCategories);
@@ -268,11 +286,12 @@ export function RegistrationForm({ catalog, initialToday, onDone }: { catalog: R
           <label>Modalidade<select name="modality" defaultValue=""><option value="">Não informar</option>{modalities.map((item) => <option key={item}>{item}</option>)}</select></label>
         </div>
         <PositionField />
-        <CatalogCombobox name="club_id" label="Clube ou equipe" options={clubs} value={clubId} onChange={setClubId} onCreate={async (name) => {
+        <CatalogCombobox name="club_id" label="Clube de origem" hint="O clube em que o atleta atua hoje e ao qual retorna após as convocações. Atletas do mesmo clube ficam agrupados nas buscas e análises." options={clubs} value={clubId} onChange={setClubId} onCreate={async (name) => {
           const result = await createOrganization(name, "club");
           if (result.id && result.name) remember({ id: result.id, name: result.name }, clubs, setClubs);
           return result;
         }} />
+        <NationalTeamField teams={catalog.national_teams} />
         <label>Número da camisa<Optional /><input name="shirt" inputMode="numeric" maxLength={3} autoComplete="off" aria-invalid={Boolean(errors.shirt)} /></label>
         {errors.shirt && <p className="field-error" role="alert">{errors.shirt}</p>}
       </fieldset>
@@ -324,7 +343,7 @@ export function SportLinkForm({ athleteId, catalog }: { athleteId: string; catal
       <h2>Novo vínculo</h2>
       <p>O vínculo aberto é encerrado hoje. O clube anterior permanece no histórico.</p>
       <input type="hidden" name="athlete_id" value={athleteId} />
-      <CatalogCombobox name="category_id" label="Categoria" optional={false} options={categories} value={categoryId} onChange={setCategoryId} onCreate={async (name) => {
+      <CatalogCombobox name="category_id" label="Categoria atual" hint="A categoria em que o atleta compete hoje, como Sub-16, Sub-18 ou Profissional." optional={false} options={categories} value={categoryId} onChange={setCategoryId} onCreate={async (name) => {
         const result = await createCategory(name);
         keep(result, setCategories);
         return result;
@@ -334,11 +353,12 @@ export function SportLinkForm({ athleteId, catalog }: { athleteId: string; catal
         <label>Modalidade<select name="modality" defaultValue=""><option value="">Não informar</option>{modalities.map((item) => <option key={item}>{item}</option>)}</select></label>
       </div>
       <PositionField />
-      <CatalogCombobox name="club_id" label="Clube ou equipe" options={clubs} value={clubId} onChange={setClubId} onCreate={async (name) => {
+      <CatalogCombobox name="club_id" label="Clube de origem" hint="O clube em que o atleta atua hoje e ao qual retorna após as convocações. Atletas do mesmo clube ficam agrupados nas buscas e análises." options={clubs} value={clubId} onChange={setClubId} onCreate={async (name) => {
         const result = await createOrganization(name, "club");
         keep(result, setClubs);
         return result;
       }} />
+      <NationalTeamField teams={catalog.national_teams} />
       <label>Número da camisa<Optional /><input name="shirt" inputMode="numeric" maxLength={3} autoComplete="off" /></label>
       <button className="button" type="submit">Registrar vínculo</button>
     </form>

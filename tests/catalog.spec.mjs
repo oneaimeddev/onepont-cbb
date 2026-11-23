@@ -182,15 +182,15 @@ test("cadastra dados mínimos ou enriquecidos e preserva o histórico esportivo"
   await page.getByLabel("Contato de emergência (opcional)").fill("(11) 96666-0000");
 
   await page.getByRole("tab", { name: "Dados esportivos" }).click();
-  await chooseOption(page, "Categoria", existingCategory.name);
+  await chooseOption(page, "Categoria atual", existingCategory.name);
   await expect(page.locator('input[name="category_id"]')).toHaveValue(existingCategory.id);
-  await addOption(page, "Categoria", newCategory);
-  await addOption(page, "Categoria", newCategory.replace(" ", "   "));
+  await addOption(page, "Categoria atual", newCategory);
+  await addOption(page, "Categoria atual", newCategory.replace(" ", "   "));
   await expect(page.getByRole("status")).toContainText("Essa opção já existe e foi selecionada.");
-  await chooseOption(page, "Clube ou equipe (opcional)", existingClub.name);
+  await chooseOption(page, "Clube de origem (opcional)", existingClub.name);
   await expect(page.locator('input[name="club_id"]')).toHaveValue(existingClub.id);
-  await addOption(page, "Clube ou equipe (opcional)", newClub);
-  await addOption(page, "Clube ou equipe (opcional)", newClub.replace(" ", "  "));
+  await addOption(page, "Clube de origem (opcional)", newClub);
+  await addOption(page, "Clube de origem (opcional)", newClub.replace(" ", "  "));
   await expect(page.getByRole("status").last()).toContainText("Essa opção já existe e foi selecionada.");
   await page.getByLabel("Feminino ou masculino").selectOption("Masculino");
   await page.getByLabel("Modalidade").selectOption("5x5");
@@ -214,10 +214,10 @@ test("cadastra dados mínimos ou enriquecidos e preserva o histórico esportivo"
 
   await page.getByText("Registrar novo vínculo esportivo", { exact: true }).click();
   const linkForm = page.locator("form").filter({ has: page.getByRole("heading", { name: "Novo vínculo" }) });
-  await addOption(linkForm, "Categoria", historyCategory);
+  await addOption(linkForm, "Categoria atual", historyCategory);
   await linkForm.getByLabel("Feminino ou masculino").selectOption("Masculino");
   await linkForm.getByLabel("Modalidade").selectOption("5x5");
-  await addOption(linkForm, "Clube ou equipe (opcional)", historyClub);
+  await addOption(linkForm, "Clube de origem (opcional)", historyClub);
   await linkForm.getByRole("button", { name: "Registrar vínculo" }).click();
   await expect(page.getByText("Cadastro salvo.")).toBeVisible();
   await expect(page.locator(".sport-history li").filter({ hasText: newClub })).toContainText("até");
@@ -232,8 +232,8 @@ test("cadastra dados mínimos ou enriquecidos e preserva o histórico esportivo"
   await page.goto("/atletas/novo");
   await page.getByLabel("Nome completo").fill(reuseName);
   await page.getByRole("tab", { name: "Dados esportivos" }).click();
-  await chooseOption(page, "Categoria", newCategory);
-  await chooseOption(page, "Clube ou equipe (opcional)", newClub);
+  await chooseOption(page, "Categoria atual", newCategory);
+  await chooseOption(page, "Clube de origem (opcional)", newClub);
   await page.getByLabel("Feminino ou masculino").selectOption("Masculino");
   await page.getByLabel("Modalidade").selectOption("5x5");
   await page.getByRole("button", { name: "Salvar cadastro" }).click();

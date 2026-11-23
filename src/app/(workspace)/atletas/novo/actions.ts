@@ -70,6 +70,7 @@ export async function registerAthlete(form: FormData): Promise<RegisterResult> {
     modality: text(form, "modality"),
     position: text(form, "position"),
     club_id: text(form, "club_id"),
+    national_team_id: text(form, "national_team_id"),
     shirt: text(form, "shirt"),
   };
   const client = await supabaseServer();
@@ -91,6 +92,7 @@ export async function addSportLink(form: FormData) {
       modality: text(form, "modality"),
       position: text(form, "position"),
       club_id: text(form, "club_id"),
+      national_team_id: text(form, "national_team_id"),
       shirt: text(form, "shirt"),
     },
   });
