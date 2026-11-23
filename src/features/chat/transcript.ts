@@ -1,3 +1,4 @@
+import { presentedReplies } from "./platform-guide";
 import { clinicalSearchBoard, type ClinicalSearchBoard } from "../clinical-search/contract";
 import { attachmentBoard, type AttachmentBoard } from "../attachments/types";
 import { presentedDraft, type ClinicalDraft } from "./clinical-draft";
@@ -28,6 +29,8 @@ export type ChatTurn = {
   attachments?: AttachmentBoard | null;
   clinicalSearch?: ClinicalSearchBoard | null;
   analysis: HistoryAnalysis | null;
+  /** Quick replies offered by the assistant, shown as buttons under its latest message. */
+  replies?: string[];
 };
 
 export function turnCarriesContent(turn: Pick<ChatTurn, "text" | "athletes" | "navigation" | "draft" | "document" | "readings" | "analysis">) {
@@ -63,7 +66,7 @@ function storedTurn(value: unknown): ChatTurn | null {
   const readings = row.role === "assistant" ? presentedReadings(row.readings) : null;
   const analysis = row.role === "assistant" ? presentedAnalysis(row.analysis) : null;
   if (row.role === "user" && !text.trim()) return null;
-  return { clinicalSearch: row.role === "assistant" ? clinicalSearchBoard(row.clinicalSearch) : null, attachments: row.role === "assistant" ? attachmentBoard(row.attachments) : null, id: row.id.slice(0, 80), role: row.role, text, athletes, navigation, search, draft, document, readings, analysis };
+  return { clinicalSearch: row.role === "assistant" ? clinicalSearchBoard(row.clinicalSearch) : null, attachments: row.role === "assistant" ? attachmentBoard(row.attachments) : null, id: row.id.slice(0, 80), role: row.role, text, athletes, navigation, search, draft, document, readings, analysis, replies: row.role === "assistant" ? presentedReplies(row.replies) : [] };
 }
 
 export function turnsFrom(raw: string): ChatTurn[] {

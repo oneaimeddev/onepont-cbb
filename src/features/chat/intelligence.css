@@ -741,3 +741,15 @@ p.ia-status {
   .ia-rail { border-bottom: 0; box-shadow: inset 0 -3px 0 var(--cbb-yellow); }
   .ia-icon[aria-current="page"] { box-shadow: inset 0 -3px 0 var(--cbb-yellow); }
 }
+
+/* Respostas sugeridas pelo assistente: atalhos para a próxima mensagem, sem substituir o composer. */
+.ia-replies { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .75rem; }
+.ia-reply {
+  min-height: 40px; padding: .45rem .9rem; border: 1px solid var(--line-strong); border-radius: 999px;
+  background: var(--paper); color: var(--cbb-navy); font: inherit; font-size: .875rem; font-weight: 500; line-height: 1.2;
+  cursor: pointer; transition: background-color .15s var(--ease), border-color .15s var(--ease), color .15s var(--ease);
+}
+.ia-reply:hover { border-color: var(--cbb-green); background: var(--brand-soft); color: var(--green-ink); }
+.ia-reply:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.ia-reply:disabled { cursor: not-allowed; opacity: .55; }
+@media (max-width: 760px) { .ia-reply { min-height: 44px; } }

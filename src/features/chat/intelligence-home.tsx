@@ -29,6 +29,7 @@ import { ClinicalReadings } from "./clinical-reading";
 import { historyRequest, presentedAnalysis, type HistoryAnalysis } from "./history-analysis";
 import { LongitudinalCard } from "./longitudinal-card";
 import { createdDocumentIds, presentedDocumentRoster, presentedReadings, type ReadingBoard, type ReadingRef } from "./document-resolution";
+import { presentedReplies } from "./platform-guide";
 import { conversationSnapshot, discardInactiveTranscript, loadScroll, loadTurns, readConversationSnapshot, rememberServerSnapshot, replaceTurns, saveScroll, subscribeTurns, transcriptFollowsServer, turnCarriesContent, turnsFrom, updateDocumentTurn, type ChatTurn } from "./transcript";
 import { hasUnsavedClinicalDraft, setUnsavedClinicalDraft } from "../clinical/unsaved";
 import { useDictation } from "./voice/use-dictation";
@@ -901,13 +902,13 @@ export function IntelligenceHome({
             continue;
           }
           const data = parsed.data;
-          const record = data && typeof data === "object" ? data as { text?: unknown; athletes?: unknown; navigation?: unknown; search?: unknown; draft?: unknown; document?: unknown; readings?: unknown; attachments?: unknown; clinicalSearch?: unknown; analysis?: unknown; context?: unknown; contextCleared?: unknown; sessionId?: unknown; error?: unknown } : {};
+          const record = data && typeof data === "object" ? data as { text?: unknown; athletes?: unknown; navigation?: unknown; search?: unknown; draft?: unknown; document?: unknown; readings?: unknown; attachments?: unknown; clinicalSearch?: unknown; analysis?: unknown; replies?: unknown; context?: unknown; contextCleared?: unknown; sessionId?: unknown; error?: unknown } : {};
           if (parsed.event === "delta" && typeof record.text === "string" && record.text) {
             patchTurns((current) => current.map((turn) => turn.id === assistantId && typeof record.text === "string" ? { ...turn, text: turn.text + record.text } : turn));
           } else if (parsed.event === "done") {
             const text = typeof record.text === "string" && record.text.trim() ? record.text.trim() : replies.provider;
             finishTurn(assistantId, text, presentedAthletes(record.athletes), presentedNavigation(record.navigation), presentedSearch(record.search), presentedDraft(record.draft), presentedDocument(record.document), presentedReadings(record.readings), presentedAnalysis(record.analysis));
-            patchTurns(current=>current.map(turn=>turn.id===assistantId?{...turn,clinicalSearch:clinicalSearchBoard(record.clinicalSearch),attachments:attachmentBoard(record.attachments)}:turn));
+            patchTurns(current=>current.map(turn=>turn.id===assistantId?{...turn,clinicalSearch:clinicalSearchBoard(record.clinicalSearch),attachments:attachmentBoard(record.attachments),replies:presentedReplies(record.replies)}:turn));
             if (typeof record.sessionId === "string" && uuidPattern.test(record.sessionId) && !sessionRef.current) {
               sessionRef.current = record.sessionId;
               setOpenSessionId(record.sessionId);
@@ -1177,6 +1178,13 @@ export function IntelligenceHome({
                     />
                   ) : null}
                   {turn.analysis ? <LongitudinalCard analysis={turn.analysis} /> : null}
+                  {turn.role === "assistant" && turn.replies?.length && turns.at(-1)?.id === turn.id && !pending ? (
+                    <div className="ia-replies" role="group" aria-label="Respostas sugeridas">
+                      {turn.replies.map((reply) => (
+                        <button key={reply} type="button" className="ia-reply" disabled={!enabled || starting} onClick={() => void send(reply, "text")}>{reply}</button>
+                      ))}
+                    </div>
+                  ) : null}
                 </article>
                 );
               })}

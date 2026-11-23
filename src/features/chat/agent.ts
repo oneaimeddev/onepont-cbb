@@ -12,6 +12,7 @@ import { activityFilterSchema, clinicalSearchBoard } from "../clinical-search/co
 import { clinicalSearchIntent } from "../clinical-search/intent";
 import { clinicalSearchConversation, runClinicalSearch } from "../clinical-search/service";
 import { attachmentConversation } from "../attachments/chat-service";
+import { platformGuide, presentedReplies } from "./platform-guide";
 import type { AttachmentBoard } from "../attachments/types";
 import { supabaseServer } from "../../lib/supabase";
 import { intelligenceModel } from "./config";
@@ -308,6 +309,17 @@ async function prepareConversation(input: unknown) {
     }
     return null;
   }
+
+  // Quick replies the assistant offers at the end of a turn; shown as buttons under the reply.
+  let replyOptions: string[] = [];
+  const offerReplies = tool({
+    description: "Oferece de uma a três respostas rápidas, como botões, quando a resposta termina com uma pergunta, uma escolha ou uma sugestão de próximo passo. As opções são ações ou escolhas curtas, nunca dados clínicos.",
+    inputSchema: z.object({ options: z.array(z.string().min(1).max(60)).min(1).max(3) }),
+    execute: async ({ options }) => {
+      replyOptions = presentedReplies(options);
+      return { status: "ok" as const };
+    },
+  });
 
   const searchAthletes = tool({
     description: "Pesquisa todos os atletas autorizados, não apenas os cards visíveis. O nome pode omitir sobrenomes do meio. Passe clube de origem, categoria atual, naipe em division, modalidade e gênero separados do nome. Não invente pessoas. Se houver mais de uma, não escolha a primeira.",
@@ -1069,6 +1081,7 @@ async function prepareConversation(input: unknown) {
     documentActionView: () => documentActionReply,
     holdClinicalNarrative: canAuthorDocuments || documentPreparation.requested,
     attachmentView: () => attachmentPublished,
+    repliesView: () => replyOptions,
     clinicalView: () => clinicalPublished,
     request: {
       model: model.provider === "google"
@@ -1076,6 +1089,7 @@ async function prepareConversation(input: unknown) {
         : createOpenAI({ apiKey: model.apiKey, baseURL: model.baseURL }).chat(model.model),
       system: [
         "Você é o CBB Intelligence, assistente do prontuário de um profissional autenticado.",
+        ...platformGuide,
         "Responda em português, somente com fatos devolvidos pelas ferramentas.",
         "Para buscas clínicas em vários atletas, use searchClinicalActivity com filtros tipados. Envie períodos relativos, sem calcular datas pelo seu relógio. Exames devem ser separados em solicitações e resultados/laudos anexados; não há confirmação estruturada de realização. Especialidade filtra apenas evoluções. Nunca substitua o atleta em contexto só porque fez uma busca transversal.",
         "Anexos: use listClinicalAttachments para consultar metadados e abrir o visualizador. Nunca afirme ter interpretado o conteúdo de um PDF ou imagem. Não há ferramenta de upload nem de análise automática de arquivos.",
@@ -1145,7 +1159,7 @@ async function prepareConversation(input: unknown) {
       ].filter((line) => line.trim()).join("\n"),
       messages: parsed.data.messages,
       tools: {
-        searchClinicalActivity, listClinicalAttachments, searchAthletes, recallAthlete, getAthleteSummary, navigateToAthlete, openConsultationVoice, selectAthleteContext, clearAthleteContext, prepareClinicalDraft, offerConsultationReport, saveClinicalDraft, readClinicalEvolutions, analyzeAthleteHistory,
+        offerReplies, searchClinicalActivity, listClinicalAttachments, searchAthletes, recallAthlete, getAthleteSummary, navigateToAthlete, openConsultationVoice, selectAthleteContext, clearAthleteContext, prepareClinicalDraft, offerConsultationReport, saveClinicalDraft, readClinicalEvolutions, analyzeAthleteHistory,
         ...(canAuthorDocuments ? { editDocumentProposal: editProposal, resumeDocumentProposal: resumeProposal, preparePrescription, prepareSurgicalOrder, prepareExamRequest, prepareCertificate, prepareReferral, listDocumentDrafts, openClinicalDocument, saveClinicalDocument, browseClinicalDocuments, readClinicalDocument } : {}),
       },
       stopWhen: [stepCountIs(6), hasToolCall("resumeDocumentProposal", "editDocumentProposal", "offerConsultationReport")],
@@ -1264,6 +1278,7 @@ export async function openIntelligenceStream(input: unknown): Promise<{ stream: 
           context: clinical ? null : view.context,
           contextCleared: clinical ? false : view.contextCleared,
           sessionId: view.sessionId,
+          replies: clinical ? [] : prepared.repliesView(),
         });
       } catch (error) {
         send("error", { error: failureCode(error) });

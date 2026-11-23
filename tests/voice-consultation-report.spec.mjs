@@ -128,3 +128,38 @@ test("áudio de consulta anexado é transcrito em trechos e abre a escolha do re
   expect(agentCalls).toHaveLength(0);
   expect(sql(`select count(*) from clinical.records where athlete_id = '${athlete}'`)).toBe("0");
 });
+
+test("respostas sugeridas aparecem como botões e enviam a escolha como mensagem", async ({ page }) => {
+  test.setTimeout(60_000);
+  const email = `respostas-${randomUUID()}@example.com`;
+  const password = randomUUID();
+  const { data, error } = await admin.auth.admin.createUser({ email, password, email_confirm: true });
+  if (error) throw error;
+  users.push(data.user.id);
+  const profile = await admin.from("profiles").insert({ id: data.user.id, display_name: "QA Respostas", profession: "Medicina", can_manage_access: false, can_read_audit: false });
+  if (profile.error) throw profile.error;
+  const calls = [];
+  await page.route("**/api/inteligencia", async (route) => {
+    calls.push(route.request().postDataJSON());
+    const first = calls.length === 1;
+    await route.fulfill({
+      status: 200,
+      headers: { "content-type": "text/event-stream; charset=utf-8" },
+      body: `event: done\ndata: ${JSON.stringify({ text: first ? "Para registrar a consulta, escolha primeiro o atleta. Quer buscar pelo nome?" : "Certo.", athletes: [], navigation: null, search: null, draft: null, document: null, context: null, contextCleared: false, replies: first ? ["Buscar atleta pelo nome", "Ver lista de atletas"] : [] })}\n\n`,
+    });
+  });
+  await page.goto("/login");
+  await page.getByLabel("E-mail").fill(email);
+  await page.getByLabel("Senha", { exact: true }).fill(password);
+  await page.getByRole("button", { name: "Entrar", exact: true }).click();
+  await page.waitForURL("/");
+  await page.getByLabel("Mensagem").fill("Quero iniciar uma consulta");
+  await page.keyboard.press("Enter");
+  const group = page.getByRole("group", { name: "Respostas sugeridas" });
+  await expect(group.getByRole("button", { name: "Buscar atleta pelo nome" })).toBeVisible();
+  await group.getByRole("button", { name: "Ver lista de atletas" }).click();
+  await expect.poll(() => calls.length).toBe(2);
+  expect(calls[1].messages.at(-1).content).toBe("Ver lista de atletas");
+  // Only the latest reply keeps the suggestions.
+  await expect(page.getByRole("group", { name: "Respostas sugeridas" })).toHaveCount(0);
+});
