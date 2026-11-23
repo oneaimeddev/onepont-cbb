@@ -137,3 +137,31 @@ Padrões, restrições de sigilo e o plano de aproveitamento estão em
 docs/design-lab/clinical-north-star.md. A captura aprovada está em
 docs/visual/design-sprint-002-1/perfil-longitudinal-1440x900.png.
 A Home CBB Intelligence continua sendo a entrada aprovada.
+
+## Identidade CBB (23/11/2026)
+
+Releitura da identidade do site oficial da CBB, aplicada de forma contida para preservar a
+leitura clínica. As cores ficam centralizadas em tokens (`:root` em src/app/globals.css); as
+folhas de estilo das funcionalidades usam só os tokens, sem códigos de cor soltos. Os
+documentos médicos mantêm a paleta própria, fixada em documents.css.
+
+| Token | Cor | Uso |
+|---|---|---|
+| `--cbb-green` | #2e6a29 | Ação principal (botões), links de ação, abas ativas. Branco sobre ele: 6,5:1 |
+| `--cbb-green-deep` | #1d3a1a | Barras de navegação, painel do login, cartão do atleta sem foto |
+| `--cbb-yellow` | #dcc54c | Estado ativo na navegação, filetes institucionais. Nunca como texto sobre branco |
+| `--cbb-navy` | #171d33 | Títulos, avatares de iniciais, texto forte |
+| `--ink` / `--muted` | #182033 / #505b6b | Texto e texto de apoio (6,3:1 sobre a superfície) |
+| `--surface` / `--line` | #f5f6f2 / #e3e6df | Fundo neutro levemente quente e divisórias |
+
+Elementos de marca:
+- Barra lateral (workspace e chat) no verde-escuro com a textura discreta da camisa (duas
+  tramas diagonais em CSS), filete amarelo no topo e item ativo com barra amarela.
+- Login em duas colunas: painel verde com escudo, frase institucional sobre filete amarelo e a
+  silhueta do jogador (public/brand/player.png, usada como máscara e tingida pelo token). No
+  celular, faixa verde compacta acima do formulário.
+- Perfil sem foto: cartão de atleta verde com a silhueta e as iniciais, como no site da CBB.
+
+Tipografia mantida: Geist Sans na interface e Geist Serif nos nomes de atletas e na saudação.
+Capturas de antes e depois geradas com a homologação (dados fictícios), desktop 1440 × 1000 e
+celular 390 × 844.

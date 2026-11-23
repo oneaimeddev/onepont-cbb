@@ -1,5 +1,5 @@
 .professional-profile { max-width: 70rem; }
-.professional-section { padding: 1.5rem 0; border-top: 1px solid var(--line, #e4e9f1); }
+.professional-section { padding: 1.5rem 0; border-top: 1px solid var(--line, var(--line)); }
 .professional-section h2 { margin: 0 0 1rem; font-size: 1.0625rem; font-weight: 600; }
 .professional-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.25rem 2rem; margin: 0; }
 .professional-facts dt { font-size: .8125rem; color: var(--muted); }

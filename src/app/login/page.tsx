@@ -14,7 +14,8 @@ export default async function LoginPage({
     <main className={`login-page ${chatFonts}`}>
       <div className="login-brand">
         <Brand />
-        <p className="login-tagline">Acompanhamento clínico multiprofissional de atletas.</p>
+        <p className="login-tagline">Acompanhamento clínico multiprofissional dos atletas das Seleções Brasileiras.</p>
+        <span className="login-player" aria-hidden="true" />
       </div>
       <section className="login-panel">
         <h1>Acesso profissional</h1>

@@ -1,5 +1,5 @@
 .clinical-search {
-  color: #142c46;
+  color: var(--cbb-navy);
   margin-block: 16px;
 }
 .clinical-search-scope {
@@ -7,7 +7,7 @@
   margin-bottom: 12px;
 }
 .clinical-search-note {
-  color: #536579;
+  color: var(--muted);
   font-size: 14px;
   line-height: 1.6;
   margin-block: 8px;
@@ -29,7 +29,7 @@
   display: block;
   min-width: 0;
   padding: 20px;
-  border: 1px solid #dce2e8;
+  border: 1px solid var(--line);
   border-radius: 12px;
   background: #fff;
 }
@@ -38,7 +38,7 @@
   margin: 0 0 8px;
 }
 .clinical-search-card header p {
-  color: #536579;
+  color: var(--muted);
   font-size: 14px;
 }
 .clinical-search-card p {
@@ -77,7 +77,7 @@
 }
 .clinical-search-open {
   padding: 20px;
-  border-top: 1px solid #dce2e8;
+  border-top: 1px solid var(--line);
 }
 .clinical-search-pagination button:disabled {
   opacity: 0.5;
@@ -85,7 +85,7 @@
 }
 .clinical-source-detail {
   margin-top: 16px;
-  border-top: 1px solid #dce2e8;
+  border-top: 1px solid var(--line);
 }
 @media (max-width: 700px) {
   .clinical-search .clinical-search-card {

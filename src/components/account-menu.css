@@ -8,7 +8,7 @@
   border: 0;
   border-radius: 999px;
   background: transparent;
-  color: var(--navy, var(--cbb-navy, #0a1731));
+  color: var(--navy, var(--cbb-navy, var(--cbb-navy)));
   font-weight: 500;
 }
 .ia-user > button:hover { background: rgb(255 255 255 / .7); }
@@ -18,7 +18,7 @@
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  background: var(--navy, var(--cbb-navy, #0a1731));
+  background: var(--navy, var(--cbb-navy, var(--cbb-navy)));
   color: white;
   font-size: 0.75rem;
   font-weight: 600;
@@ -27,7 +27,7 @@
 .ia-user small,
 .ia-menu-id small {
   display: block;
-  color: var(--quiet, var(--muted, #3a4660));
+  color: var(--quiet, var(--muted, var(--muted)));
   font-size: 0.75rem;
   font-weight: 400;
   letter-spacing: 0.006em;
@@ -36,7 +36,7 @@
 .ia-user strong,
 .ia-menu-id strong {
   display: block;
-  color: var(--navy, var(--cbb-navy, #0a1731));
+  color: var(--navy, var(--cbb-navy, var(--cbb-navy)));
   font-size: 0.875rem;
   font-weight: 500;
   letter-spacing: -0.011em;
@@ -50,7 +50,7 @@
   display: grid;
   min-width: 14rem;
   padding: 0.4rem;
-  border: 1px solid var(--ia-line, var(--line, #e4e9f1));
+  border: 1px solid var(--ia-line, var(--line, var(--line)));
   border-radius: 14px;
   background: #fff;
   box-shadow: 0 8px 24px -12px rgb(10 23 49 / .28);
@@ -66,7 +66,7 @@
   border: 0;
   border-radius: 10px;
   background: transparent;
-  color: var(--navy, var(--cbb-navy, #0a1731));
+  color: var(--navy, var(--cbb-navy, var(--cbb-navy)));
   font-weight: 500;
   letter-spacing: -0.011em;
   line-height: 1.3;
@@ -74,7 +74,7 @@
   text-decoration: none;
 }
 .ia-menu a:hover,
-.ia-menu button:hover { background: #f4f6fa; }
+.ia-menu button:hover { background: var(--surface); }
 .ia-menu form { margin: 0; }
 
 .ia-menu { max-width: calc(100vw - 2rem); }

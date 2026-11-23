@@ -3,7 +3,7 @@
 }
 .signing-section h2,
 .signing-section h3 {
-  color: var(--cbb-navy, #102849);
+  color: var(--cbb-navy, var(--cbb-navy));
 }
 .signing-form {
   display: grid;
@@ -38,7 +38,7 @@
   justify-content: space-between;
   gap: 20px;
   align-items: center;
-  border-bottom: 1px solid var(--line, #dce3ec);
+  border-bottom: 1px solid var(--line, var(--line));
   padding: 20px 0;
 }
 .signing-list p {
@@ -63,11 +63,11 @@
   list-style: decimal;
   padding-left: 24px;
   margin: 24px 0;
-  color: var(--muted, #536579);
+  color: var(--muted, var(--muted));
 }
 .signing-steps [aria-current="step"] {
   font-weight: 600;
-  color: var(--cbb-navy, #102849);
+  color: var(--cbb-navy, var(--cbb-navy));
 }
 .signing-facts {
   display: grid;
@@ -76,7 +76,7 @@
 }
 .signing-facts dt {
   font-size: 0.875rem;
-  color: var(--muted, #536579);
+  color: var(--muted, var(--muted));
   margin-bottom: 6px;
 }
 .signing-facts dd {
