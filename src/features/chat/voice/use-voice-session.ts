@@ -24,7 +24,6 @@ type Runtime = {
   socket: WebSocket | null;
   ready: boolean;
   capturing: boolean;
-  pending: string[];
   muted: boolean;
   buffer: string;
   interim: string;
@@ -50,9 +49,8 @@ const captureTimeoutMs = 20_000;
 const renewAfterMs = 9.5 * 60_000;
 const maxRenewals = 6;
 const duplicateWindowMs = 4_000;
-// Audio captured while the socket is still connecting is held and sent once the session is
-// ready, so speech starts counting at the click instead of after the network handshake.
-const maxPendingFrames = 150; // 15 s of 100 ms frames
+// How long the "Pode falar" cue stays visible once the recording is really running.
+const readyCueMs = 3_000;
 const reconnectDelayMs = 500;
 const finalTimeoutMs = 9_000;
 
@@ -92,7 +90,6 @@ export function useVoiceSession(options: Options) {
     socket: null,
     ready: false,
     capturing: false,
-    pending: [],
     muted: false,
     buffer: "",
     interim: "",
@@ -122,6 +119,7 @@ export function useVoiceSession(options: Options) {
   const [capture, setCapture] = useState<"pending" | "hearing" | "silent" | "blocked">("pending");
   const [deviceLabel, setDeviceLabel] = useState("");
   const [capturing, setCapturing] = useState(false);
+  const [readyCue, setReadyCue] = useState(false);
 
   useLayoutEffect(() => {
     optionsRef.current = options;
@@ -220,7 +218,6 @@ export function useVoiceSession(options: Options) {
     rt.releaseCapture?.();
     rt.releaseCapture = null;
     rt.capturing = false;
-    rt.pending = [];
     for (const track of rt.stream?.getTracks() ?? []) {
       track.onended = null;
       track.stop();
@@ -243,6 +240,7 @@ export function useVoiceSession(options: Options) {
     setCapture("pending");
     setDeviceLabel("");
     setCapturing(false);
+    setReadyCue(false);
   }
 
   function end(next: { notice?: string; error?: string; discard?: boolean } = {}) {
@@ -266,22 +264,10 @@ export function useVoiceSession(options: Options) {
     rt.frames += 1;
     rt.level = peak / 32767;
     if (rt.level > rt.maxLevel) rt.maxLevel = rt.level;
-    if (rt.muted) return;
-    const data = pcmBase64(buffer);
-    if (!rt.ready || !socket || socket.readyState !== WebSocket.OPEN) {
-      rt.pending.push(data);
-      if (rt.pending.length > maxPendingFrames) rt.pending.shift();
-      return;
-    }
-    socket.send(JSON.stringify({ realtimeInput: { audio: { data, mimeType: "audio/pcm;rate=16000" } } }));
-  }
-
-  function flushPending() {
-    const rt = runtime.current;
-    const socket = rt.socket;
-    if (!socket || socket.readyState !== WebSocket.OPEN) return;
-    for (const data of rt.pending) socket.send(JSON.stringify({ realtimeInput: { audio: { data, mimeType: "audio/pcm;rate=16000" } } }));
-    rt.pending = [];
+    // Nothing is sent before the provider session is ready; the panel tells the user to wait
+    // until then, so speech is only expected once recording has really started.
+    if (!rt.ready || rt.muted || !socket || socket.readyState !== WebSocket.OPEN) return;
+    socket.send(JSON.stringify({ realtimeInput: { audio: { data: pcmBase64(buffer), mimeType: "audio/pcm;rate=16000" } } }));
   }
 
   function handle(message: LiveMessage, current: boolean) {
@@ -289,8 +275,9 @@ export function useVoiceSession(options: Options) {
     if (!current) return;
     if (message.kind === "ready") {
       rt.ready = true;
-      flushPending();
       setPhase("live");
+      setReadyCue(true);
+      later(() => setReadyCue(false), readyCueMs);
       touch();
       if (rt.renewTimer) clearTimeout(rt.renewTimer);
       rt.renewTimer = later(renew, renewAfterMs);
@@ -385,6 +372,7 @@ export function useVoiceSession(options: Options) {
     const pending = takePending();
     if (pending) optionsRef.current.onDraft(pending);
     setPhase("reconnecting");
+    setReadyCue(false);
     const generation = rt.generation;
     later(() => {
       void connect(generation).catch((cause: unknown) => {
@@ -545,9 +533,7 @@ export function useVoiceSession(options: Options) {
 
   useEffect(() => () => teardown(), []);
 
-  // Once the microphone is capturing, the first connection already counts as listening: the audio
-  // is buffered and delivered as soon as the provider session is ready.
-  const status: VoiceStatus = phase === "inactive" || phase === "error" || phase === "reconnecting" || (phase === "connecting" && !capturing)
+  const status: VoiceStatus = phase === "inactive" || phase === "error" || phase === "connecting" || phase === "reconnecting"
     ? phase
     : muted
       ? "muted"
@@ -559,6 +545,7 @@ export function useVoiceSession(options: Options) {
 
   return {
     status,
+    readyCue,
     active,
     muted,
     partial,

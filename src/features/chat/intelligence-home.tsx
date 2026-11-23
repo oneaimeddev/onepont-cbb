@@ -1141,6 +1141,7 @@ export function IntelligenceHome({
             voicePanel={voiceEnabled ? (
               <VoicePanel
                 status={voice.status}
+                readyCue={voice.readyCue}
                 active={voice.active}
                 muted={voice.muted}
                 partial={voice.partial}

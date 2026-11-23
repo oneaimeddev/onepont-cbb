@@ -145,18 +145,25 @@ test("conversa por voz com turnos automáticos, controles, rascunho e recuperaç
   expect(voice.live.tokens).toBe(0);
 
   await toggle.click();
-  // Capture starts at the click: the panel listens while the provider session is still
-  // connecting, and the audio is held locally until the session is ready.
-  await expect(state).toContainText("Ouvindo");
+  // Nothing is recorded until the provider session is ready, so the panel asks the user to wait.
+  await expect(state).toContainText("Aguarde… preparando a gravação");
+  await expect(state).toContainText("Não fale ainda");
+  await expect(state).not.toContainText("Ouvindo");
+  await expect(state).not.toContainText("Pode falar");
+  await expect(panel.getByRole("button", { name: "Pausar" })).toBeDisabled();
   await expect.poll(() => voice.live.sockets.length).toBe(1);
   expect(voice.live.sockets[0].url).toContain("access_token=auth_tokens%2Foffline-1");
   expect(voice.live.sockets[0].url).not.toContain("key=");
-  await page.waitForTimeout(600);
+  await page.waitForTimeout(400);
   expect(voice.live.frames).toBe(0);
+  mkdirSync(shots, { recursive: true });
+  await page.screenshot({ path: `${shots}/aguarde.png` });
   voice.release();
-  // The speech captured before the handshake is delivered at once instead of being dropped.
-  await expect.poll(() => voice.live.frames, { timeout: 1_000 }).toBeGreaterThanOrEqual(4);
+  // Once recording really runs, the panel says so explicitly.
+  await expect(state).toContainText("Pode falar");
+  await expect(state).not.toContainText("Não fale ainda");
   await expect(state).toContainText("Ouvindo");
+  await page.screenshot({ path: `${shots}/pode-falar.png` });
   await expect(state).toContainText("Microfone ativo");
   await expect(composer.getByRole("button", { name: "Encerrar conversa por voz" })).toHaveAttribute("aria-pressed", "true");
   await expect.poll(() => voice.live.frames).toBeGreaterThan(2);
@@ -293,7 +300,7 @@ test("conversa por voz com turnos automáticos, controles, rascunho e recuperaç
   voice.final("Texto pendente antes da queda.");
   voice.close();
   const ended = page.getByRole("region", { name: "Conversa por voz" });
-  await expect(state).toContainText("Reconectando");
+  await expect(state).toContainText("Aguarde… reconectando a gravação");
   await expect(field).toHaveValue("Texto pendente antes da queda.");
   await expect(state).toContainText("Ouvindo");
   expect(agent.calls).toHaveLength(16);

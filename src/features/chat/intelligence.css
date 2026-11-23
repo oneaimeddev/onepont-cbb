@@ -639,6 +639,16 @@ p.ia-status {
 .ia-voice[data-status="transcribing"] .ia-voice-dot { background: var(--ia-blue); }
 .ia-voice[data-status="processing"] .ia-voice-dot,
 .ia-voice[data-status="responding"] .ia-voice-dot { background: var(--navy); }
+.ia-voice[data-status="connecting"] .ia-voice-dot,
+.ia-voice[data-status="reconnecting"] .ia-voice-dot { background: #c27a00; }
+.ia-voice-wait { color: #8a4b00; font-weight: 500; }
+.ia-voice-go {
+  padding: 0.05rem 0.5rem;
+  border-radius: 999px;
+  background: var(--cbb-green);
+  color: #fff;
+  font-weight: 600;
+}
 .ia-voice-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem; margin-left: auto; }
 .ia-voice-actions button {
   display: inline-flex;
@@ -665,6 +675,7 @@ p.ia-status {
 .ia-voice-warning { margin: 0; color: #8a4b00; }
 .ia-voice.is-ended { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
 .ia-voice.is-ended p { flex: 1 1 14rem; margin: 0; color: var(--navy); }
+.ia-voice-toggle { position: relative; }
 .ia-voice-toggle[aria-pressed="true"] { background: #e7f1fb; color: var(--ia-blue); }
 @media (max-width: 760px) {
   .ia-voice { gap: 0.35rem; padding: 0.5rem 0.6rem; }
@@ -674,7 +685,22 @@ p.ia-status {
 }
 @media (prefers-reduced-motion: no-preference) {
   .ia-voice[data-status="listening"] .ia-voice-dot { animation: ia-voice-pulse 1.6s ease-in-out infinite; }
+  .ia-voice[data-status="connecting"] .ia-voice-dot,
+  .ia-voice[data-status="reconnecting"] .ia-voice-dot { animation: ia-voice-wait 0.9s ease-in-out infinite; }
+  .ia-voice-toggle[data-status="connecting"]::after,
+  .ia-voice-toggle[data-status="reconnecting"]::after {
+    content: "";
+    position: absolute;
+    inset: 3px;
+    border: 2px solid transparent;
+    border-top-color: #c27a00;
+    border-radius: 999px;
+    animation: ia-voice-spin 0.8s linear infinite;
+    pointer-events: none;
+  }
 }
+@keyframes ia-voice-wait { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
+@keyframes ia-voice-spin { to { transform: rotate(360deg); } }
 @keyframes ia-voice-pulse {
   0%, 100% { box-shadow: 0 0 0 0 rgb(0 121 213 / .35); }
   50% { box-shadow: 0 0 0 5px rgb(0 121 213 / 0); }
