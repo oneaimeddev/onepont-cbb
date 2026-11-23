@@ -1,6 +1,8 @@
 import { uuidPattern } from "./guards";
 
-export type ClinicalDraftState = "proposal" | "saving" | "saved" | "finalized" | "error" | "discarded";
+// "choose" holds a consultation transcript until the professional picks the report mode;
+// its body is the transcript, not a record text.
+export type ClinicalDraftState = "choose" | "proposal" | "saving" | "saved" | "finalized" | "error" | "discarded";
 
 export type ClinicalDraft = {
   requestId: string;
@@ -19,7 +21,7 @@ export type ClinicalDraft = {
   version: number | null;
 };
 
-const states = new Set<ClinicalDraftState>(["proposal", "saved", "finalized", "error", "discarded"]);
+const states = new Set<ClinicalDraftState>(["choose", "proposal", "saved", "finalized", "error", "discarded"]);
 
 function clip(value: unknown, max: number) {
   if (typeof value !== "string") return "";
@@ -38,7 +40,7 @@ export function presentedDraft(value: unknown): ClinicalDraft | null {
   const title = clip(row.title, 160);
   if (!athleteName || !professionalName || !title) return null;
   const body = typeof row.body === "string" ? row.body.slice(0, 20000) : "";
-  if ((state === "proposal" || state === "error") && !body.trim()) return null;
+  if ((state === "choose" || state === "proposal" || state === "error") && !body.trim()) return null;
   let occurredOn: string | null = null;
   if (typeof row.occurredOn === "string" && row.occurredOn) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(row.occurredOn)) return null;

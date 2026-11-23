@@ -575,7 +575,12 @@ export function IntelligenceHome({
   }
 
   function updateDraft(turnId: string, draft: ChatTurn["draft"]) {
-    const text = draft?.state === "saved"
+    const previous = loadTurns().find((turn) => turn.id === turnId)?.draft;
+    const text = previous?.state === "choose" && draft?.state === "proposal"
+      ? `Preparei o ${draft.title.charAt(0).toLowerCase()}${draft.title.slice(1)}. Revise, edite se precisar e confirme no cartão para salvar como rascunho.`
+      : previous?.state === "choose" && draft?.state === "discarded"
+        ? "A transcrição foi descartada. Nenhum relatório foi gerado."
+      : draft?.state === "saved"
       ? "A proposta foi gravada como rascunho. Ela ainda não foi finalizada."
       : draft?.state === "finalized"
         ? "A evolução foi finalizada."

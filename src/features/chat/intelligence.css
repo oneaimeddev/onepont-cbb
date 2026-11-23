@@ -353,6 +353,29 @@ button.ia-attach:disabled:hover { border-color: #e1e7f0; color: #6d7c90; backgro
 .ia-draft-actions button, .ia-draft-actions a, .ia-document-journey button { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 .9rem; border: 1px solid var(--ia-line); border-radius: 12px; background: #fff; color: var(--navy); font-weight: 500; }
 .ia-draft-actions .ia-draft-save, .ia-document-journey .ia-draft-save { border-color: var(--cbb-green); background: var(--cbb-green); color: #fff; }
 .ia-draft-actions button:disabled, .ia-document-journey button:disabled { opacity: .6; }
+/* Consultation report: choose the report mode before any text is generated. */
+.ia-report-source summary { color: var(--quiet); font-size: .8125rem; cursor: pointer; }
+.ia-report-source p { max-height: 12rem; margin: .5rem 0 0; overflow: auto; color: #4e5d73; font-size: .875rem; white-space: pre-wrap; }
+.ia-report-modes { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: .6rem; }
+.ia-report-modes button {
+  display: grid;
+  align-content: start;
+  gap: .25rem;
+  min-height: 44px;
+  padding: .8rem .9rem;
+  border: 1px solid var(--ia-line);
+  border-radius: 14px;
+  background: #fff;
+  color: var(--navy);
+  text-align: left;
+}
+.ia-report-modes button:hover:not(:disabled) { border-color: var(--cbb-green); }
+.ia-report-modes button[aria-pressed="true"] { border-color: var(--cbb-green); background: #f1f6f0; }
+.ia-report-modes button:disabled:not([aria-pressed="true"]) { opacity: .55; }
+.ia-report-modes strong { font-weight: 600; }
+.ia-report-modes span { color: var(--quiet); font-size: .8125rem; line-height: 1.4; }
+.ia-report-wait { display: flex; align-items: center; gap: .5rem; margin: 0; color: var(--quiet); font-size: .875rem; }
+.ia-report-note { margin: 0; color: var(--quiet); font-size: .8125rem; }
 p.ia-status {
   margin: 0.45rem 0.55rem 0.2rem;
   color: var(--quiet);

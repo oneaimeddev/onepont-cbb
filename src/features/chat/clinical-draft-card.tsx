@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useEffect, useState, useTransition } from "react";
 import { setUnsavedClinicalDraft } from "../clinical/unsaved";
-import { discardClinicalDraft, finalizeClinicalDraft, saveClinicalDraft } from "./clinical-draft-actions";
+import { reportModes, type ReportMode } from "../clinical/consultation-report-modes";
+import { discardClinicalDraft, finalizeClinicalDraft, generateConsultationReport, saveClinicalDraft } from "./clinical-draft-actions";
 import { draftSaveMessage, type ClinicalDraft } from "./clinical-draft";
 
 function formatDay(value: string) {
@@ -13,6 +14,7 @@ function formatDay(value: string) {
 }
 
 const statusCopy: Record<ClinicalDraft["state"], string> = {
+  choose: "Escolha o modo do relatório",
   proposal: "Proposta ainda não salva",
   saving: "Salvando…",
   saved: "Rascunho salvo",
@@ -20,6 +22,62 @@ const statusCopy: Record<ClinicalDraft["state"], string> = {
   error: "Não foi possível salvar",
   discarded: "Proposta descartada. Nenhum registro foi gravado.",
 };
+
+function ReportChoice({ draft, onChange }: { draft: ClinicalDraft; onChange: (next: ClinicalDraft) => void }) {
+  const [pending, startTransition] = useTransition();
+  const [chosen, setChosen] = useState<ReportMode | null>(null);
+  const [failure, setFailure] = useState<string | null>(null);
+  const words = draft.body.trim().split(/\s+/).length;
+
+  function choose(mode: ReportMode) {
+    setChosen(mode);
+    setFailure(null);
+    startTransition(async () => {
+      const result = await generateConsultationReport({ athleteId: draft.athleteId, requestId: draft.requestId, mode, transcript: draft.body });
+      if (result.ok) {
+        onChange(result.draft);
+        return;
+      }
+      setChosen(null);
+      setFailure(result.error === "denied"
+        ? "Você não tem permissão para registrar a evolução deste atleta."
+        : result.error === "invalid"
+          ? "A transcrição não pôde ser usada. Envie o relato da consulta novamente."
+          : "Não foi possível gerar o relatório agora. Tente novamente.");
+    });
+  }
+
+  return (
+    <section className="ia-draft ia-report-choice" aria-label="Relatório da consulta" data-draft-state="choose" aria-busy={pending}>
+      <header>
+        <h3>Relatório da consulta</h3>
+        <p className="ia-draft-status" aria-live="polite">{pending && chosen ? `Gerando ${reportModes[chosen].label.toLowerCase()}…` : statusCopy.choose}</p>
+      </header>
+      <dl>
+        <div><dt>Atleta</dt><dd>{draft.athleteName}</dd></div>
+        <div><dt>Profissional</dt><dd>{draft.professionalName}</dd></div>
+      </dl>
+      <details className="ia-report-source">
+        <summary>Transcrição recebida ({words} {words === 1 ? "palavra" : "palavras"})</summary>
+        <p>{draft.body}</p>
+      </details>
+      <div className="ia-report-modes" role="group" aria-label="Modo do relatório">
+        {(Object.keys(reportModes) as ReportMode[]).map((mode) => (
+          <button key={mode} type="button" onClick={() => choose(mode)} disabled={pending} aria-pressed={chosen === mode}>
+            <strong>{reportModes[mode].label}</strong>
+            <span>{reportModes[mode].description}</span>
+          </button>
+        ))}
+      </div>
+      {pending ? <p className="ia-report-wait" role="status"><span className="ia-processing-dots" aria-hidden="true"><span /><span /><span /></span>O relatório fica pronto para revisão em alguns segundos.</p> : null}
+      {failure ? <p role="alert">{failure}</p> : null}
+      <p className="ia-report-note">O relatório segue o seu perfil profissional e é só uma proposta: nada é gravado sem a sua confirmação.</p>
+      <div className="ia-draft-actions">
+        <button type="button" onClick={() => onChange({ ...draft, state: "discarded", error: null })} disabled={pending}>Descartar</button>
+      </div>
+    </section>
+  );
+}
 
 export function ClinicalDraftCard({ draft, canFinalize, mandatoryRestriction = false, onChange }: {
   draft: ClinicalDraft;
@@ -34,7 +92,7 @@ export function ClinicalDraftCard({ draft, canFinalize, mandatoryRestriction = f
   const open = draft.state === "proposal" || draft.state === "error";
 
   useEffect(() => {
-    const unsaved = draft.state === "proposal" || draft.state === "saving" || draft.state === "error";
+    const unsaved = draft.state === "choose" || draft.state === "proposal" || draft.state === "saving" || draft.state === "error";
     setUnsavedClinicalDraft(unsaved);
   }, [draft.state]);
 
@@ -80,6 +138,8 @@ export function ClinicalDraftCard({ draft, canFinalize, mandatoryRestriction = f
       onChange({ ...current, state: "saved", recordId: current.recordId, error: message });
     });
   }
+
+  if (draft.state === "choose") return <ReportChoice draft={draft} onChange={onChange} />;
 
   return (
     <section className="ia-draft" aria-label="Proposta de evolução" data-draft-state={draft.state} aria-busy={busy}>

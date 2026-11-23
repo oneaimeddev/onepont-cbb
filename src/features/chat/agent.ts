@@ -25,7 +25,7 @@ import { historyScope, modelHistory, readLongitudinalHistory } from "./history-r
 
 const messageSchema = z.object({
   role: z.enum(["user", "assistant"]),
-  content: z.string().trim().min(1).max(2000),
+  content: z.string().trim().min(1).max(12000),
 }).strict();
 
 const requestSchema = z.object({
@@ -147,6 +147,14 @@ function presentationFrom(steps: ReadonlyArray<{ toolResults: ReadonlyArray<{ to
           kind = "narrative";
         }
       }
+      if (item.toolName === "offerConsultationReport" && output.status === "report_choice") {
+        const choice = presentedDraft(output);
+        if (choice) {
+          draft = choice;
+          search = null;
+          kind = "narrative";
+        }
+      }
       if (item.toolName === "prepareClinicalDraft" && output.status === "proposal") {
         const proposal = presentedDraft(output);
         if (proposal) {
@@ -224,6 +232,7 @@ async function prepareConversation(input: unknown) {
   const documentRosterIds = (parsed.data.documentRoster ?? []).filter((id) => uuidPattern.test(id)).slice(0, 20);
   const createdIds = (parsed.data.createdDocumentIds ?? []).filter((id) => uuidPattern.test(id)).slice(0, 8);
   const utterance = parsed.data.messages.at(-1)?.content ?? "";
+  const sentByProfessional = parsed.data.messages.filter((message) => message.role === "user").map((message) => message.content.trim());
   const displayedProposals = parsed.data.displayedProposals ?? [];
   const creationTurnKey = parsed.data.messageId ?? crypto.randomUUID();
   const documentPreparation = { spoken: false, attempted: false, requested: (["prescription", "exam_request", "surgical_order"] as const).some((kind) => documentCreationRequested(kind, utterance)), notice: "" };
@@ -514,6 +523,47 @@ async function prepareConversation(input: unknown) {
         contentHash: stored?.ok === true && typeof stored.contentHash === "string" ? stored.contentHash : null,
         version: stored?.ok === true && typeof stored.version === "number" ? stored.version : null,
         sessionId: stored?.ok === true && typeof stored.sessionId === "string" ? stored.sessionId : null,
+      };
+    },
+  });
+
+  // The transcript is the professional's own message: the latest long user message, so a short
+  // follow-up such as "gere o relatório" still points to the consultation sent just before.
+  function consultationTranscript() {
+    const latest = sentByProfessional.at(-1) ?? "";
+    return latest.length >= 200 ? latest : sentByProfessional.findLast((content) => content.length >= 200) ?? latest;
+  }
+
+  const offerConsultationReport = tool({
+    description: "Quando o profissional enviar a transcrição ou o relato de uma consulta, mostra um cartão para ele escolher entre relatório detalhado e relatório sintético. Não gera o relatório, não grava e não finaliza nada.",
+    inputSchema: z.object({ athleteId: z.string() }),
+    execute: async ({ athleteId }) => {
+      const decision = decideAthleteAccess(athleteId, contextAthleteId, searches);
+      if (decision !== "allow") {
+        const search = searches.findLast((item) => item.ids.includes(athleteId) || item.total > 1);
+        return { ...unavailable(decision), athletes: decision === "confirm" ? search?.athletes ?? [] : [] };
+      }
+      const transcript = consultationTranscript().slice(0, 20000);
+      if (transcript.length < 20) return { status: "incomplete" as const, missing: ["transcrição da consulta"] };
+      const prepared = await client.rpc("agent_clinical_draft_prepare", { target: athleteId });
+      const data = prepared.data as { ok?: boolean; athleteName?: string; professionalName?: string } | null;
+      if (prepared.error || !data?.ok || !data.athleteName || !data.professionalName) return { status: "denied" as const };
+      return {
+        status: "report_choice" as const,
+        state: "choose" as const,
+        requestId: crypto.randomUUID(),
+        athleteId,
+        athleteName: data.athleteName,
+        professionalName: data.professionalName,
+        occurredOn: null,
+        title: "Relatório da consulta",
+        body: transcript,
+        missing: [],
+        restricted: true,
+        recordId: null,
+        error: null,
+        contentHash: null,
+        version: null,
       };
     },
   });
@@ -979,6 +1029,7 @@ async function prepareConversation(input: unknown) {
         rosterPrompt(rosterSlots),
         "Quando a pessoa corrigir ou complementar um campo de um cartão em andamento, use editDocumentProposal. Prepare com fill apenas para o primeiro preenchimento de um cartão vazio. Não abra outro cartão para corrigir um dado.",
         "Tipos de cartões exibidos: " + (parsed.data.displayedProposals ?? []).map(p => p.kind).join(", "),
+        "Quando a mensagem do profissional for a transcrição ou o relato de uma consulta ou atendimento (por exemplo, diálogo com o atleta, queixa, história, exame, conduta), use offerConsultationReport para o atleta selecionado ou o único atleta identificado, em vez de prepareClinicalDraft. Não escreva o relatório: o cartão oferece Relatório detalhado e Relatório sintético, e o profissional escolhe. Responda em uma frase curta convidando a escolher o modo no cartão. Se nenhum atleta estiver identificado, pergunte de qual atleta é a consulta.",
         "Quando o profissional pedir uma evolução, use prepareClinicalDraft só para o atleta selecionado ou para o único atleta identificado.",
         "Organize apenas o relato recebido. Coloque o que não foi dito em missing. Não invente queixas, datas, diagnósticos, exames ou condutas.",
         "A proposta do cartão não é um registro clínico. Não diga que ela foi salva, finalizada ou assinada.",
@@ -1018,10 +1069,10 @@ async function prepareConversation(input: unknown) {
       ].filter((line) => line.trim()).join("\n"),
       messages: parsed.data.messages,
       tools: {
-        searchClinicalActivity, listClinicalAttachments, searchAthletes, recallAthlete, getAthleteSummary, navigateToAthlete, openConsultationVoice, selectAthleteContext, clearAthleteContext, prepareClinicalDraft, saveClinicalDraft, readClinicalEvolutions, analyzeAthleteHistory,
+        searchClinicalActivity, listClinicalAttachments, searchAthletes, recallAthlete, getAthleteSummary, navigateToAthlete, openConsultationVoice, selectAthleteContext, clearAthleteContext, prepareClinicalDraft, offerConsultationReport, saveClinicalDraft, readClinicalEvolutions, analyzeAthleteHistory,
         ...(canAuthorDocuments ? { editDocumentProposal: editProposal, resumeDocumentProposal: resumeProposal, preparePrescription, prepareSurgicalOrder, prepareExamRequest, listDocumentDrafts, openClinicalDocument, saveClinicalDocument, browseClinicalDocuments, readClinicalDocument } : {}),
       },
-      stopWhen: [stepCountIs(6), hasToolCall("resumeDocumentProposal", "editDocumentProposal")],
+      stopWhen: [stepCountIs(6), hasToolCall("resumeDocumentProposal", "editDocumentProposal", "offerConsultationReport")],
       maxRetries: 1,
       timeout: 60_000,
       providerOptions: model.provider === "openai" ? { openai: { store: false } } : undefined,
@@ -1101,6 +1152,8 @@ export async function openIntelligenceStream(input: unknown): Promise<{ stream: 
             : preparation.notice || (saveOnly ? "O salvamento ainda precisa de confirmação. Use “Confirmar e salvar” no cartão que deseja guardar como rascunho." : "Não preparei o documento. Informe os nomes e campos clínicos explicitamente.")
           : view.document
           ? (modelText || "Organizei uma proposta de documento para revisão. Ela ainda não foi salva.")
+          : view.draft?.state === "choose"
+            ? `Recebi a transcrição da consulta de ${view.draft.athleteName}. Escolha no cartão o modo do relatório: detalhado ou sintético.`
           : view.draft
             ? (modelText || "Organizei uma proposta de evolução para revisão. Ela ainda não foi salva.")
               : prepared.published.analysis && !modelText

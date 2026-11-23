@@ -26,6 +26,17 @@ export function consultationSpecialty(profession: string): Specialty | null {
   return Object.hasOwn(specialtyAliases, label) ? specialtyAliases[label] : null;
 }
 
+/** Focus of the authenticated professional's specialty, or a neutral focus for other professions. */
+export function professionalFocus(profession: string) {
+  const specialty = consultationSpecialty(profession);
+  return {
+    specialty,
+    focus: specialty
+      ? specialtyFocus[specialty]
+      : `Registro do atendimento sob a perspectiva de ${profession.trim() || "o profissional responsável"}, com achados, intervenções, orientações e acompanhamento da sua área.`,
+  };
+}
+
 export const consultationSystemPrompt = `Você é um assistente especializado em organizar registros clínicos esportivos para profissionais de saúde.
 Elabore um rascunho de evolução adequado à especialidade informada, exclusivamente com os dados autorizados fornecidos.
 Escreva em português brasileiro, em linguagem técnica, clara e prática, com seções curtas e no máximo 400 palavras.
