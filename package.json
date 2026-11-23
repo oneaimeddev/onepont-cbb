@@ -1,6 +1,7 @@
 {
   "name": "prontuario-cbb",
   "version": "1.0.0",
+  "engines": { "node": "22.x" },
   "scripts": {
     "test": "playwright test",
     "dev": "next dev",

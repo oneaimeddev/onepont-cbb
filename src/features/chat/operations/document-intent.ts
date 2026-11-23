@@ -29,7 +29,7 @@ export function proposalSaveIntent(message: string) {
   const header = foldName(message.split(/\s+para\s+|[:;\n]/iu)[0]);
   if (
     /\b(evolucao|anexo|cadastro)\b/.test(header) ||
-    !/\b(salve|salvar|salvamento|grave|gravar|confirmar|confirme)\b/.test(
+    !/^(?:(?:pode|quero|vamos) )?(?:(?:confirme|confirmar) e )?(?:salve|salvar|grave|gravar)\b/.test(
       header,
     )
   )
@@ -46,12 +46,34 @@ export function proposalSaveIntent(message: string) {
   };
 }
 
+function clinicalCorrection(message: string) {
+  const dose = message.trim().match(/^(?:n[aã]o[,]?\s+)?(?:a\s+)?dose\s+(?:era|é)\s+(?:de\s+)?(\d+(?:[.,]\d+)?)\s*(mg|miligramas?|g|gramas?|mcg|microgramas?|ml|mililitros?)\.?$/iu);
+  if (dose) {
+    const unit = dose[2].toLowerCase();
+    const unitLabel = unit === "mg" || unit.startsWith("miligram") ? "mg"
+      : unit === "g" || unit.startsWith("grama") ? "g"
+      : unit === "mcg" || unit.startsWith("micrograma") ? "mcg"
+      : "mL";
+    return { kind: "prescription" as const, value: dose[1], unit: unitLabel };
+  }
+  const route = message.trim().match(/^(?:a via (?:é|era)|via) (oral|intravenosa|intramuscular|subcutânea|tópica)\.?$/iu);
+  if (route) return { kind: "route" as const, value: route[1].toLowerCase() };
+  const side = foldName(message).match(/^(?:nao )?(?:a lateralidade (?:era|e)|era (?:do|o) lado) (esquerd[oa]|direit[oa]|bilateral)$/);
+  return side && !message.includes("?") ? { kind: "laterality" as const, value: side[1] } : null;
+}
+
 export function proposalIntent(message: string) {
+  const correction = clinicalCorrection(message);
+  if (correction) return {
+    action: "edit" as const,
+    kind: correction.kind === "laterality" ? null : "prescription" as const,
+    mixed: false,
+  };
   const s = foldName(message);
   if (/\b(evolucao|anexo|cadastro|filtro)\b/.test(s.split(/\s+para\s+|:/)[0]))
     return null;
   const edit =
-    /\b(altere|alterar|troque|trocar|substitua|remova|remover|retire|exclua|adicione|adicionar|inclua|incluir|acrescente)\b/.test(
+    /^(?:(?:por favor|agora|quero|vamos) )*(altere|alterar|troque|trocar|substitua|remova|remover|retire|exclua|adicione|adicionar|inclua|incluir|acrescente)\b/.test(
       s,
     );
   // Named patients, historical references and document ordinals remain with the
@@ -189,15 +211,72 @@ const enumValues: Record<string, Record<string, string>> = {
   },
 };
 
+// Keep the structured side and its existing anatomical label in the same patch.
+function reconcileLaterality(document: DocumentDraft, patches: ProposalPatch[], anatomy?: string) {
+  const changes = [...patches];
+  const clarification = "Qual região do procedimento ou exame deve mudar de lado?";
+  for (const change of patches) {
+    if (change.operation !== "set_field" || change.field !== "laterality") continue;
+    const content = document.content;
+    const target = content && "items" in content ? content.items.find(item => item.id === change.itemId) : content;
+    if (!target || !("region" in target)) return { clarification };
+    const fields = "procedure" in target
+      ? { procedure: target.procedure, region: target.region }
+      : { name: target.name, region: target.region };
+    const region = foldName(target.region).replace(/\b(?:direit[oa]|esquerd[oa]|bilateral)\b/g, "").trim();
+    const labels = Object.entries(fields);
+    if (anatomy && !labels.some(([, text]) => (" " + foldName(text) + " ").includes(" " + foldName(anatomy) + " "))) return { clarification };
+    let anchor = "";
+    for (const [field, text] of labels) {
+      const sides = text.match(/\b(?:esquerd[oa]|direit[oa]|bilateral)\b/giu) ?? [];
+      if (!sides.length) continue;
+      if (sides.length !== 1 || /\b(?:ou|contralateral|exceto|sem)\b/i.test(text) ||
+          (!anatomy && /[,;/]|\be\b/iu.test(text))) return { clarification };
+      const side = sides[0];
+      const noun = foldName(text.slice(0, text.indexOf(side))).split(" ").at(-1) ?? "";
+      if (!anatomy && (anchor && noun && anchor !== noun || region && noun && !region.split(" ").includes(noun))) return { clarification };
+      if (noun) anchor = noun;
+      if (enumValues.laterality[foldName(side)] === change.value) continue;
+      if (anatomy && noun && !foldName(anatomy).split(" ").includes(noun)) return { clarification };
+      if (!["left", "right"].includes(change.value) || foldName(side) === "bilateral" ||
+          patches.some(p => "field" in p && p.field === field && p.itemId === change.itemId)) return { clarification };
+      const replacement = (change.value === "right" ? "direit" : "esquerd") + side.slice(-1).toLowerCase();
+      changes.push({ ...change, field, value: text.replace(side, replacement) });
+    }
+  }
+  return { changes };
+}
+
 // Only literal values in the ORIGINAL utterance become patches. There is no
 // clinical completion, positional mutation or assistant-generated confirmation.
 export function resolveProposalEdit(
   message: string,
   document: DocumentDraft,
   newId = () => crypto.randomUUID(),
+  anatomy?: string,
 ): { changes: ProposalPatch[] } | { clarification: string } {
   if (!document.content)
     return { clarification: "Abra a proposta atual antes de alterá-la." };
+  const correction = clinicalCorrection(message);
+  if (correction) {
+    const items = "items" in document.content ? document.content.items : null;
+    const item = items?.length === 1 ? items[0] : null;
+    if (correction.kind === "prescription" && document.kind === "prescription" && item) {
+      return { changes: [
+        { operation: "set_field", field: "dose", value: correction.value, itemId: item.id },
+        { operation: "set_field", field: "dose_unit", value: correction.unit, itemId: item.id },
+      ] };
+    }
+    if (correction.kind === "route" && document.kind === "prescription" && item) {
+      return { changes: [{ operation: "set_field", field: "route", value: correction.value, itemId: item.id }] };
+    }
+    if (correction.kind === "laterality" && (document.kind === "surgical_order" || (document.kind === "exam_request" && item))) {
+      const value = enumValues.laterality[correction.value];
+      return reconcileLaterality(document, [{ operation: "set_field", field: "laterality", value,
+        ...(item ? { itemId: item.id } : {}) }], anatomy);
+    }
+    return { clarification: "Indique o documento e o item que deseja corrigir no cartão." };
+  }
   if (/\?|^\s*(não|nao|se\b|caso\b|talvez\b)/iu.test(message))
     return {
       clarification:
@@ -226,15 +305,21 @@ export function resolveProposalEdit(
     const add = part.match(
       /^(?:adicione|inclua|acrescente)\s+(?:(?:um|o)\s+)?(?:medicamento|exame)\s+(?:chamado\s+|com o nome\s+|:\s*)(.+)$/iu,
     );
-    if (add && items) {
-      if (!add[1].trim() || add[1].length > 160)
+    const naturalExam = document.kind === "exam_request"
+      ? part.match(/^(?:adicione|inclua|acrescente)\s+também\s+(?:um|uma)\s+([^.!?;:,\n]+)\.?$/iu)
+      : null;
+    const name = add?.[1] ?? naturalExam?.[1];
+    if (naturalExam && /\b(para|e|ou|mas|nao|se)\b/.test(foldName(name ?? "")))
+      return { clarification: "Informe um único exame para acrescentar à proposta em contexto." };
+    if (name && items) {
+      if (!name.trim() || name.length > 160)
         return {
           clarification:
             "Informe somente o nome do novo item, com até 160 caracteres. Os demais campos serão pedidos separadamente.",
         };
       changes.push({
         operation: "add_item",
-        item: { id: newId(), name: add[1].trim() },
+        item: { id: newId(), name: name.trim() },
       });
       continue;
     }
@@ -371,5 +456,45 @@ export function resolveProposalEdit(
       changes.push({ operation, field, value, itemId: item.id });
     }
   }
+  return reconcileLaterality(document, changes, anatomy);
+}
+
+export const spokenEditSchema = z.object({
+  field: z.enum(["lateralidade", "região", "procedimento", "indicação", "justificativa", "diagnóstico", "prioridade", "materiais", "dose", "unidade", "via", "frequência", "duração", "quantidade", "apresentação", "instruções", "nome", "detalhes técnicos"]),
+  value: z.string().trim().min(1).max(2000),
+  item: z.string().trim().min(1).max(160).optional(),
+  anatomy: z.string().trim().min(1).max(120).optional(),
+}).strict();
+
+export function resolveSpokenEdit(message: string, document: DocumentDraft, edits: z.infer<typeof spokenEditSchema>[]) {
+  const changes: ProposalPatch[] = [];
+  const content = document.content;
+  const clarify = { clarification: "Pode confirmar qual campo do cartão deseja corrigir e o novo valor?" };
+  if (!content || /[?;]|\b(?:não|talvez|se|caso|exceto)\b/iu.test(message)) return clarify;
+  const contains = (span: string, quote: string) => {
+    const escaped = quote.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return new RegExp("(?<![\\p{L}\\p{N}])" + (/^\d/.test(quote) ? "(?<!\\d[.,])" : "") +
+      escaped + (/\d$/.test(quote) ? "(?![.,]\\d)" : "") + "(?![\\p{L}\\p{N}])", "iu").test(span);
+  };
+  for (const edit of edits) {
+    if (!contains(message, edit.value) || (edit.item && !contains(message, edit.item)) ||
+        (edit.anatomy && !contains(message, edit.anatomy))) return clarify;
+    const items = "items" in content ? content.items : null;
+    const item = items && itemFrom(edit.item ?? "", items);
+    if (edit.item && (!item || unknownTarget(edit.item, document))) return { clarification: "Qual item do cartão você quer corrigir?" };
+    const descriptor = item && items ? " do item " + (items.findIndex(row => row.id === item.id) + 1) : "";
+    if (edit.field === "lateralidade" && !Object.hasOwn(enumValues.laterality, foldName(edit.value))) return clarify;
+    const result = resolveProposalEdit("Altere " + edit.field + descriptor + " para " + edit.value, document, undefined, edit.anatomy);
+    if ("clarification" in result) return result;
+    if (edit.field !== "lateralidade" && result.changes.length !== 1) return clarify;
+    for (const change of result.changes) {
+      if (change.operation !== "set_field") return clarify;
+      const target = change.itemId ? item : content;
+      if (!target || !Object.hasOwn(target, change.field)) return clarify;
+      changes.push(change);
+    }
+  }
+  const targets = changes.flatMap(change => change.operation === "set_field" ? [[change.itemId ?? "", change.field].join(":")] : []);
+  if (new Set(targets).size !== targets.length) return clarify;
   return { changes };
 }

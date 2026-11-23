@@ -1,4 +1,4 @@
-import { test, expect } from "./fixtures.mjs";
+import { test, expect, stubMicrophone } from "./fixtures.mjs";
 import { randomUUID } from "node:crypto";
 import { createRequire } from "node:module";
 import { mkdirSync } from "node:fs";
@@ -228,9 +228,33 @@ test("mobile: delivery summary, authorized recipient, polling and reload retain 
     .scrollIntoViewIfNeeded();
   await page.screenshot({ path: `${shots}/delivery-chat-mobile.png` });
 });
+test("retoma o envio depois de resolver um destinatário ausente e exige nova confirmação", async ({ page }) => {
+  await seed("exam_request", f.absent);
+  await page.goto(`/?atleta=${f.absent}`);
+
+  await say(page, "Quero finalizar esse documento e preparar o envio.");
+  const blocked = page.getByText(/Ainda falta um destinatário autorizado/);
+  await expect(blocked).toHaveCount(1);
+  await say(page, "Certo, vamos resolver isso.");
+  await expect(blocked).toHaveCount(2);
+  await page.getByRole("link", { name: "Abrir cadastro do atleta" }).last().click();
+  await page.waitForURL(`**/atletas/${f.absent}?aba=cadastro`);
+
+  sql(`insert into clinical.athlete_contacts(athlete_id, phone) values('${f.absent}', '11999990009')`);
+  await page.goBack();
+  await expect(blocked).toHaveCount(2);
+  await say(page, "Retomar a preparação do envio.");
+  await expect(page.getByText(/Escolha a identidade antes de preparar a assinatura/)).toBeVisible();
+  await say(page, `Use a identidade ${f.inventory.identities[0].label}`);
+  await expect(page.getByText(/Preparei o resumo de autorização no cartão/)).toBeVisible();
+  await expect(page.getByRole("region", { name: "Resumo da autorização pendente" })).toContainText("Autorizar entrega simulada");
+  expect(sql(`select count(*) from clinical.chat_operation_authorizations where professional_id = '${f.owner.id}'`)).toBe("0");
+});
+
 test("voice transcription reaches same edit/review authority; high impact stays pending for text", async ({
   page,
 }) => {
+  await stubMicrophone(page);
   await seed("prescription");
   await page.goto(`/?atleta=${f.athlete}`);
   let socket;

@@ -92,6 +92,7 @@ export default defineConfig({
         CBB_SIGNING_MODE: "off",
         CBB_DEPLOYMENT_ENV: "operational",
         CBB_INTELLIGENCE_API_KEY: "offline-playwright-key",
+        CONSULTATION_VOICE_BETA: "1",
         CBB_INTELLIGENCE_MODEL: "gemini-3.5-flash",
         CBB_INTELLIGENCE_BASE_URL: "",
         CBB_VOICE_ENABLED: "true",

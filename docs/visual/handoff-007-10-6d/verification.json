@@ -1,0 +1,63 @@
+{
+  "date": "2026-11-21",
+  "baseline": "5f86dac",
+  "branch": "fix/handoff-007-10-6d-evolution-confidentiality",
+  "implementation_commits": [
+    "413857e",
+    "f550183"
+  ],
+  "distinct_scenarios": 34,
+  "new_domain_tests": 15,
+  "new_ui_tests": 2,
+  "existing_regression_tests": 17,
+  "lint": "passed, zero warnings",
+  "typecheck": "passed",
+  "build": "passed",
+  "axe_checked_states": 5,
+  "axe_violations": 0,
+  "temporary_evolution_accounts_remaining": 0,
+  "historical_psychology_records_locked_without_content_rewrite": 2,
+  "migration_versions": [
+    "20261121000100",
+    "20261121000200",
+    "20261121000300",
+    "20261121000400",
+    "20261121000500"
+  ],
+  "full_suite_run": false,
+  "visible_browser_opened": false,
+  "merge_push_deploy": false,
+  "images": [
+    {
+      "file": "psychology-draft-1280.png",
+      "label": "Rascunho de Psicologia: sigilo obrigatório",
+      "width": 1280,
+      "height": 1269
+    },
+    {
+      "file": "restricted-timeline-1440.png",
+      "label": "Timeline vista pelo médico sem acesso ao conteúdo",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "restricted-timeline-390.png",
+      "label": "Timeline restrita no mobile",
+      "width": 390,
+      "height": 1034
+    },
+    {
+      "file": "correction-history-1280.png",
+      "label": "Correção publicada e histórico preservado",
+      "width": 1280,
+      "height": 1677
+    },
+    {
+      "file": "correction-history-390.png",
+      "label": "Correção e histórico no mobile",
+      "width": 390,
+      "height": 1753
+    }
+  ],
+  "known_operational_issue": "Preexisting local migration history gap: 20261115000900"
+}

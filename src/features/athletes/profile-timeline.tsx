@@ -38,18 +38,16 @@ function RecordRows({
               <time className="timeline-day" dateTime={record.occurred_at}>
                 {recordWhen(record.occurred_at).day}
               </time>
-              <details open={target === record.id}>
+              {record.content_restricted ? <p>Conteúdo restrito</p> : <details open={target === record.id}>
                 <summary>{record.title}</summary>
                 <p className="record-body">{record.body}</p>
-                {canWrite && record.is_author && record.status === "draft" && (
-                  <Link
-                    className="clinical-link"
-                    prefetch={false}
-                    href={`${base}/evolucao?registro=${record.id}`}
-                  >
-                    Revisar rascunho
-                  </Link>
-                )}
+                {record.linked_corrections?.map((correction) => <section key={correction.version} aria-label="Correção vinculada">
+                  <h4>{correction.title}</h4><p className="record-body">{correction.body}</p>
+                  <p>{correction.actor_name} · {correction.reason}</p>
+                </section>)}
+                <Link className="clinical-link" prefetch={false} href={`${base}/evolucao?registro=${record.id}`}>
+                  {canWrite && record.can_edit ? record.has_signature ? "Registrar correção vinculada" : "Editar evolução" : "Consultar evolução e histórico"}
+                </Link>
                 {record.encounter_status && (
                   <p>
                     Atendimento{" "}
@@ -58,9 +56,10 @@ function RecordRows({
                       : "encerrado"}
                   </p>
                 )}
-              </details>
+              </details>}
               <p className="timeline-byline">
-                {record.author_name}, {record.specialty}
+                {record.author_name}{record.specialty ? `, ${record.specialty}` : ""}
+                {record.content_restricted && <> · <time dateTime={record.occurred_at}>{new Intl.DateTimeFormat("pt-BR", {dateStyle:"short",timeStyle:"short",timeZone:"America/Sao_Paulo"}).format(new Date(record.occurred_at))}</time></>}
                 {record.is_author && record.is_restricted && (
                   <span className="record-restriction">
                     {" "}
@@ -68,7 +67,7 @@ function RecordRows({
                   </span>
                 )}
               </p>
-              <span
+              {!record.content_restricted && <span
                 className={
                   record.status === "draft"
                     ? "pill pill-draft"
@@ -76,7 +75,7 @@ function RecordRows({
                 }
               >
                 {record.status === "draft" ? "Rascunho" : "Finalizado"}
-              </span>
+              </span>}
             </div>
           </li>
         ))}
@@ -97,7 +96,7 @@ export function ProfileTimeline({
   base: string;
 }) {
   const query = useSearchParams();
-  const specialties = [...new Set(records.map((r) => r.specialty))].sort(
+  const specialties = [...new Set(records.flatMap((r) => r.specialty ? [r.specialty] : []))].sort(
     (a, b) => a.localeCompare(b, "pt-BR"),
   );
   const from = profileFilterDate(query.get("de"));
@@ -221,7 +220,7 @@ export function ProfileTimeline({
       <p className="profile-filter-summary" role="status">
         Filtros ativos: {active.length ? active.join(" · ") : "nenhum"}.
         Mostrando {visible.length} de {filtered.length} evoluções
-        correspondentes · {records.length} autorizadas neste perfil.
+        correspondentes · {records.length} atendimentos representados neste perfil.
       </p>
       {separate && (
         <div className="profile-target-record">

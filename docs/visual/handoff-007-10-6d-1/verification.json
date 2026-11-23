@@ -1,0 +1,52 @@
+{
+  "date": "2026-11-21",
+  "baseline": "0da6779",
+  "branch": "fix/handoff-007-10-6d-1-direct-evolution",
+  "implementation_commits": [
+    "4e445d6",
+    "e96cfbf"
+  ],
+  "new_backend_tests": 13,
+  "new_ui_tests": 5,
+  "existing_regressions": 21,
+  "distinct_scenarios": 39,
+  "lint": "passed, zero warnings",
+  "typecheck": "passed",
+  "build": "passed",
+  "migration": "20261121000600",
+  "new_clinical_entities": 0,
+  "migration_file_matches_local_history": true,
+  "temporary_users_remaining": 0,
+  "fault_injection_triggers_remaining": 0,
+  "axe_new_capture_states": 4,
+  "axe_violations": 0,
+  "full_suite_run": false,
+  "visible_browser_opened": false,
+  "merge_push_deploy": false,
+  "images": [
+    {
+      "file": "form-1440.png",
+      "label": "Formulário tradicional com as duas ações",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "finalized-1440.png",
+      "label": "Finalização direta confirmada na timeline",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "form-390.png",
+      "label": "Formulário mobile de Psicologia com sigilo obrigatório",
+      "width": 390,
+      "height": 925
+    },
+    {
+      "file": "retry-preserved-1440.png",
+      "label": "Conteúdo preservado após perda de resposta já gravada",
+      "width": 1440,
+      "height": 1000
+    }
+  ]
+}

@@ -59,17 +59,23 @@ export type AthleteRegistration = {
 
 type ClinicalRecord = {
   encounter_status: "open" | "closed" | null;
-  version: number;
+  version?: number;
+  content_restricted?: boolean;
+  can_edit?: boolean;
+  version_count?: number;
+  has_signature?: boolean;
+  signed_version?: number | null;
+  linked_corrections?: {version:number;title:string;body:string;reason:string;actor_name:string;created_at:string}[];
   is_restricted: boolean;
   is_author: boolean;
   encounter_id: string | null;
   id: string;
   author_name: string;
-  specialty: string;
+  specialty?: string;
   title: string;
-  body: string;
+  body?: string;
   occurred_at: string;
-  status: "draft" | "finalized";
+  status?: "draft" | "finalized";
 };
 
 export const uuidPattern = /^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i;
@@ -102,7 +108,7 @@ export async function listAthletes(search = "") {
   return data as { can_create: boolean; athletes: AthleteSummary[] };
 }
 
-export type AthleteWorkspace = { athlete: Athlete; can_read_records: boolean; can_edit: boolean; can_write: boolean; can_finalize: boolean; sports: SportLink[]; counts: { evolutions: number; encounters: number } | null; records: ClinicalRecord[] | null; recent_records: Pick<ClinicalRecord, "id" | "title" | "specialty" | "author_name" | "status" | "occurred_at">[] | null };
+export type AthleteWorkspace = { psychology_required?: boolean; athlete: Athlete; can_read_records: boolean; can_edit: boolean; can_write: boolean; can_finalize: boolean; sports: SportLink[]; counts: { evolutions: number; encounters: number } | null; records: ClinicalRecord[] | null; recent_records: Pick<ClinicalRecord, "id" | "title" | "specialty" | "author_name" | "status" | "occurred_at">[] | null };
 
 export async function loadAthlete(id: string, view: "profile" | "timeline" | "chat") {
   await requireProfile();

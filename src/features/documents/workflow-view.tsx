@@ -278,6 +278,9 @@ export function DocumentWorkflowView({
                 {d.provenance === "simulated" && (
                   <p>Nenhum WhatsApp foi enviado externamente.</p>
                 )}
+                {d.provenance === "simulated" && d.hasDemoAttachment && (
+                  <Link className="outline" prefetch={false} href={`${base}/documentos/${document.id}/conversa-simulada`}>Abrir conversa simulada</Link>
+                )}
                 {d.state === "blocked" && (
                   <p>
                     A autorização do destinatário não permite prosseguir. O

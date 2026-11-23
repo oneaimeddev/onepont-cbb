@@ -6,6 +6,7 @@ import { parseConversation, parseHistory } from "../../features/chat/conversatio
 import { endConversationContext } from "../../features/chat/conversation-actions";
 import { IntelligenceHome } from "../../features/chat/intelligence-home";
 import { chatFonts } from "../../features/chat/fonts";
+import { consultationSpecialty } from "../../features/clinical/consultation-prompt";
 import { getAthlete, loadAthlete } from "../../features/athletes/data";
 import { requireProfile } from "../../lib/profile";
 import { supabaseServer } from "../../lib/supabase";
@@ -32,11 +33,12 @@ export default async function ChatPage({ searchParams }: {
   const { atleta } = await searchParams;
   const requested = typeof atleta === "string" ? atleta : null;
   const client = await supabaseServer();
-  const [currentResult, recentResult] = await Promise.all([
+  const [currentResult, recentResult, evolutionPolicy] = await Promise.all([
     requested ? client.rpc("conversation_current") : Promise.resolve({ data: null, error: null }),
     client.rpc("conversation_recent"),
+    client.rpc("evolution_policy"),
   ]);
-  if (currentResult.error || recentResult.error) throw new Error("Não foi possível recuperar a conversa.");
+  if (currentResult.error || recentResult.error || evolutionPolicy.error) throw new Error("Não foi possível recuperar a conversa.");
   const current = parseConversation(currentResult.data);
   const history = parseHistory(recentResult.data);
   const context = requested
@@ -64,7 +66,11 @@ export default async function ChatPage({ searchParams }: {
       enabled={intelligenceEnabled()}
       voiceEnabled={Boolean(voiceApiKey())}
       contextAthleteId={active?.id ?? null}
+      consultationAvailable={process.env.CONSULTATION_VOICE_BETA === "1" && Boolean(
+        context?.can_write && context.can_read_records && active?.source === "demo" && consultationSpecialty(profile.profession),
+      )}
       canFinalize={Boolean(context?.can_finalize)}
+      evolutionRestricted={Boolean(evolutionPolicy.data?.psychology_required)}
       initialSessionId={current.sessionId}
       initialSnapshot={current.snapshot}
       initialHistory={history}

@@ -1,4 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { prescriptionPdf } from "./prescription-pdf.ts";
+import { demoEnvironmentAllowed } from "../signing/environment.ts";
 import type {
   DeliveryAdapter,
   DeliveryJob,
@@ -7,13 +9,7 @@ import type {
 export function deliveryEnvironmentAllowed(
   env: Record<string, string | undefined>,
 ) {
-  return (
-    env.CBB_SIGNING_MODE === "demo" &&
-    ["local", "test", "controlled-demo"].includes(
-      env.CBB_DEPLOYMENT_ENV ?? "",
-    ) &&
-    !["production", "preview"].includes(env.VERCEL_ENV ?? "")
-  );
+  return demoEnvironmentAllowed(env);
 }
 export function simulatedDeliveryAdapter(): DeliveryAdapter {
   const observe = async (job: DeliveryJob): Promise<DeliveryObservation> => {
@@ -91,6 +87,17 @@ export async function reconcileDeliveries(
     if (claimed.error) throw new Error("Delivery reconciliation unavailable");
     const job = claimed.data?.job as DeliveryJob | null;
     if (!job) break;
+    if (job.adapter !== adapter.key) throw new Error("Incompatible adapter");
+    const attachmentArgs = { request_id: job.requestId, lease_token: job.leaseToken };
+    const attachment = await client.rpc("demo_delivery_attachment", attachmentArgs);
+    if (attachment.error || attachment.data?.error)
+      throw new Error("Demo attachment unavailable; lease will be retried");
+    if (attachment.data?.required && !attachment.data.stored) {
+      const pdf = await prescriptionPdf(attachment.data.material, job.artifact.snapshotId);
+      const stored = await client.rpc("demo_delivery_attachment", { ...attachmentArgs, pdf_base64: pdf });
+      if (stored.error || stored.data?.error || !stored.data?.stored)
+        throw new Error("Demo attachment could not be persisted; lease will be retried");
+    }
     // A reclaimed lease always reconciles the same operation; it never blindly resubmits an uncertain message.
     const method = job.cancelRequested
       ? adapter.cancel

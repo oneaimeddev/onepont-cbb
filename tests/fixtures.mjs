@@ -20,3 +20,21 @@ export const test = base.extend({
 export { expect };
 
 export { request } from "@playwright/test";
+
+export async function stubMicrophone(page) {
+  await page.addInitScript(() => {
+    window.testMicrophoneTracks = [];
+    navigator.mediaDevices.getUserMedia = async () => {
+      const context = new AudioContext();
+      const output = context.createMediaStreamDestination();
+      const track = output.stream.getAudioTracks()[0];
+      const stop = track.stop.bind(track);
+      track.stop = () => {
+        stop();
+        if (context.state !== "closed") void context.close();
+      };
+      window.testMicrophoneTracks.push(track);
+      return output.stream;
+    };
+  });
+}

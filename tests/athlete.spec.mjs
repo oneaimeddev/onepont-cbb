@@ -89,7 +89,10 @@ test("busca, seleção, timeline, troca, cadastro e auditoria do atleta", async 
   await page.setViewportSize({ width: 390, height: 844 });
   const timeline = await professional.client.rpc("athlete_workspace", { target: athlete, view_name: "timeline" });
   expect(timeline.error).toBeNull();
-  expect(timeline.data.records.map((r) => r.title)).toEqual(["Evento recente", "Evento anterior"]);
+  expect(timeline.data.records.filter((r) => !r.content_restricted).map((r) => r.title)).toEqual(["Evento recente", "Evento anterior"]);
+  const restricted = timeline.data.records.filter((r) => r.content_restricted);
+  expect(restricted).toHaveLength(2);
+  for (const entry of restricted) { expect(entry.title).toBe("Conteúdo restrito"); expect(entry).not.toHaveProperty("body"); expect(entry).not.toHaveProperty("specialty"); }
 
   await page.getByRole("link", { name: "Abrir no chat" }).click();
   await page.getByRole("button", { name: "Contexto", exact: true }).click();

@@ -1,0 +1,8 @@
+.agents/
+docs/
+tests/
+test-results/
+playwright*.ts
+supabase/
+scripts/beta/
+*.zip

@@ -1,23 +1,64 @@
 import "server-only";
 import { createHash } from "node:crypto";
 import { supabaseServer } from "../../../lib/supabase";
+import type { DocumentContent, DocumentKind } from "../../documents/content";
+import { spokenPatientMatches } from "./document-creation";
 import { presentedDocument } from "../document-draft";
 import {
   proposalIntent,
   proposalSaveIntent,
   resolveProposalEdit,
+  resolveSpokenEdit,
   type DisplayedProposal,
+  type ProposalPatch,
 } from "./document-intent";
+
+const spokenDocument = {
+  prescription: "a prescrição",
+  exam_request: "o pedido de exames",
+  surgical_order: "o pedido cirúrgico",
+};
+
+export async function resumeDocumentProposal(athleteId: string | null, proposals: DisplayedProposal[], kind?: DocumentKind) {
+  if (!athleteId) return { text: "Selecione o atleta para retomar o cartão." };
+  const shown = proposals.filter(p => p.athleteId === athleteId && (!kind || p.kind === kind));
+  if (shown.length > 1) return { text: "Há mais de um cartão possível. Selecione o que você quer retomar." };
+  if (shown[0]?.dirty) return { text: "O cartão selecionado está em edição. Continue nele para manter as alterações que você fez." };
+  const client = await supabaseServer();
+  const read = await client.rpc("chat_document_proposal_read", { request_id: shown[0]?.requestId ?? null, kind: kind ?? null });
+  const document = presentedDocument(read.data?.document);
+  if (read.data?.error === "ambiguous") return { text: "Há mais de uma proposta em andamento. Selecione o cartão que você quer retomar." };
+  if (read.error || !document || document.athleteId !== athleteId)
+    return { text: "Não consegui localizar essa proposta na conversa ativa deste atleta." };
+  return { document, text: document.state === "saved" ? "Aqui está o cartão do rascunho salvo." : "Aqui está o cartão com os dados que você já ditou." };
+}
 
 export async function documentConversation(input: {
   message: string;
+  previousReply?: string;
   athleteId: string | null;
   proposals: DisplayedProposal[];
   messageId?: string;
   inputMode?: "text" | "voice";
+  spokenEdit?: { kind: DocumentKind; edits: Parameters<typeof resolveSpokenEdit>[2] };
+  initialContent?: { kind: DocumentKind; content: DocumentContent; reply: string };
 }) {
-  const intent =
-    proposalSaveIntent(input.message) ?? proposalIntent(input.message);
+  const doseFollowUp = input.previousReply === "Anotei o medicamento no cartão. Qual é a dose?"
+    && /^\s*\d+(?:[.,]\d+)?\s*(?:mg|g|mcg|mL|miligramas?|gramas?|microgramas?|mililitros?)\.?\s*$/iu.test(input.message);
+  const message = doseFollowUp ? "A dose é de " + input.message.trim() : input.message;
+  let intent =
+    input.spokenEdit ? { action: "edit" as const, kind: input.spokenEdit.kind, mixed: false } : input.initialContent ? { action: "edit" as const, kind: input.initialContent.kind, mixed: false }
+      : proposalSaveIntent(message) ?? proposalIntent(message);
+  let deferredKind: DocumentKind | null = null;
+  if ((!intent || intent.action === "save") && input.proposals.length && /\b(?:salvar|salve|gravar|grave)\b/iu.test(message)) {
+    const client = await supabaseServer();
+    const turn = await client.rpc("chat_document_save_turn", { utterance: message });
+    if (typeof turn.data?.directive === "string") {
+      intent = proposalSaveIntent(turn.data.directive);
+      const next = turn.data.deferredKind;
+      if (next === "surgical_order" || next === "exam_request" || next === "prescription") deferredKind = next;
+    }
+  }
   if (!intent) return null;
   const save = intent.action === "save";
   if (!input.proposals.length && intent.action === "review") return null;
@@ -37,6 +78,13 @@ export async function documentConversation(input: {
   const distinct = [
     ...new Map(candidates.map((p) => [p.requestId, p])).values(),
   ];
+  if (save && intent.kind && !distinct.length && input.proposals.length === 1) {
+    const selected = input.proposals[0];
+    if (selected.athleteId === input.athleteId && selected.kind !== intent.kind) {
+      const active = await resumeDocumentProposal(input.athleteId, input.proposals, selected.kind);
+      return answer("Você mencionou " + spokenDocument[intent.kind] + ", mas o cartão selecionado é " + spokenDocument[selected.kind] + ". Para salvar este cartão, diga “Pode confirmar e salvar " + spokenDocument[selected.kind] + "”.", active.document);
+    }
+  }
   if (distinct.length !== 1)
     return answer(
       distinct.length > 1
@@ -60,6 +108,7 @@ export async function documentConversation(input: {
     );
   if (document.athleteId !== input.athleteId)
     return answer("Confirme o atleta em contexto antes de continuar.");
+  if (input.spokenEdit && !spokenPatientMatches(message, document.athleteName)) return answer("Confirme o atleta do cartão que deseja corrigir.");
   if (document.readOnlyReason)
     return answer(
       document.readOnlyReason === "finalized"
@@ -88,10 +137,17 @@ export async function documentConversation(input: {
       return answer(
         r.data?.error === "conflict"
           ? "A versão mudou. Confira a proposta atual antes de confirmar novamente."
-          : "Para salvar somente este rascunho, confirme o tipo do documento e diga “Pode confirmar e salvar a prescrição”, “o pedido cirúrgico” ou “a solicitação de exames”. Assinatura e emissão não estão autorizadas.",
+          : r.data?.error === "ambiguous"
+            ? "A confirmação ficou ambígua. O cartão continua aqui. Para gravar este rascunho, diga “Pode confirmar e salvar " + spokenDocument[document.kind] + "”."
+              : r.data?.error === "unapproved"
+              ? "O cartão continua aqui. Se quiser gravar este rascunho agora, pode dizer “Pode salvar”."
+              : "Não consegui salvar este rascunho. O cartão continua disponível para revisão.",
+        document,
       );
     return answer(
-      "Salvei esta versão como rascunho. O documento não foi assinado nem emitido.",
+      deferredKind
+        ? "Salvei " + spokenDocument[document.kind] + " como rascunho. Quando quiser, podemos abrir " + spokenDocument[deferredKind] + "."
+        : "Salvei esta versão como rascunho. O documento não foi assinado nem emitido.",
       presentedDocument(r.data?.document),
     );
   }
@@ -119,7 +175,17 @@ export async function documentConversation(input: {
     );
   }
   let itemNumber = 0;
-  const resolved = resolveProposalEdit(input.message, document, () => {
+  const initial = input.initialContent?.content;
+  const currentContent = document.content;
+  let initialChanges: ProposalPatch[] | undefined;
+  if (initial) {
+    const blank = currentContent && Object.values(currentContent).every(value => Array.isArray(value) ? !value.length : !value);
+    if (!blank) return answer("Esse cartão já tem dados. Diga o que você quer corrigir ou peça um novo cartão.", document);
+    initialChanges = Object.entries(initial).flatMap<ProposalPatch>(([field, value]) =>
+      field === "items" || !value ? [] : [{ operation: "set_field", field, value }]);
+    if ("items" in initial) initialChanges.push(...initial.items.map(item => ({ operation: "add_item" as const, item })));
+  }
+  const resolved = input.spokenEdit ? resolveSpokenEdit(message, document, input.spokenEdit.edits) : initialChanges ? { changes: initialChanges } : resolveProposalEdit(message, document, () => {
     const hash = createHash("sha256")
       .update(`${shown.requestId}:${key}:${itemNumber++}`)
       .digest("hex");
@@ -144,7 +210,7 @@ export async function documentConversation(input: {
         : "Não foi possível aplicar a alteração. Confira o item, o campo e os limites do documento.",
     );
   return answer(
-    "Atualizei a proposta e preservei os campos não mencionados. Confira o cartão antes de salvar. O documento não foi assinado nem emitido.",
+    input.initialContent?.reply ?? (doseFollowUp ? "Anotei a dose. Qual é a via de administração?" : "Atualizei a proposta e preservei os campos não mencionados. Confira o cartão antes de salvar. O documento não foi assinado nem emitido."),
     next,
   );
 }

@@ -203,7 +203,10 @@ test("prepara, revisa, confirma e bloqueia a evolução assistida", async ({ pag
 
   const timeline = await reader.client.rpc("athlete_workspace", { target: athlete, view_name: "timeline" });
   expect(JSON.stringify(timeline.data)).not.toContain(approved);
-  expect(JSON.stringify(timeline.data.records ?? [])).not.toContain(recordId);
+  expect(timeline.data.records).toContainEqual(expect.objectContaining({id:recordId,title:"Conteúdo restrito",content_restricted:true}));
+  const restrictedRecord=timeline.data.records.find((entry)=>entry.id===recordId);
+  expect(restrictedRecord).not.toHaveProperty("body");
+  expect(restrictedRecord).not.toHaveProperty("version");
 
   const failedModel = await page.request.post("/api/inteligencia", {
     data: { messages: [{ role: "user", content: "Elabore outra evolução fictícia deste atleta." }], contextAthleteId: athlete },

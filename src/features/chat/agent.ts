@@ -1,11 +1,12 @@
 import "server-only";
-import { displayedProposalSchema } from "./operations/document-intent";
+import { spokenEditSchema, displayedProposalSchema } from "./operations/document-intent";
+import { documentDictation, documentOpeningQuestion } from "./operations/document-dictation";
 import { workflowConversation } from "./operations/workflow-service";
-import { documentConversation } from "./operations/document-service";
-import { creationPatientMatches, documentCreationRequested, groundDocumentCreation, stableCreationItemId } from "./operations/document-creation";
+import { documentConversation, resumeDocumentProposal } from "./operations/document-service";
+import { creationPatientMatches, dictatedExam, documentCreationRequested, groundDocumentCreation, groundSpokenContent, spokenPatientMatches, type SpokenSource, stableCreationItemId } from "./operations/document-creation";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createOpenAI } from "@ai-sdk/openai";
-import { APICallError, streamText, stepCountIs, tool } from "ai";
+import { APICallError, streamText, hasToolCall, stepCountIs, tool } from "ai";
 import { z } from "zod";
 import { activityFilterSchema, clinicalSearchBoard } from "../clinical-search/contract";
 import { clinicalSearchIntent } from "../clinical-search/intent";
@@ -55,7 +56,7 @@ const voiceRules = [
   "Se a fala parecer cortada ou ininteligível, peça ao profissional que repita em poucas palavras.",
   "Se o nome do atleta puder corresponder a mais de uma pessoa ou parecer mal transcrito, busque e peça confirmação. Nunca escolha sozinho.",
   "Nunca altere lateralidade, datas, doses, unidades, procedimentos ou negações. Se um desses dados estiver ambíguo, pergunte antes de preparar a evolução.",
-  "Uma frase explícita como pode confirmar e salvar é conferida pelo sistema, a partir da mensagem do profissional. Não afirme que gravou.",
+  "Uma confirmação explícita do profissional pode salvar somente um rascunho. O sistema valida essa confirmação. Nunca afirme que uma evolução foi publicada pela fala.",
   "Uma frase explícita pode gravar o rascunho de uma evolução, de uma prescrição ou de um pedido cirúrgico. O sistema confere a frase. Não diga que gravou, emitiu ou assinou.",
 ];
 
@@ -138,7 +139,7 @@ function presentationFrom(steps: ReadonlyArray<{ toolResults: ReadonlyArray<{ to
         document = null;
         kind = "search";
       }
-      if ((item.toolName === "preparePrescription" || item.toolName === "prepareSurgicalOrder" || item.toolName === "prepareExamRequest" || item.toolName === "openClinicalDocument") && (output.status === "proposal" || output.status === "saved")) {
+      if ((item.toolName === "preparePrescription" || item.toolName === "prepareSurgicalOrder" || item.toolName === "prepareExamRequest" || item.toolName === "openClinicalDocument" || item.toolName === "resumeDocumentProposal" || item.toolName === "editDocumentProposal") && (output.status === "proposal" || output.status === "saved")) {
         const proposal = presentedDocument(output);
         if (proposal) {
           document = proposal;
@@ -180,11 +181,15 @@ function presentationFrom(steps: ReadonlyArray<{ toolResults: ReadonlyArray<{ to
         const candidate = (output as { sessionId: string }).sessionId;
         if (uuidPattern.test(candidate)) sessionId = candidate;
       }
-      if (item.toolName === "navigateToAthlete" && output.status === "ok") {
+      if ((item.toolName === "navigateToAthlete" || item.toolName === "openConsultationVoice") && output.status === "ok") {
         const athlete = presentedAthletes([output.athlete])[0];
         const link = athlete ? presentedNavigation({ id: athlete.id, href: output.href, name: athlete.name }) : null;
         if (athlete && link) {
           navigation = link;
+          if (item.toolName === "openConsultationVoice") {
+            context = { id: athlete.id, name: athlete.name };
+            contextCleared = false;
+          }
           athletes = [athlete];
           search = null;
           kind = "narrative";
@@ -219,8 +224,9 @@ async function prepareConversation(input: unknown) {
   const documentRosterIds = (parsed.data.documentRoster ?? []).filter((id) => uuidPattern.test(id)).slice(0, 20);
   const createdIds = (parsed.data.createdDocumentIds ?? []).filter((id) => uuidPattern.test(id)).slice(0, 8);
   const utterance = parsed.data.messages.at(-1)?.content ?? "";
+  const displayedProposals = parsed.data.displayedProposals ?? [];
   const creationTurnKey = parsed.data.messageId ?? crypto.randomUUID();
-  const documentPreparation = { attempted: false, requested: (["prescription", "exam_request", "surgical_order"] as const).some((kind) => documentCreationRequested(kind, utterance)), notice: "" };
+  const documentPreparation = { spoken: false, attempted: false, requested: (["prescription", "exam_request", "surgical_order"] as const).some((kind) => documentCreationRequested(kind, utterance)), notice: "" };
   if (documentPreparation.requested && !canAuthorDocuments) documentPreparation.notice = "Seu perfil não tem autorização para preparar documentos médicos. Não preparei nem salvei um documento.";
   const command = athleteCommand(utterance);
   const speech = documentRequest(utterance);
@@ -402,6 +408,30 @@ async function prepareConversation(input: unknown) {
     },
   });
 
+  const openConsultationVoice = tool({
+    description: "Oferece um link para Registrar evolução por voz ou revisar a última consulta gravada pelo profissional para esse atleta. Nunca inicia, salva ou finaliza a gravação. Use somente quando o profissional pedir a consulta gravada. Busque o atleta quando ele for nomeado e esclareça múltiplos resultados.",
+    inputSchema: z.object({ athleteId: z.uuid(), destination: z.enum(["capture", "review"]) }),
+    execute: async ({ athleteId, destination }) => {
+      const decision = decideAthleteAccess(athleteId, contextAthleteId, searches);
+      if (decision !== "allow") return unavailable(decision);
+      if (process.env.CONSULTATION_VOICE_BETA !== "1") return unavailable("denied");
+      const [opened, access] = await Promise.all([
+        client.rpc("agent_athlete_workspace", { target: athleteId, view_name: "chat" }),
+        client.rpc("chat_consultation_navigation", { target: athleteId, review: destination === "review" }),
+      ]);
+      const athlete = athletesFromDirectory([opened.data?.athlete])[0];
+      const base = athleteProfilePath(athleteId);
+      if (opened.error || access.error || !access.data || !athlete || !base) return unavailable("denied");
+      const capture = base + "/evolucao?modo=voz";
+      const href = destination === "capture" && access.data.available === true ? capture
+        : destination === "review" && uuidPattern.test(access.data.recordId ?? "") ? base + "/evolucao?registro=" + access.data.recordId
+        : destination === "review" && uuidPattern.test(access.data.captureId ?? "") ? capture + "&consulta=" + access.data.captureId
+        : null;
+      if (!href) return unavailable("denied");
+      return { status: "ok" as const, athlete, href };
+    },
+  });
+
   const selectAthleteContext = tool({
     description: "Coloca um atleta já identificado no contexto da conversa. Não abre o prontuário e não escolhe sozinho quando houver mais de uma pessoa.",
     inputSchema: z.object({ athleteId: z.string() }),
@@ -498,10 +528,25 @@ async function prepareConversation(input: unknown) {
     execute: async () => ({ status: "confirmation_required" as const }),
   });
 
-  async function registerDocument(athleteId: string, kind: "prescription" | "surgical_order" | "exam_request", content: ReturnType<typeof prescriptionPayload> | ReturnType<typeof surgicalPayload> | ReturnType<typeof examPayload>) {
+  const spokenSource = z.object({
+    action: z.enum(["open", "create", "fill"]),
+    itemQuotes: z.array(z.string().min(1).max(2000)).max(12),
+    patientName: z.string().max(160).optional(),
+  }).strict().optional();
+
+  async function registerDocument(athleteId: string, kind: "prescription" | "surgical_order" | "exam_request", content: ReturnType<typeof prescriptionPayload> | ReturnType<typeof surgicalPayload> | ReturnType<typeof examPayload>, source?: SpokenSource) {
     documentPreparation.attempted = true;
+    documentPreparation.spoken = Boolean(source);
     const blocked = (fields: string[] = []) => {
-      documentPreparation.notice = "Não preparei nem alterei o documento. Confirme o atleta em contexto e informe os nomes e valores explicitamente. Para vários itens, separe cada Medicamento: ou Exame: e seus campos por ponto e vírgula ou nova linha. Alterações de propostas existentes devem usar o cartão e a versão atual.";
+      documentPreparation.notice = "Não preparei nem alterei o documento. Pode dizer qual item você quer incluir e os dados dele? Se forem vários, vamos por partes.";
+      if (source) {
+        const field = fields[0];
+        documentPreparation.notice = field === "athlete_context" ? "Para qual atleta você quer abrir esse cartão?"
+          : field === "item_source" || field === "item_sources" ? "Pode confirmar os itens e os detalhes que pertencem a cada um?"
+          : field === "ambiguous_intent" ? "Quais dados você quer que entrem no cartão?"
+          : field === "field_source" ? "Pode confirmar o dado clínico que deseja registrar?"
+          : "Não consegui preparar o cartão com esses dados. Pode confirmar o que deseja incluir?";
+      }
       return { status: "needs_source" as const, fields };
     };
     const decision = decideAthleteAccess(athleteId, contextAthleteId, searches);
@@ -510,11 +555,31 @@ async function prepareConversation(input: unknown) {
       documentPreparation.notice = "Não preparei o documento. Confirme o atleta autorizado antes de continuar.";
       return { ...unavailable(decision), athletes: decision === "confirm" ? search?.athletes ?? [] : [] };
     }
-    const grounded = groundDocumentCreation(kind, content, utterance, (index) => stableCreationItemId(creationTurnKey, athleteId, kind, index));
+    const openingOnly = documentCreationRequested(kind, utterance)
+      && Object.values(content).every((value) => Array.isArray(value) ? value.length === 0 : value === "");
+    const itemId = (index: number) => stableCreationItemId(creationTurnKey, athleteId, kind, index);
+    const grounded = source ? groundSpokenContent(content, utterance, source, itemId)
+      : openingOnly ? { ok: true as const, content } : groundDocumentCreation(kind, content, utterance, itemId);
     if (!grounded.ok) return blocked(grounded.fields);
     const roster = await client.rpc("agent_presented_athletes", { ids: [athleteId] });
     const intended = athletesFromDirectory(roster.error ? [] : roster.data).find((p) => p.id === athleteId);
-    if (!intended || !creationPatientMatches(utterance, intended.name)) return blocked(["athlete_context"]);
+    if (!intended) return blocked(["athlete_context"]);
+    if (source) {
+      const current = await client.rpc("conversation_current");
+      if (athleteId !== contextAthleteId || current.error || current.data?.session?.athleteId !== athleteId ||
+          !spokenPatientMatches(utterance, intended.name, source.patientName)) return blocked(["athlete_context"]);
+      if (source.action === "fill") {
+        const reply = await documentConversation({
+          message: utterance, athleteId, proposals: displayedProposals, messageId: creationTurnKey,
+          initialContent: { kind, content: grounded.content, reply: "Atualizei o cartão para você conferir." },
+        });
+        if (!reply?.document || reply.text !== "Atualizei o cartão para você conferir.") {
+          documentPreparation.notice = reply?.text ?? "Selecione o cartão que deseja preencher.";
+          return { status: "needs_source" as const };
+        }
+        return { ...reply.document, status: "proposal" as const };
+      }
+    } else if (!(kind === "exam_request" && dictatedExam(utterance)) && !creationPatientMatches(utterance, intended.name)) return blocked(["athlete_context"]);
     const registered = await client.rpc("chat_document_proposal_create", {
       target: athleteId,
       kind,
@@ -530,6 +595,7 @@ async function prepareConversation(input: unknown) {
     description: "Prepara uma proposta de prescrição ainda não gravada, só com o que o profissional pediu agora. Não copie medicação de evoluções ou do histórico. Não invente duração, quantidade, via, apresentação ou contraindicação. Não grave, emita nem assine.",
     inputSchema: z.object({
       athleteId: z.string(),
+      source: spokenSource,
       notes: z.string().max(2000).optional(),
       items: z.array(z.object({
         name: z.string().max(160),
@@ -543,13 +609,14 @@ async function prepareConversation(input: unknown) {
         instructions: z.string().max(500).optional(),
       }).strict()).max(12),
     }).strict(),
-    execute: async ({ athleteId, notes, items }) => registerDocument(athleteId, "prescription", prescriptionPayload(notes ?? "", items)),
+    execute: async ({ athleteId, notes, items, source }) => registerDocument(athleteId, "prescription", prescriptionPayload(notes ?? "", items), source),
   });
 
   const prepareSurgicalOrder = tool({
     description: "Prepara uma proposta de pedido cirúrgico ainda não gravada, só com o que o médico informou. Não invente indicação, diagnóstico, lateralidade ou prioridade. O documento permanece rascunho não assinado.",
     inputSchema: z.object({
       athleteId: z.string(),
+      source: spokenSource,
       procedure: z.string().max(200).optional(),
       region: z.string().max(120).optional(),
       laterality: z.string().max(40).optional(),
@@ -560,13 +627,14 @@ async function prepareConversation(input: unknown) {
       additional: z.string().max(2000).optional(),
       materials: z.string().max(1000).optional(),
     }).strict(),
-    execute: async (input) => registerDocument(input.athleteId, "surgical_order", surgicalPayload(input)),
+    execute: async (input) => registerDocument(input.athleteId, "surgical_order", surgicalPayload(input), input.source),
   });
 
   const prepareExamRequest = tool({
     description: "Prepara uma solicitação de exames ainda não gravada, somente com os exames que o médico citou. Não escolha exames por conta própria e não invente contraste, preparo, prioridade ou diagnóstico. Não grave, emita nem assine.",
     inputSchema: z.object({
       athleteId: z.string(),
+      source: spokenSource,
       occurredOn: z.string().max(10).optional(),
       indication: z.string().max(2000).optional(),
       justification: z.string().max(2000).optional(),
@@ -582,7 +650,7 @@ async function prepareConversation(input: unknown) {
         notes: z.string().max(500).optional(),
       }).strict()).max(12),
     }).strict(),
-    execute: async (input) => registerDocument(input.athleteId, "exam_request", examPayload(input)),
+    execute: async (input) => registerDocument(input.athleteId, "exam_request", examPayload(input), input.source),
   });
 
   const listDocumentDrafts = tool({
@@ -607,6 +675,28 @@ async function prepareConversation(input: unknown) {
         }];
       }).slice(0, 12);
       return { status: "ok" as const, total: data.documents.length, documents };
+    },
+  });
+
+  let documentActionReply: string | undefined;
+  const editProposal = tool({
+    description: "Corrige campos no cartão selecionado. Copie cada novo valor literalmente da fala atual. Se o profissional mencionar anatomia ou item, copie a região em anatomy e o nome ou posição do item em item. Use anatomy somente se a região estiver na fala atual. Quando só mudar o lado, omita anatomy e item no pedido cirúrgico; o servidor lê a região do cartão.",
+    inputSchema: z.object({ kind: z.enum(["surgical_order", "exam_request", "prescription"]), edits: z.array(spokenEditSchema).min(1).max(10) }).strict(),
+    execute: async (spokenEdit) => {
+      const reply = await documentConversation({ athleteId: contextAthleteId, message: utterance, proposals: displayedProposals,
+        messageId: creationTurnKey, spokenEdit });
+      documentActionReply = reply?.text ?? "Selecione o cartão que deseja corrigir.";
+      return reply?.document ? { ...reply.document, status: reply.document.state } : { status: "unavailable" };
+    },
+  });
+
+  const resumeProposal = tool({
+    description: "Retoma o cartão já trabalhado nesta conversa, inclusive uma proposta ainda não salva. Informe o tipo se o profissional o indicou. O servidor resolve a referência e devolve o mesmo cartão.",
+    inputSchema: z.object({ kind: z.enum(["prescription", "exam_request", "surgical_order"]).optional() }).strict(),
+    execute: async ({ kind }) => {
+      const reply = await resumeDocumentProposal(contextAthleteId, displayedProposals, kind);
+      documentActionReply = reply.text;
+      return reply.document ? { ...reply.document, status: reply.document.state } : { status: "unavailable" };
     },
   });
 
@@ -856,6 +946,7 @@ async function prepareConversation(input: unknown) {
   return {
     published,
     documentView: () => documentPreparation,
+    documentActionView: () => documentActionReply,
     holdClinicalNarrative: canAuthorDocuments || documentPreparation.requested,
     attachmentView: () => attachmentPublished,
     clinicalView: () => clinicalPublished,
@@ -879,12 +970,15 @@ async function prepareConversation(input: unknown) {
         "Um nome sem os sobrenomes do meio pode corresponder ao nome completo quando a ferramenta devolver uma única pessoa.",
         "Para o terceiro da lista, ele, ela ou aquele de um clube já mostrado, use recallAthlete. O ordinal começa em 1.",
         "me traga o atleta e coloque em contexto selecionam só quando a ferramenta devolver uma pessoa. Não escolha a primeira de várias.",
+        "Para pedidos como abre o João da categoria sub-18, pesquise pelo nome e pela categoria. Com um único resultado, use selectAthleteContext para continuar no chat. Se o pedido mencionar abrir o prontuário, use o link existente.",
         "Diga que a pessoa está em contexto. Não diga que o prontuário foi aberto.",
         "Abrir o prontuário produz um link. A página não foi aberta até o profissional usá-lo.",
         "Mostre as informações do atleta em contexto, ou da única pessoa encontrada, com os dados devolvidos. Não complete o que não veio.",
         "Encerre o contexto sem apagar a conversa.",
         "Não selecione um atleta quando a busca tiver mais de uma pessoa possível.",
         rosterPrompt(rosterSlots),
+        "Quando a pessoa corrigir ou complementar um campo de um cartão em andamento, use editDocumentProposal. Prepare com fill apenas para o primeiro preenchimento de um cartão vazio. Não abra outro cartão para corrigir um dado.",
+        "Tipos de cartões exibidos: " + (parsed.data.displayedProposals ?? []).map(p => p.kind).join(", "),
         "Quando o profissional pedir uma evolução, use prepareClinicalDraft só para o atleta selecionado ou para o único atleta identificado.",
         "Organize apenas o relato recebido. Coloque o que não foi dito em missing. Não invente queixas, datas, diagnósticos, exames ou condutas.",
         "A proposta do cartão não é um registro clínico. Não diga que ela foi salva, finalizada ou assinada.",
@@ -897,7 +991,7 @@ async function prepareConversation(input: unknown) {
           ? "Quando o médico pedir um pedido cirúrgico, use prepareSurgicalOrder. Informe procedimento, lateralidade, indicação, justificativa e complementos somente se ele os disse. Não invente indicação nem diagnóstico."
           : "",
         canAuthorDocuments
-          ? "preparePrescription, prepareSurgicalOrder e prepareExamRequest criam propostas novas somente quando o profissional pede criação explícita. Não use prepare* para alterar ou complementar uma proposta. Esses pedidos usam o cartão e operações com versão. Valores precisam de fonte na mensagem atual; não copie histórico nem respostas do assistente. Não converta grafia ou unidades. Para vários itens, peça Medicamento: NOME; Dose: VALOR; Unidade: VALOR; ou Exame: NOME; Tipo: VALOR, em linhas separadas. Se houver needs_source, peça esclarecimento e não afirme que preparou, alterou, salvou ou assinou."
+          ? "Interprete a intenção no contexto da conversa, inclusive respostas curtas, mudança de documento e pedidos de vários itens. Use prepareExamRequest para exames. Nas três ferramentas prepare, para linguagem livre, sempre envie source. Use action open se o profissional escolheu o tipo sem ditar dados, create se pede uma nova proposta com dados, fill se está respondendo para preencher um cartão vazio existente daquele tipo. itemQuotes contém um trecho literal contínuo da última mensagem do profissional por item, na mesma ordem, incluindo todos os detalhes daquele item. Para cirurgia ou cartão vazio envie []. Transcreva todos os valores literalmente, inclusive o nome completo do exame com região e lado. Omita campos desconhecidos. Se houver nome de paciente explícito envie patientName exatamente como foi dito. Em formato rotulado (Medicamento:, Exame:, Procedimento:) omita source. Perguntas sobre condutas, relatos passados e hipóteses não autorizam preparar documentos. Se o destinatário ou a intenção estiverem ambíguos, peça esclarecimento. Use a conversa para resolver o tipo do documento, nunca como fonte de dados clínicos."
           : "",
         canAuthorDocuments
           ? "Para consultar prescrições, pedidos cirúrgicos ou solicitações de exames já gravados, use browseClinicalDocuments ou readClinicalDocument. O cartão mostra o original. Não descreva dose, exame, indicação ou justificativa. Não diga que o documento foi emitido ou assinado. Se houver mais de um, peça para o profissional escolher."
@@ -906,14 +1000,16 @@ async function prepareConversation(input: unknown) {
           ? "A última prescrição é a mais recente deste médico. O segundo documento é o segundo card desta conversa. O documento recém-gravado é o que esta conversa acabou de salvar."
           : "",
         canAuthorDocuments
-          ? "Para ver rascunhos já gravados deste médico, use listDocumentDrafts. Para abrir um deles no editor tradicional, use openClinicalDocument. Não diga que o documento foi emitido ou assinado."
+          ? "Para retomar, continuar ou mostrar o documento em que estavam trabalhando, use resumeDocumentProposal mesmo se o salvamento anterior falhou ou o cartão saiu de vista. Para ver rascunhos já gravados deste médico, use listDocumentDrafts. Para abrir um deles no editor tradicional, use openClinicalDocument. Não diga que o documento foi emitido ou assinado."
           : "",
         canAuthorDocuments
           ? "saveClinicalDocument não grava nada. A frase explícita ou o botão do cartão grava somente o rascunho. Não emita, não assine e não marque revisão."
           : "",
         "Para ler evoluções já gravadas, use readClinicalEvolutions. Não altere, não finalize e não reescreva o texto do registro.",
         "Quando o profissional pedir a análise do histórico, lesões ao longo do tempo, comparação entre especialidades ou as fontes dessa análise, use analyzeAthleteHistory. Não descreva queixas, doses, diagnósticos ou condutas. O cartão mostra a cronologia. Não diga que a análise diagnosticou, liberou ou prescreveu.",
+        "Abrir uma prescrição, uma solicitação de exames ou um pedido cirúrgico e preencher seus detalhes são etapas separadas. Ao reconhecer um pedido explícito de abertura sem detalhes, chame a ferramenta de preparação do tipo correto com os campos vazios. Se a proposta estiver no chat, mantenha o mesmo cartão. Pergunte só pelo próximo dado necessário e trate cada dado clínico como informação do profissional, nunca como sugestão sua.",
         "A autoria é sempre do profissional autenticado. Não mude o atleta nem torne público um registro restrito.",
+        "Use openConsultationVoice para pedidos como vou começar o atendimento do João, gravar a consulta, abrir a gravação de evolução ou revisar o relatório que acabamos de gerar. Resolva o atleta autorizado e ofereça o link. Explique a indisponibilidade se a ferramenta falhar. O profissional inicia a gravação na página de atendimento.",
         "Use as mensagens anteriores para resolver referências como dela, desse período ou essas informações. Não peça confirmações desnecessárias quando o contexto já é claro.",
         contextAthleteId
           ? `Atleta já selecionado pelo profissional: ${contextAthleteId}. Use esse identificador quando a fala se referir a essa pessoa.`
@@ -922,10 +1018,10 @@ async function prepareConversation(input: unknown) {
       ].filter((line) => line.trim()).join("\n"),
       messages: parsed.data.messages,
       tools: {
-        searchClinicalActivity, listClinicalAttachments, searchAthletes, recallAthlete, getAthleteSummary, navigateToAthlete, selectAthleteContext, clearAthleteContext, prepareClinicalDraft, saveClinicalDraft, readClinicalEvolutions, analyzeAthleteHistory,
-        ...(canAuthorDocuments ? { preparePrescription, prepareSurgicalOrder, prepareExamRequest, listDocumentDrafts, openClinicalDocument, saveClinicalDocument, browseClinicalDocuments, readClinicalDocument } : {}),
+        searchClinicalActivity, listClinicalAttachments, searchAthletes, recallAthlete, getAthleteSummary, navigateToAthlete, openConsultationVoice, selectAthleteContext, clearAthleteContext, prepareClinicalDraft, saveClinicalDraft, readClinicalEvolutions, analyzeAthleteHistory,
+        ...(canAuthorDocuments ? { editDocumentProposal: editProposal, resumeDocumentProposal: resumeProposal, preparePrescription, prepareSurgicalOrder, prepareExamRequest, listDocumentDrafts, openClinicalDocument, saveClinicalDocument, browseClinicalDocuments, readClinicalDocument } : {}),
       },
-      stopWhen: stepCountIs(6),
+      stopWhen: [stepCountIs(6), hasToolCall("resumeDocumentProposal", "editDocumentProposal")],
       maxRetries: 1,
       timeout: 60_000,
       providerOptions: model.provider === "openai" ? { openai: { store: false } } : undefined,
@@ -940,9 +1036,10 @@ function failureCode(error: unknown) {
 export async function openIntelligenceStream(input: unknown): Promise<{ stream: ReadableStream<Uint8Array> } | { error: "unavailable" | "invalid" | "limit" | "provider" }> {
   const documentInput = requestSchema.safeParse(input);
   if (documentInput.success && documentInput.data.messages.at(-1)?.role === "user") {
-    const reply = await workflowConversation({ message: documentInput.data.messages.at(-1)!.content, athleteId: documentInput.data.contextAthleteId ?? null, proposals: documentInput.data.displayedProposals ?? [], messageId: documentInput.data.messageId, inputMode: documentInput.data.inputMode }) ?? await documentConversation({ message: documentInput.data.messages.at(-1)!.content, athleteId: documentInput.data.contextAthleteId ?? null, proposals: documentInput.data.displayedProposals ?? [], messageId: documentInput.data.messageId, inputMode: documentInput.data.inputMode });
+    const previousReply = documentInput.data.messages.slice(0, -1).findLast((message) => message.role === "assistant")?.content;
+    const reply = await workflowConversation({ previousReply, message: documentInput.data.messages.at(-1)!.content, athleteId: documentInput.data.contextAthleteId ?? null, proposals: documentInput.data.displayedProposals ?? [], messageId: documentInput.data.messageId, inputMode: documentInput.data.inputMode }) ?? await documentDictation({ message: documentInput.data.messages.at(-1)!.content, previousReply, athleteId: documentInput.data.contextAthleteId ?? null, messageId: documentInput.data.messageId, proposals: documentInput.data.displayedProposals ?? [] }) ?? await documentConversation({ previousReply, message: documentInput.data.messages.at(-1)!.content, athleteId: documentInput.data.contextAthleteId ?? null, proposals: documentInput.data.displayedProposals ?? [], messageId: documentInput.data.messageId, inputMode: documentInput.data.inputMode });
     if (reply) {
-      const bytes = new TextEncoder().encode(`event: done\ndata: ${JSON.stringify({ ...reply, athletes: [], navigation: null, search: null, draft: null, context: null })}\n\n`);
+      const bytes = new TextEncoder().encode(`event: done\ndata: ${JSON.stringify({ athletes: [], navigation: null, search: null, draft: null, context: null, ...reply })}\n\n`);
       return { stream: new ReadableStream<Uint8Array>({ start(controller) { controller.enqueue(bytes); controller.close(); } }) };
     }
   }
@@ -991,12 +1088,17 @@ export async function openIntelligenceStream(input: unknown): Promise<{ stream: 
         const preparation = prepared.documentView();
         const medicalDocumentTool = steps.some((step) => step.toolCalls.some((call) => ["preparePrescription", "prepareSurgicalOrder", "prepareExamRequest", "saveClinicalDocument"].includes(call.toolName)));
         const saveOnly = !preparation.attempted && !preparation.requested && steps.some((step) => step.toolCalls.some((call) => call.toolName === "saveClinicalDocument"));
-        const text = preparation.attempted || preparation.requested || medicalDocumentTool
+        const content = view.document?.content;
+        const blankDocument = content && Object.values(content).every((value) => Array.isArray(value) ? value.length === 0 : value === "");
+        const text = prepared.documentActionView() ?? (blankDocument && view.document?.state === "proposal"
+          ? documentOpeningQuestion(view.document.kind, view.document.athleteName)
+          : preparation.attempted || preparation.requested || medicalDocumentTool
           ? view.document
             ? view.document.readOnlyReason ? "Recuperei o documento somente para consulta. Confira seu estado no prontuário."
               : view.document.state === "saved" ? "Esta proposta já foi salva como rascunho. Recuperei o mesmo documento, sem nova gravação, assinatura ou emissão."
+                : preparation.spoken ? "O cartão está pronto para você conferir."
                 : "Preparei a proposta com os valores informados nesta mensagem. Confira o cartão antes de salvar. Ela não foi gravada no prontuário, assinada ou emitida."
-            : preparation.notice || (saveOnly ? "O sistema confere sua solicitação original para salvar somente o rascunho. Acompanhe o resultado no cartão; isso não autoriza assinatura ou emissão." : "Não preparei o documento. Informe os nomes e campos clínicos explicitamente.")
+            : preparation.notice || (saveOnly ? "O salvamento ainda precisa de confirmação. Use “Confirmar e salvar” no cartão que deseja guardar como rascunho." : "Não preparei o documento. Informe os nomes e campos clínicos explicitamente.")
           : view.document
           ? (modelText || "Organizei uma proposta de documento para revisão. Ela ainda não foi salva.")
           : view.draft
@@ -1009,13 +1111,15 @@ export async function openIntelligenceStream(input: unknown): Promise<{ stream: 
                 : prepared.published.reading.total === 1
                   ? "Encontrei 1 registro autorizado. O cartão mostra o original."
                   : `Encontrei ${prepared.published.reading.total} registros autorizados. Os cartões mostram o original.`
+              : view.navigation?.href.includes("/evolucao?")
+                ? "Abra a experiência de evolução pelo link abaixo."
               : view.navigation && !modelText
                 ? "O link abaixo abre o prontuário."
               : view.context && !modelText
                 ? `${view.context.name} está em contexto.`
                 : view.kind === "search"
               ? compactDirectoryReply(view.search?.total ?? view.athletes.length, view.athletes.length)
-              : replyText(modelText, view.athletes);
+              : replyText(modelText, view.athletes));
         const clinical=prepared.clinicalView();
         send("done", {
           clinicalSearch: clinical?.board??null,
