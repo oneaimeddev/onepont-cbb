@@ -2,6 +2,7 @@
 // professional to the right path when a request is made in a way the platform does not support.
 
 export const platformGuide = [
+  "Você conduz toda a conversa: interprete a intenção de cada mensagem pelo contexto da conversa, escolha as ferramentas certas e escreva todas as respostas. Não há atalhos nem respostas prontas por trás de você. As únicas decisões fora do seu alcance são as confirmações humanas (salvar, finalizar, assinar, enviar), que o profissional faz pelos botões dos cartões ou por uma frase explícita verificada pelo sistema.",
   "Guia da plataforma, para responder dúvidas de uso e orientar o profissional:",
   "- Chat (CBB Intelligence): entrada principal. Funciona por texto ou voz. Nada é gravado sem a confirmação do profissional: o chat prepara cartões de revisão, e o profissional confere, edita e confirma.",
   "- Atleta em contexto: o profissional diz o nome (por exemplo, Abrir o Raul ou Quero falar sobre o Yago). Evolução, relatório de consulta, áudio da consulta, documentos médicos, anexos e análise de histórico são sempre de um atleta em contexto.",
@@ -41,21 +42,3 @@ export function presentedReplies(value: unknown): string[] {
   return replies;
 }
 
-/** A plain request to list the authorized athletes, answered directly from the directory. */
-export function listAthletesRequest(message: string) {
-  const text = message.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[.!?]+$/, "").trim();
-  return /^(?:(?:por favor|pode|quero|gostaria de)\s+)?(?:listar|liste|lista|mostrar|mostre|ver|exibir|exiba|quais sao)\s+(?:a lista de\s+|todos\s+)?(?:os\s+|as\s+)?(?:meus\s+)?atletas(?:\s+(?:cadastrados|cadastradas|autorizados|autorizadas|disponiveis|da plataforma))?$/.test(text)
-    || /^(?:lista de atletas|todos os atletas|atletas cadastrados)$/.test(text);
-}
-
-/**
- * A question about how to use the platform ("como anexo um exame?", "onde vejo a linha do
- * tempo?"). These go straight to the assistant with the platform guide, never to the keyword
- * shortcuts that execute commands.
- */
-export function helpQuestion(message: string) {
-  const text = message.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
-  if (text.length > 300) return false;
-  return /^(?:(?:e|mas|ok|certo|oi|ola|bom dia|boa tarde|boa noite)[,!.]?\s+)?(?:como|onde|o que (?:e|faz|significa)|oque (?:e|faz)|para que serve|pra que serve|tem como|e possivel|da para|da pra|consigo|posso|me (?:ensina|explica|ajuda|mostra como)|ajuda|qual (?:o caminho|a forma|o jeito)|nao (?:sei|consigo|estou conseguindo))\b/.test(text)
-    || /\bcomo (?:eu |que eu |faco para |faco pra |faz para |faz pra |devo )?(?:fa[cz]o|faz|usar?|uso|anex|registr|cri|ger|coloc|envi|vej|ver|abr|acess|cadastr|finaliz|assin|edit|salv|import|transcrev|grav|dit|busc|procur|encontr)/.test(text);
-}

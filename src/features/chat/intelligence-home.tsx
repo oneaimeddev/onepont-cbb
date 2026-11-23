@@ -4,8 +4,8 @@ import { ClinicalSearchCards } from "../clinical-search/cards";
 import { clinicalSearchBoard, previousClinicalSearch, type ActivityResult } from "../clinical-search/contract";
 import { AttachmentUpload } from "../attachments/upload";
 import { AttachmentCards } from "../attachments/module";
-import { attachmentBoard, attachmentCategories } from "../attachments/types";
-import { attachmentRoster, uploadRequest, type UploadRequest } from "../attachments/conversation";
+import { attachmentBoard } from "../attachments/types";
+import { attachmentRoster, presentedUpload, type UploadRequest } from "../attachments/conversation";
 import { allowAttachmentContextChange, hasPendingAttachment } from "../attachments/pending";
 import Image from "next/image";
 import { AccountMenu } from "../../components/account-menu";
@@ -583,27 +583,6 @@ export function IntelligenceHome({
     return sessionRef.current!;
   }
 
-  // A request to attach a file opens the attachment form with the athlete in context and the
-  // fields suggested from the message. Nothing is stored until the professional selects the
-  // file, reviews the required fields and confirms the sending.
-  function requestAttachmentUpload(message:string, upload:UploadRequest) {
-    const target = currentAthlete();
-    const empty = { athletes: [], navigation: null, search: null, draft: null, document: null, readings: null, analysis: null };
-    const suggested = [upload.title && `título ${upload.title}`, upload.category && `categoria ${attachmentCategories[upload.category as keyof typeof attachmentCategories]}`, upload.documentDate && `data clínica ${upload.documentDate.split("-").reverse().join("/")}`].filter(Boolean);
-    const text = target
-      ? `Abri o envio de anexo clínico para o atleta em contexto. Selecione o arquivo (PDF ou imagem)${suggested.length ? `, revise os campos sugeridos (${suggested.join(", ")})` : ", informe título e categoria"} e confirme. O anexo entra no cadastro do atleta e na linha do tempo.`
-      : "Abri o envio de anexo clínico. Escolha o atleta, selecione o arquivo (PDF ou imagem), informe título e categoria e confirme. O anexo entra no cadastro do atleta e na linha do tempo.";
-    patchTurns((current) => [
-      ...current,
-      { ...empty, id: crypto.randomUUID(), role: "user", text: message },
-      { ...empty, id: crypto.randomUUID(), role: "assistant", text },
-    ]);
-    setFailure(null);
-    setAttachmentPrefill(upload);
-    setAttachmentOpen(true);
-    if (target) queuePersist(target, epochRef.current);
-  }
-
   function uploadedAttachment(id:string,athleteId:string,reused=false) {
     setAttachmentOpen(false);setAttachmentPending(false);setAttachmentPrefill(null);
     patchTurns(current=>[...current,{id:crypto.randomUUID(),role:"assistant",text:reused?"Este arquivo já estava anexado. O registro existente foi reutilizado e seus metadados foram preservados.":"Anexo clínico registrado no cadastro do atleta confirmado e incluído na linha do tempo. O conteúdo do arquivo não foi enviado à IA.",athletes:[],navigation:null,search:null,draft:null,document:null,readings:null,analysis:null,attachments:{athleteId,ids:[id]}}]);
@@ -727,8 +706,6 @@ export function IntelligenceHome({
 
   async function send(message: string, inputMode: "text" | "voice" = "text") {
     if(hasPendingAttachment()){setFailure("Conclua ou descarte o anexo pendente antes de enviar outra mensagem.");return;}
-    const upload = uploadRequest(message);
-    if (upload) { requestAttachmentUpload(message, upload); return; }
     const pendingDrafts = loadTurns().flatMap((turn) => turn.draft && turn.draft.contentHash && (turn.draft.state === "proposal" || turn.draft.state === "error")
       ? [{ turnId: turn.id, draft: turn.draft }]
       : []);
@@ -902,13 +879,16 @@ export function IntelligenceHome({
             continue;
           }
           const data = parsed.data;
-          const record = data && typeof data === "object" ? data as { text?: unknown; athletes?: unknown; navigation?: unknown; search?: unknown; draft?: unknown; document?: unknown; readings?: unknown; attachments?: unknown; clinicalSearch?: unknown; analysis?: unknown; replies?: unknown; context?: unknown; contextCleared?: unknown; sessionId?: unknown; error?: unknown } : {};
+          const record = data && typeof data === "object" ? data as { text?: unknown; athletes?: unknown; navigation?: unknown; search?: unknown; draft?: unknown; document?: unknown; readings?: unknown; attachments?: unknown; clinicalSearch?: unknown; analysis?: unknown; replies?: unknown; upload?: unknown; context?: unknown; contextCleared?: unknown; sessionId?: unknown; error?: unknown } : {};
           if (parsed.event === "delta" && typeof record.text === "string" && record.text) {
             patchTurns((current) => current.map((turn) => turn.id === assistantId && typeof record.text === "string" ? { ...turn, text: turn.text + record.text } : turn));
           } else if (parsed.event === "done") {
             const text = typeof record.text === "string" && record.text.trim() ? record.text.trim() : replies.provider;
             finishTurn(assistantId, text, presentedAthletes(record.athletes), presentedNavigation(record.navigation), presentedSearch(record.search), presentedDraft(record.draft), presentedDocument(record.document), presentedReadings(record.readings), presentedAnalysis(record.analysis));
             patchTurns(current=>current.map(turn=>turn.id===assistantId?{...turn,clinicalSearch:clinicalSearchBoard(record.clinicalSearch),attachments:attachmentBoard(record.attachments),replies:presentedReplies(record.replies)}:turn));
+            // The assistant asked to open the attachment form, with the fields the professional said.
+            const upload=presentedUpload(record.upload);
+            if(upload){setAttachmentPrefill(upload);setAttachmentOpen(true);}
             if (typeof record.sessionId === "string" && uuidPattern.test(record.sessionId) && !sessionRef.current) {
               sessionRef.current = record.sessionId;
               setOpenSessionId(record.sessionId);
