@@ -4,8 +4,8 @@ import type { VoiceStatus } from "./use-voice-session";
 
 const labels: Record<VoiceStatus, string> = {
   inactive: "Voz desligada",
-  connecting: "Conectando a voz…",
-  reconnecting: "Reconectando a voz…",
+  connecting: "Aguarde… preparando a gravação",
+  reconnecting: "Aguarde… reconectando a gravação",
   responding: "Respondendo",
   listening: "Ouvindo",
   transcribing: "Transcrevendo",
@@ -45,6 +45,7 @@ export function VoiceToggle({ active, status = "inactive", muted = false, disabl
 
 export function VoicePanel({
   status,
+  readyCue = false,
   active,
   muted,
   partial,
@@ -64,6 +65,7 @@ export function VoicePanel({
   onCorrect,
 }: {
   status: VoiceStatus;
+  readyCue?: boolean;
   active: boolean;
   muted: boolean;
   partial: string;
@@ -95,13 +97,18 @@ export function VoicePanel({
       </section>
     );
   }
+  // Until the provider session is ready nothing is recorded, so the panel asks the user to wait
+  // and only says "Pode falar" once audio is really being sent.
+  const waiting = status === "connecting" || status === "reconnecting";
   return (
     <section className="ia-voice" aria-label="Conversa por voz" data-status={status}>
       <div className="ia-voice-bar">
         <p className="ia-voice-state" role="status" aria-live="polite">
           <span className="ia-voice-dot" aria-hidden="true" />
           <strong>{labels[status]}</strong>
-          {status !== "connecting" ? <span className="ia-voice-mic">{muted ? "Microfone silenciado" : "Microfone ativo"}</span> : null}
+          {waiting ? <span className="ia-voice-wait">Não fale ainda</span> : null}
+          {!waiting && readyCue && !muted ? <span className="ia-voice-go">Pode falar</span> : null}
+          {!waiting ? <span className="ia-voice-mic">{muted ? "Microfone silenciado" : "Microfone ativo"}</span> : null}
           {deviceLabel ? <span className="ia-voice-device">{deviceLabel}</span> : null}
           {capture === "hearing" && !muted ? (
             <span className="ia-voice-level" aria-hidden="true"><span style={{ width: `${Math.round(Math.min(level, 1) * 100)}%` }} /></span>
@@ -112,7 +119,7 @@ export function VoicePanel({
             <input type="checkbox" checked={review} onChange={(event) => onReview(event.target.checked)} />
             <span>Revisar antes de enviar</span>
           </label>
-          <button type="button" onClick={onMute} disabled={status === "connecting"} aria-pressed={muted}>
+          <button type="button" onClick={onMute} disabled={waiting} aria-pressed={muted}>
             <Icon name={muted ? "mic" : "micOff"} size={16} />
             {muted ? "Retomar" : "Pausar"}
           </button>
