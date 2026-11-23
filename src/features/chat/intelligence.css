@@ -718,3 +718,7 @@ p.ia-status {
 
 .ia-send:hover:not(:disabled), .ia-draft-finalize button:hover:not(:disabled), .ia-draft-actions .ia-draft-save:hover:not(:disabled), .ia-document-journey .ia-draft-save:hover:not(:disabled) { background: var(--green-hover); }
 .ia-send:active:not(:disabled), .ia-draft-finalize button:active:not(:disabled), .ia-draft-actions .ia-draft-save:active:not(:disabled), .ia-document-journey .ia-draft-save:active:not(:disabled) { background: var(--green-active); }
+/* Attached consultation audio: segment progress in the composer toolbar. */
+.ia-attach-group { display: inline-flex; flex-wrap: wrap; align-items: center; gap: .25rem; }
+.ia-audio-bar { display: inline-block; width: 7rem; height: 6px; border-radius: 999px; background: #e4e9f1; overflow: hidden; }
+.ia-audio-bar span { display: block; height: 100%; border-radius: inherit; background: var(--cbb-green); transition: width 200ms ease; }

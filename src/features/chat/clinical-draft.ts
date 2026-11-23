@@ -21,6 +21,8 @@ export type ClinicalDraft = {
   version: number | null;
 };
 
+export const consultationTranscriptLimit = 60000;
+
 const states = new Set<ClinicalDraftState>(["choose", "proposal", "saved", "finalized", "error", "discarded"]);
 
 function clip(value: unknown, max: number) {
@@ -39,7 +41,8 @@ export function presentedDraft(value: unknown): ClinicalDraft | null {
   const professionalName = clip(row.professionalName, 160);
   const title = clip(row.title, 160);
   if (!athleteName || !professionalName || !title) return null;
-  const body = typeof row.body === "string" ? row.body.slice(0, 20000) : "";
+  // A consultation transcript waiting for the report mode can be long (about an hour of speech).
+  const body = typeof row.body === "string" ? row.body.slice(0, state === "choose" ? consultationTranscriptLimit : 20000) : "";
   if ((state === "choose" || state === "proposal" || state === "error") && !body.trim()) return null;
   let occurredOn: string | null = null;
   if (typeof row.occurredOn === "string" && row.occurredOn) {

@@ -1,6 +1,6 @@
 import { getAccess } from "../../../../lib/profile";
 import { voiceApiKey } from "../../../../features/chat/config";
-import { dictationInstruction } from "../../../../features/chat/voice/dictation-prompt";
+import { consultationSegmentInstruction, dictationInstruction } from "../../../../features/chat/voice/dictation-prompt";
 import { maxSegmentSeconds, sampleRate } from "../../../../features/chat/voice/dictation-audio";
 
 // Transcribes one recorded dictation segment and returns only the text. The audio is
@@ -11,16 +11,19 @@ const headerSize = 44;
 const minBytes = headerSize + sampleRate * 2 * 0.2;
 const maxBytes = headerSize + sampleRate * 2 * maxSegmentSeconds;
 const windowMs = 10 * 60 * 1000;
-const maxSegments = 40;
+// Dictation and attached consultation audio have separate budgets: an attached recording of up
+// to 90 minutes is sent as about 110 segments of 50 seconds.
+const limits = { dictation: 40, consultation: 150 } as const;
 const hits = new Map<string, number[]>();
 const noStore = { "cache-control": "no-store" };
 
-function withinLimit(userId: string) {
+function withinLimit(userId: string, mode: keyof typeof limits) {
   const now = Date.now();
-  const recent = (hits.get(userId) ?? []).filter((time) => now - time < windowMs);
-  const allowed = recent.length < maxSegments;
+  const key = `${mode}:${userId}`;
+  const recent = (hits.get(key) ?? []).filter((time) => now - time < windowMs);
+  const allowed = recent.length < limits[mode];
   if (allowed) recent.push(now);
-  hits.set(userId, recent);
+  hits.set(key, recent);
   return allowed;
 }
 
@@ -64,7 +67,8 @@ export async function POST(request: Request) {
   if (!Number.isSafeInteger(declared) || declared < minBytes || declared > maxBytes) {
     return Response.json({ error: "invalid" }, { status: 413, headers: noStore });
   }
-  if (!withinLimit(access.userId)) return Response.json({ error: "limit", text: errors.limit }, { status: 429, headers: noStore });
+  const mode = new URL(request.url).searchParams.get("modo") === "consulta" ? "consultation" : "dictation";
+  if (!withinLimit(access.userId, mode)) return Response.json({ error: "limit", text: errors.limit }, { status: 429, headers: noStore });
   const audio = Buffer.from(await request.arrayBuffer());
   if (audio.length !== declared || !isPcmWav(audio)) return Response.json({ error: "invalid" }, { status: 400, headers: noStore });
 
@@ -77,7 +81,7 @@ export async function POST(request: Request) {
       cache: "no-store",
       headers: { "content-type": "application/json", "x-goog-api-key": apiKey },
       body: JSON.stringify({
-        systemInstruction: { parts: [{ text: dictationInstruction }] },
+        systemInstruction: { parts: [{ text: mode === "consultation" ? consultationSegmentInstruction : dictationInstruction }] },
         contents: [{ role: "user", parts: [{ inlineData: { mimeType: "audio/wav", data: audio.toString("base64") } }] }],
         generationConfig: { temperature: 0 },
       }),
@@ -99,7 +103,8 @@ export async function POST(request: Request) {
       .map((part) => part.text ?? "")
       .join("")
       .replace(/\[sem fala\]/gi, "")
-      .replace(/\s+/g, " ")
+      .replace(mode === "consultation" ? /[ \t]+/g : /\s+/g, " ")
+      .replace(/\n{3,}/g, "\n\n")
       .trim();
     return Response.json({ text }, { headers: noStore });
   } catch (cause) {

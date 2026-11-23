@@ -7,7 +7,7 @@ import { buildConsultationReport, generatedAt, identificationSection, plainRepor
 import { isReportMode, reportModes } from "../clinical/consultation-report-modes";
 import { requireProfile } from "../../lib/profile";
 import { supabaseServer } from "../../lib/supabase";
-import type { ClinicalDraft } from "./clinical-draft";
+import { consultationTranscriptLimit, type ClinicalDraft } from "./clinical-draft";
 import { intelligenceModel } from "./config";
 import { uuidPattern } from "./guards";
 
@@ -150,7 +150,7 @@ export async function generateConsultationReport(input: {
 }): Promise<ReportResult> {
   const profile = await requireProfile();
   if (!uuidPattern.test(input.athleteId) || !uuidPattern.test(input.requestId) || !isReportMode(input.mode)) return { ok: false, error: "invalid" };
-  const transcript = typeof input.transcript === "string" ? input.transcript.trim().slice(0, 20000) : "";
+  const transcript = typeof input.transcript === "string" ? input.transcript.trim().slice(0, consultationTranscriptLimit) : "";
   if (transcript.length < 20) return { ok: false, error: "invalid" };
   const model = intelligenceModel();
   if (!model) return { ok: false, error: "unavailable" };
@@ -228,6 +228,41 @@ export async function generateConsultationReport(input: {
       error: null,
       contentHash: typeof stored.contentHash === "string" ? stored.contentHash : null,
       version: typeof stored.version === "number" ? stored.version : null,
+    },
+  };
+}
+
+/**
+ * Opens the report-mode card for a consultation recording attached to the chat and transcribed in
+ * the browser. Access to the athlete is checked as for the agent's consultation offer; nothing is
+ * generated or stored here.
+ */
+export async function offerConsultationFromAudio(input: { athleteId: string; transcript: string }): Promise<ReportResult> {
+  await requireProfile();
+  if (!uuidPattern.test(input.athleteId)) return { ok: false, error: "invalid" };
+  const transcript = typeof input.transcript === "string" ? input.transcript.trim().slice(0, consultationTranscriptLimit) : "";
+  if (transcript.length < 20) return { ok: false, error: "invalid" };
+  const client = await supabaseServer();
+  const prepared = await client.rpc("agent_clinical_draft_prepare", { target: input.athleteId });
+  const names = prepared.data as { ok?: boolean; athleteName?: string; professionalName?: string } | null;
+  if (prepared.error || !names?.ok || !names.athleteName || !names.professionalName) return { ok: false, error: "denied" };
+  return {
+    ok: true,
+    draft: {
+      requestId: crypto.randomUUID(),
+      athleteId: input.athleteId,
+      athleteName: names.athleteName,
+      professionalName: names.professionalName,
+      occurredOn: null,
+      title: "Relatório da consulta",
+      body: transcript,
+      missing: [],
+      restricted: true,
+      state: "choose",
+      recordId: null,
+      error: null,
+      contentHash: null,
+      version: null,
     },
   };
 }

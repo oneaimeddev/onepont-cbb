@@ -83,3 +83,48 @@ test("transcrição de consulta oferece relatório detalhado ou sintético antes
   await expect(page.getByText("A transcrição foi descartada. Nenhum relatório foi gerado.")).toBeVisible();
   expect(sql(`select count(*) from clinical.records where athlete_id = '${athlete}'`)).toBe("0");
 });
+
+test("áudio de consulta anexado é transcrito em trechos e abre a escolha do relatório", async ({ page }) => {
+  test.setTimeout(60_000);
+  const email = `relatorio-audio-${randomUUID()}@example.com`;
+  const password = randomUUID();
+  const { data, error } = await admin.auth.admin.createUser({ email, password, email_confirm: true });
+  if (error) throw error;
+  users.push(data.user.id);
+  const profile = await admin.from("profiles").insert({ id: data.user.id, display_name: "QA Relatório Áudio", profession: "Medicina", can_manage_access: false, can_read_audit: false });
+  if (profile.error) throw profile.error;
+  sql(`insert into clinical.athletes(id, full_name, category, source) values('${athlete}', 'Lara Menezes QA', 'Sub-19', 'demo') on conflict do nothing;
+    insert into clinical.athlete_access(athlete_id, professional_id, can_read_records, can_edit, can_write, can_finalize)
+    values('${athlete}', '${data.user.id}', true, false, true, false) on conflict do nothing;`);
+  const segments = [];
+  await page.route("**/api/inteligencia/ditado?modo=consulta", async (route) => {
+    segments.push(route.request().headers()["content-type"]);
+    await route.fulfill({ json: { text: "Profissional: O que aconteceu? Atleta: Torci o tornozelo direito no treino de ontem." } });
+  });
+  const agentCalls = [];
+  await page.route("**/api/inteligencia", (route) => { agentCalls.push(route.request().postDataJSON()); return route.abort(); });
+  await page.goto("/login");
+  await page.getByLabel("E-mail").fill(email);
+  await page.getByLabel("Senha", { exact: true }).fill(password);
+  await page.getByRole("button", { name: "Entrar", exact: true }).click();
+  await page.waitForURL("/");
+
+  // Without an athlete in context the recording is not processed.
+  await page.getByLabel("Arquivo de áudio da consulta").setInputFiles("tests/fixtures/consulta-demo.wav");
+  await expect(page.getByText("Coloque em contexto o atleta da consulta antes de anexar o áudio.")).toBeVisible();
+  expect(segments).toHaveLength(0);
+
+  await page.goto(`/?atleta=${athlete}`);
+  await page.getByLabel("Arquivo de áudio da consulta").setInputFiles("tests/fixtures/consulta-demo.wav");
+  await expect(page.getByText("Áudio da consulta anexado: consulta-demo.wav", { exact: false })).toBeVisible();
+  const card = page.getByRole("region", { name: "Relatório da consulta" }).last();
+  await expect(card).toBeVisible();
+  await expect(card.getByRole("group", { name: "Modo do relatório" }).getByRole("button", { name: /Relatório detalhado/ })).toBeEnabled();
+  await card.getByText(/Transcrição recebida/).click();
+  await expect(card.getByText(/Torci o tornozelo direito/)).toBeVisible();
+  expect(segments.length).toBeGreaterThan(0);
+  expect(segments.every((type) => type === "audio/wav")).toBe(true);
+  // The transcript goes to the report card, not to the agent as a message.
+  expect(agentCalls).toHaveLength(0);
+  expect(sql(`select count(*) from clinical.records where athlete_id = '${athlete}'`)).toBe("0");
+});

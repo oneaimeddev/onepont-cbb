@@ -18,7 +18,7 @@ import { ClinicalDraftCard } from "./clinical-draft-card";
 import { draftSaveMessage, presentedDraft } from "./clinical-draft";
 import { DocumentDraftCard } from "./document-draft-card";
 import { displayedDocumentProposals, isDocumentKind, presentedDocument, type DocumentDraft } from "./document-draft";
-import { confirmSpokenDraft } from "./clinical-draft-actions";
+import { confirmSpokenDraft, offerConsultationFromAudio } from "./clinical-draft-actions";
 import { athleteCardLine, compactDirectoryReply, presentedAthletes, presentedContext, presentedNavigation, presentedSearch, uuidPattern, type PresentedAthlete, type PresentedSearch } from "./guards";
 import { HomeGreeting } from "./home-greeting";
 import { ProcessingIndicator } from "./processing-indicator";
@@ -33,6 +33,8 @@ import { conversationSnapshot, discardInactiveTranscript, loadScroll, loadTurns,
 import { hasUnsavedClinicalDraft, setUnsavedClinicalDraft } from "../clinical/unsaved";
 import { useDictation } from "./voice/use-dictation";
 import { DictationButton, DictationStatus } from "./voice/dictation-control";
+import { ConsultationAudioButton, ConsultationAudioStatus } from "./voice/consultation-audio-control";
+import { useConsultationAudio } from "./voice/use-consultation-audio";
 import { joinSegments } from "./voice/transcription";
 import "./intelligence.css";
 
@@ -276,6 +278,42 @@ export function IntelligenceHome({
   });
 
 
+  // A consultation recorded on another device: transcribed in segments, then offered as the
+  // report-mode card for the athlete in context, exactly like a consultation sent as text.
+  const audioAthlete = useRef<string | null>(null);
+  const consultationAudio = useConsultationAudio({
+    onTranscript: async ({ transcript, fileName, duration }) => {
+      const athleteId = audioAthlete.current;
+      if (!athleteId) throw new Error("Coloque em contexto o atleta da consulta antes de anexar o áudio.");
+      const offered = await offerConsultationFromAudio({ athleteId, transcript });
+      if (!offered.ok) {
+        throw new Error(offered.error === "denied"
+          ? "Você não tem permissão para registrar a evolução deste atleta."
+          : "Não foi possível preparar o relatório desta gravação.");
+      }
+      await ensureAttachmentSession(athleteId);
+      const empty = { athletes: [], navigation: null, search: null, document: null, readings: null, analysis: null };
+      patchTurns((current) => [
+        ...current,
+        { ...empty, id: crypto.randomUUID(), role: "user", text: `Áudio da consulta anexado: ${fileName} · ${duration}`, draft: null },
+        { ...empty, id: crypto.randomUUID(), role: "assistant", text: `Transcrevi o áudio da consulta de ${offered.draft.athleteName}. Escolha no cartão o modo do relatório: detalhado ou sintético.`, draft: offered.draft },
+      ]);
+      pinRef.current = true;
+      queuePersist(athleteId, epochRef.current);
+    },
+  });
+
+  function attachConsultationAudio(file: File) {
+    const athleteId = currentAthlete();
+    if (!athleteId) {
+      setFailure("Coloque em contexto o atleta da consulta antes de anexar o áudio.");
+      return;
+    }
+    setFailure(null);
+    audioAthlete.current = athleteId;
+    void consultationAudio.attach(file);
+  }
+
   useLayoutEffect(() => () => abortRef.current?.abort(), []);
   useLayoutEffect(() => {
     rememberServerSnapshot(initialSnapshot);
@@ -347,6 +385,7 @@ export function IntelligenceHome({
       return;
     }
     dictation.cancel();
+    consultationAudio.cancel();
     const epoch = epochRef.current;
     queuePersist(currentAthlete(), epoch);
     void persistQueue.current.then(() => {
@@ -433,6 +472,7 @@ export function IntelligenceHome({
       setUnsavedClinicalDraft(false);
     }
     dictation.cancel();
+    consultationAudio.cancel();
     const epoch = epochRef.current + 1;
     epochRef.current = epoch;
     abortRef.current?.abort();
@@ -483,6 +523,7 @@ export function IntelligenceHome({
       return;
     }
     dictation.cancel();
+    consultationAudio.cancel();
     const epoch = epochRef.current + 1;
     epochRef.current = epoch;
     abortRef.current?.abort();
@@ -1122,7 +1163,16 @@ export function IntelligenceHome({
             onFocusChange={setComposerFocused}
             enabled={enabled}
             pending={pending || attachmentPending || dictation.state === "transcribing"}
-            attachmentControl={dictation.state !== "idle" ? (
+            attachmentControl={consultationAudio.state !== "idle" ? (
+              <ConsultationAudioStatus
+                state={consultationAudio.state}
+                progress={consultationAudio.progress}
+                error={consultationAudio.error}
+                canRetry={consultationAudio.canRetry}
+                onCancel={consultationAudio.cancel}
+                onRetry={consultationAudio.retry}
+              />
+            ) : dictation.state !== "idle" ? (
               <DictationStatus
                 state={dictation.state}
                 elapsed={dictation.elapsed}
@@ -1132,7 +1182,12 @@ export function IntelligenceHome({
                 onCancel={dictation.cancel}
                 onRetry={() => void dictation.retry()}
               />
-            ) : <button type="button" className="ia-attach" disabled={starting || pending} onClick={()=>setAttachmentOpen(true)}><Icon name="clip" size={16}/>Anexar ao prontuário</button>}
+            ) : (
+              <span className="ia-attach-group">
+                <button type="button" className="ia-attach" disabled={starting || pending} onClick={()=>setAttachmentOpen(true)}><Icon name="clip" size={16}/>Anexar ao prontuário</button>
+                {voiceEnabled ? <ConsultationAudioButton disabled={!enabled || starting || pending} onFile={attachConsultationAudio} /> : null}
+              </span>
+            )}
             failure={failure}
             value={draftMessage}
             onValueChange={(next) => {
@@ -1148,7 +1203,7 @@ export function IntelligenceHome({
             voiceControl={voiceEnabled ? (
               <DictationButton
                 state={dictation.state}
-                disabled={!enabled || starting || pending || attachmentPending}
+                disabled={!enabled || starting || pending || attachmentPending || consultationAudio.busy}
                 onStart={() => void dictation.start()}
                 onStop={() => void dictation.stop()}
               />

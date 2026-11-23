@@ -43,3 +43,14 @@ Diagnóstico, conduta e retorno indicados a partir do contexto são propostas pa
 ## Limites
 
 O campo de mensagem e o agente passaram a aceitar até 12.000 caracteres, o suficiente para cerca de 10 minutos de consulta transcrita. O histórico salvo continua guardando até 4.000 caracteres por mensagem, e o cartão leva a transcrição completa até a geração.
+
+## Áudio de consulta anexado
+
+Uma consulta gravada em outro aparelho pode ser anexada ao chat pelo botão "Áudio da consulta", com um atleta em contexto. O fluxo:
+
+1. **Preparo no navegador:** o arquivo (MP3, M4A, WAV, OGG ou WebM, até 200 MB e 90 minutos) é decodificado, convertido para 16 kHz mono e dividido em trechos de até 50 s, cortados nos silêncios. O arquivo não sai do aparelho e só os trechos são enviados.
+2. **Transcrição:** os trechos vão a `POST /api/inteligencia/ditado?modo=consulta`, três por vez, com uma nova tentativa automática por trecho. Esse modo usa uma instrução própria para diálogo, com falas marcadas como "Profissional:" e "Atleta:", e tem limite próprio de 150 trechos a cada 10 minutos.
+3. **Falha:** se um trecho falhar, os já transcritos são mantidos e "Tentar novamente" reenvia só os que faltam.
+4. **Cartão:** a transcrição completa não passa pelo campo de mensagem. `offerConsultationFromAudio` confere o acesso ao atleta e abre direto o cartão de escolha do relatório.
+
+O cartão aceita transcrições de até 60.000 caracteres, cerca de uma hora de fala.
