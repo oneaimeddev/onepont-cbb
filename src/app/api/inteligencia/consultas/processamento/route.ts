@@ -104,11 +104,8 @@ export async function POST(request: Request) {
       return respond({ error: "no_speech" }, 422);
     }
     const prompt = buildConsultationPrompt({
-      institution: "CBB DEMO",
       athlete: "Atleta fictício",
-      professional: "Profissional da encenação",
       profession: claim.specialty,
-      occurredAt: "consulta simulada",
       transcript: claim.transcript,
       uncertainties: /\[inaudível\]/i.test(claim.transcript) ? ["Transcrição contém trechos inaudíveis."] : [],
     });

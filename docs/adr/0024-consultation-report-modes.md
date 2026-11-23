@@ -11,9 +11,16 @@ Quando o profissional envia ao CBB Intelligence a transcrição ou o relato de u
 
 A escolha chama a ação de servidor `generateConsultationReport`, que valida a sessão, o perfil e o acesso ao atleta, gera o texto pelo modelo do agente (`src/features/clinical/consultation-report.ts`) e registra uma proposta com `clinical_draft_proposal_register`. O cartão vira a proposta de evolução de sempre: o profissional revisa, edita e confirma para salvar o rascunho. Depois, finaliza pelo fluxo existente.
 
-## Perfil profissional
+## Prompt universal e persona
 
-O prompt usa a profissão do perfil autenticado. Medicina propõe hipóteses com CID-10 e diferenciais clínicos. As demais profissões descrevem a avaliação da própria área, citam CID-10 só quando um diagnóstico médico constar na transcrição e apontam o que pede avaliação de outras especialidades. Para profissões fora das cinco especialidades da consulta por voz, o foco é descrito de forma neutra a partir da profissão.
+Todo relatório gerado (o do chat e a evolução da consulta gravada) usa o modelo definido pelo responsável pelo produto, em `src/features/clinical/consultation-prompt.ts`:
+
+- **System:** "Você é um assistente clínico especializado. Gere um relatório direcionado a um(a) [profissão] do Clube Paineiras do Morumby. Foque especificamente em: [foco]. Escreva em português claro, técnico e prático, com no máximo 400 palavras, em seções curtas. Não repita informações irrelevantes para essa profissão." Abaixo dele vêm as salvaguardas clínicas e, no chat, as regras de objetividade e a estrutura do modo.
+- **User:** "Paciente / Diagnóstico / Conteúdo clínico disponível / Elabore o relatório direcionado ao(à) [profissão]."
+
+Personas e focos: médico(a) do esporte, enfermeiro(a), fisioterapeuta esportivo(a), nutricionista esportivo(a) e psicólogo(a) do esporte, com os focos do anexo. Para outras profissões, a persona é montada a partir do título do perfil. Medicina propõe hipóteses com CID-10. As demais profissões descrevem a avaliação da própria área e citam CID-10 só quando um diagnóstico médico constar no conteúdo.
+
+O modo detalhado tem até 400 palavras. Cada seção cumpre uma finalidade sem repetir as outras e sem reproduzir o diálogo. Seções vazias recebem "Não abordado", e os dados relevantes que não foram tratados na consulta aparecem em tópicos curtos só na seção 11. O sintético tem até 250 palavras.
 
 ## Salvaguardas
 

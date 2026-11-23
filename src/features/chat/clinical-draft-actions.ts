@@ -162,7 +162,6 @@ export async function generateConsultationReport(input: {
   const mode = input.mode;
   const request = buildConsultationReport(mode, {
     athlete: names.athleteName,
-    professional: names.professionalName,
     profession: profile.profession,
     transcript,
   });
