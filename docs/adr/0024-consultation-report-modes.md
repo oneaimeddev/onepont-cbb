@@ -15,8 +15,8 @@ A escolha chama a ação de servidor `generateConsultationReport`, que valida a 
 
 Todo relatório gerado (o do chat e a evolução da consulta gravada) usa o modelo definido pelo responsável pelo produto, em `src/features/clinical/consultation-prompt.ts`:
 
-- **System:** "Você é um assistente clínico especializado. Gere um relatório direcionado a um(a) [profissão] do Clube Paineiras do Morumby. Foque especificamente em: [foco]. Escreva em português claro, técnico e prático, com no máximo 400 palavras, em seções curtas. Não repita informações irrelevantes para essa profissão." Abaixo dele vêm as salvaguardas clínicas e, no chat, as regras de objetividade e a estrutura do modo.
-- **User:** "Paciente / Diagnóstico / Conteúdo clínico disponível / Elabore o relatório direcionado ao(à) [profissão]."
+- **System:** "Você é um assistente clínico especializado. Gere um relatório direcionado a um(a) [profissão] da Confederação Brasileira de Basketball (CBB). Foque especificamente em: [foco]. Escreva em português claro, técnico e prático, com no máximo 400 palavras, em seções curtas. Não repita informações irrelevantes para essa profissão." Abaixo dele vêm as salvaguardas clínicas e, no chat, as regras de objetividade e a estrutura do modo.
+- **User:** "Paciente / Diagnóstico / Conteúdo clínico disponível / Elabore o relatório direcionado ao(à) [profissão]." Sem diagnóstico documentado, o campo pede que ele seja indicado a partir do contexto clínico da consulta, como hipótese.
 
 Personas e focos: médico(a) do esporte, enfermeiro(a), fisioterapeuta esportivo(a), nutricionista esportivo(a) e psicólogo(a) do esporte, com os focos do anexo. Para outras profissões, a persona é montada a partir do título do perfil. Medicina propõe hipóteses com CID-10. As demais profissões descrevem a avaliação da própria área e citam CID-10 só quando um diagnóstico médico constar no conteúdo.
 

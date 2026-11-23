@@ -3,7 +3,7 @@
 // product owner's template: one universal system prompt filled with the professional's persona,
 // and a user prompt with patient, diagnosis and the available clinical content.
 
-export const reportInstitution = "Clube Paineiras do Morumby";
+export const reportInstitution = "Confederação Brasileira de Basketball (CBB)";
 
 const specialties = {
   Medicina: {
@@ -63,7 +63,7 @@ export function professionalFocus(profession: string) {
 
 /** The universal system prompt, filled with the professional's persona. */
 export function universalSystemPrompt(role: string, focus: string) {
-  return `Você é um assistente clínico especializado. Gere um relatório direcionado a um(a) ${role} do ${reportInstitution}. Foque especificamente em: ${focus}. Escreva em português claro, técnico e prático, com no máximo 400 palavras, em seções curtas. Não repita informações irrelevantes para essa profissão.`;
+  return `Você é um assistente clínico especializado. Gere um relatório direcionado a um(a) ${role} da ${reportInstitution}. Foque especificamente em: ${focus}. Escreva em português claro, técnico e prático, com no máximo 400 palavras, em seções curtas. Não repita informações irrelevantes para essa profissão.`;
 }
 
 // Clinical safeguards kept under the universal prompt for every report.
@@ -81,7 +81,8 @@ export const clinicalSafeguards = [
 export function reportUserPrompt(input: { patient: string; diagnosis?: string; content: string; role: string }) {
   return [
     `Paciente: ${input.patient}`,
-    `Diagnóstico: ${input.diagnosis?.trim() || "não informado previamente"}`,
+    // Without a documented diagnosis, it is indicated from the clinical context of this consultation.
+    `Diagnóstico: ${input.diagnosis?.trim() || "indique a partir do contexto clínico desta consulta, como hipótese, com CID-10 quando aplicável à sua área"}`,
     `Conteúdo clínico disponível: ${input.content}`,
     `Elabore o relatório direcionado ao(à) ${input.role}.`,
   ].join("\n");
