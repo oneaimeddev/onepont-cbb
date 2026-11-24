@@ -732,14 +732,14 @@ p.ia-status {
   box-shadow: inset 0 3px 0 var(--cbb-yellow);
 }
 .ia-rail nav { border-top-color: rgb(255 255 255 / .14); }
-.ia-icon { color: var(--on-navy); }
-.ia-icon:hover { background: rgb(255 255 255 / .09); color: #fff; }
-.ia-icon[aria-current="page"] { background: rgb(255 255 255 / .13); color: #fff; box-shadow: inset 3px 0 0 var(--cbb-yellow); }
-.ia-icon:disabled, .ia-icon:disabled:hover { color: rgb(215 227 210 / .45); }
-.ia-icon:focus-visible { outline-color: var(--cbb-yellow); }
+.ia-rail .ia-icon { color: var(--on-navy); }
+.ia-rail .ia-icon:hover { background: rgb(255 255 255 / .09); color: #fff; }
+.ia-rail .ia-icon[aria-current="page"] { background: rgb(255 255 255 / .13); color: #fff; box-shadow: inset 3px 0 0 var(--cbb-yellow); }
+.ia-rail .ia-icon:disabled, .ia-rail .ia-icon:disabled:hover { color: rgb(215 227 210 / .45); }
+.ia-rail .ia-icon:focus-visible { outline-color: var(--cbb-yellow); }
 @media (max-width: 760px) {
   .ia-rail { border-bottom: 0; box-shadow: inset 0 -3px 0 var(--cbb-yellow); }
-  .ia-icon[aria-current="page"] { box-shadow: inset 0 -3px 0 var(--cbb-yellow); }
+  .ia-rail .ia-icon[aria-current="page"] { box-shadow: inset 0 -3px 0 var(--cbb-yellow); }
 }
 
 /* Respostas sugeridas pelo assistente: atalhos para a próxima mensagem, sem substituir o composer. */
@@ -753,3 +753,17 @@ p.ia-status {
 .ia-reply:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
 .ia-reply:disabled { cursor: not-allowed; opacity: .55; }
 @media (max-width: 760px) { .ia-reply { min-height: 44px; } }
+
+/* Microfone do composer: botão de ação visível, ao lado do enviar, no verde CBB. */
+.ia .ia-icon.ia-dictation-button {
+  width: 40px; height: 40px; border: 1.5px solid var(--cbb-green); border-radius: 50%;
+  background: var(--brand-soft); color: var(--cbb-green);
+  transition: background-color .15s var(--ease), color .15s var(--ease), box-shadow .15s var(--ease);
+}
+.ia .ia-icon.ia-dictation-button svg { width: 20px; height: 20px; }
+.ia .ia-icon.ia-dictation-button:hover:not(:disabled) { background: var(--cbb-green); color: #fff; box-shadow: 0 0 0 4px rgb(46 106 41 / .14); }
+.ia .ia-icon.ia-dictation-button:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.ia .ia-icon.ia-dictation-button:disabled { border-color: var(--line-strong); background: var(--surface); color: var(--muted-soft); }
+.ia .ia-icon.ia-dictation-button[data-state="recording"],
+.ia .ia-icon.ia-dictation-button[data-state="starting"] { border-color: #c62828; background: #c62828; color: #fff; box-shadow: 0 0 0 4px rgb(198 40 40 / .16); }
+@media (max-width: 760px) { .ia .ia-icon.ia-dictation-button { width: 44px; height: 44px; } }
