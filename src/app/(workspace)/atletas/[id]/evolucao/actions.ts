@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { getAccess, requireProfile } from "../../../../../lib/profile";
 import { supabaseServer } from "../../../../../lib/supabase";
 import { uuidPattern } from "../../../../../features/athletes/data";
+import { consultationVoiceEnabled } from "../../../../../features/chat/config";
 
 export type EvolutionSubmitResult =
   | {
@@ -36,7 +37,7 @@ export async function submitEvolution(
       !uuidPattern.test(athlete) ||
       !uuidPattern.test(request) ||
       (record && !uuidPattern.test(record)) ||
-      (capture && (!uuidPattern.test(capture) || process.env.CONSULTATION_VOICE_BETA !== "1")) ||
+      (capture && (!uuidPattern.test(capture) || !consultationVoiceEnabled())) ||
       !Number.isInteger(version) ||
       version < 0 ||
       (intent !== "draft" && intent !== "finalize") ||

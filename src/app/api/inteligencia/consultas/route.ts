@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { getAccess } from "../../../../lib/profile";
 import { supabaseServer } from "../../../../lib/supabase";
+import { consultationVoiceEnabled } from "../../../../features/chat/config";
 
 const ids = z.object({ target: z.uuid(), session_id: z.uuid() });
 const captureCommand = z.discriminatedUnion("operation", [
@@ -21,7 +22,7 @@ function response(result: { data: unknown; error: unknown }) {
 }
 
 export async function POST(request: Request) {
-  if (process.env.CONSULTATION_VOICE_BETA !== "1")
+  if (!consultationVoiceEnabled())
     return Response.json({ error: "unavailable" }, { status: 404 });
   const access = await getAccess();
   if (access.status !== 200)

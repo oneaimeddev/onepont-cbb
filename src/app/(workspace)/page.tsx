@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Avatar } from "../../components/avatar";
 import { SubmitButton } from "../../components/submit-button";
-import { intelligenceEnabled, voiceApiKey } from "../../features/chat/config";
+import { consultationVoiceEnabled, intelligenceEnabled, voiceApiKey } from "../../features/chat/config";
 import { parseConversation, parseHistory } from "../../features/chat/conversation";
 import { endConversationContext } from "../../features/chat/conversation-actions";
 import { IntelligenceHome } from "../../features/chat/intelligence-home";
@@ -66,7 +66,7 @@ export default async function ChatPage({ searchParams }: {
       enabled={intelligenceEnabled()}
       voiceEnabled={Boolean(voiceApiKey())}
       contextAthleteId={active?.id ?? null}
-      consultationAvailable={process.env.CONSULTATION_VOICE_BETA === "1" && Boolean(
+      consultationAvailable={consultationVoiceEnabled() && Boolean(
         context?.can_write && context.can_read_records && consultationSpecialty(profile.profession),
       )}
       canFinalize={Boolean(context?.can_finalize)}

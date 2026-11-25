@@ -15,7 +15,7 @@ import { attachmentConversation } from "../attachments/chat-service";
 import { platformGuide, presentedReplies } from "./platform-guide";
 import type { AttachmentBoard } from "../attachments/types";
 import { supabaseServer } from "../../lib/supabase";
-import { intelligenceModel } from "./config";
+import { consultationVoiceEnabled, intelligenceModel } from "./config";
 import { presentedDraft, type ClinicalDraft } from "./clinical-draft";
 import { groundCertificate, groundReferral, letterDocumentRequested, letterPatientMatches } from "./operations/letter-documents";
 import type { CertificateContent, ReferralContent } from "../documents/content";
@@ -481,7 +481,7 @@ async function prepareConversation(input: unknown) {
       const decision = decideAthleteAccess(athleteId, contextAthleteId, searches);
       if (decision === "confirm") return unavailable(decision);
       if (decision !== "allow") return { status: "athlete_required" as const, hint: "Pergunte para qual atleta é a consulta; ele precisa estar em contexto." };
-      if (process.env.CONSULTATION_VOICE_BETA !== "1") return unavailable("denied");
+      if (!consultationVoiceEnabled()) return { status: "unavailable" as const, reason: "feature_off" };
       const [opened, access] = await Promise.all([
         client.rpc("agent_athlete_workspace", { target: athleteId, view_name: "chat" }),
         client.rpc("chat_consultation_navigation", { target: athleteId, review: destination === "review" }),
@@ -491,7 +491,7 @@ async function prepareConversation(input: unknown) {
       if (!opened.error && !access.error && !access.data) {
         return { status: "not_allowed" as const, hint: "A gravação de consulta exige perfil de Medicina, Fisioterapia, Nutrição, Psicologia ou Enfermagem e permissão de escrita no prontuário deste atleta." };
       }
-      if (opened.error || access.error || !athlete || !base) return unavailable("denied");
+      if (opened.error || access.error || !athlete || !base) return { status: "unavailable" as const, reason: opened.error || access.error ? "database" : "athlete" };
       const capture = base + "/evolucao?modo=voz";
       const href = destination === "capture" && access.data.available === true ? capture
         : destination === "review" && uuidPattern.test(access.data.recordId ?? "") ? base + "/evolucao?registro=" + access.data.recordId
@@ -1131,6 +1131,11 @@ async function prepareConversation(input: unknown) {
     replyMessageView: () => replyMessage,
     contextAthleteId,
     clinicalView: () => clinicalPublished,
+    // Gemini intermittently returns MALFORMED_RESPONSE; the retry goes to a second model so a
+    // quick-reply tap (Listar os atletas) works on the first try.
+    fallbackModel: model.provider === "google" && process.env.CBB_INTELLIGENCE_FALLBACK_MODEL !== "none"
+      ? createGoogleGenerativeAI({ apiKey: model.apiKey }).chat(process.env.CBB_INTELLIGENCE_FALLBACK_MODEL || "gemini-3.8-flash")
+      : null,
     request: {
       model: model.provider === "google"
         ? createGoogleGenerativeAI({ apiKey: model.apiKey }).chat(model.model)
@@ -1267,10 +1272,10 @@ export async function openIntelligenceStream(input: unknown): Promise<{ stream: 
           // The model returned neither text nor a tool call. Ask once more, with an explicit nudge,
           // instead of falling back to a fixed text.
           console.warn(JSON.stringify({ event: "intelligence_empty_turn", finish: steps.map((step) => step.finishReason), raw: steps.map((step) => step.rawFinishReason ?? null), ms: Date.now() - started }));
-          ({ result, steps } = await run({ ...prepared.request, system: `${prepared.request.system}\nA tentativa anterior desta resposta não produziu conteúdo. Responda agora: use as ferramentas necessárias para atender o pedido e escreva a resposta ao profissional.` }));
+          ({ result, steps } = await run({ ...prepared.request, ...(prepared.fallbackModel ? { model: prepared.fallbackModel } : {}), system: `${prepared.request.system}\nA tentativa anterior desta resposta não produziu conteúdo. Responda agora: use as ferramentas necessárias para atender o pedido e escreva a resposta ao profissional.` }));
         }
         // Per-turn diagnostics without clinical content: how the model finished, which tools it used.
-        console.info(JSON.stringify({ event: "intelligence_turn", retried: empty, ms: Date.now() - started, steps: steps.length, finish: steps.map((step) => step.finishReason), raw: steps.map((step) => step.rawFinishReason ?? null), tools: steps.flatMap((step) => step.toolCalls.map((call) => call.toolName)) }));
+        console.info(JSON.stringify({ event: "intelligence_turn", retried: empty, fallback: empty && Boolean(prepared.fallbackModel), ms: Date.now() - started, steps: steps.length, finish: steps.map((step) => step.finishReason), raw: steps.map((step) => step.rawFinishReason ?? null), tools: steps.flatMap((step) => step.toolCalls.map((call) => call.toolName)), statuses: steps.flatMap((step) => step.toolResults.map((item) => `${item.toolName}:${String((item.output as { status?: unknown } | null)?.status ?? "")}${(item.output as { reason?: unknown } | null)?.reason ? `/${String((item.output as { reason?: unknown }).reason)}` : ""}`)) }));
         const view = presentationFrom(steps);
         // The guidance written through offerReplies replaces an empty model text; without either,
         // a missing athlete is the usual cause, so the fallback points to the right first step.

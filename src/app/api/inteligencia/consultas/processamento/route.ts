@@ -3,7 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { getAccess } from "../../../../../lib/profile";
 import { buildConsultationPrompt } from "../../../../../features/clinical/consultation-prompt";
-import { voiceApiKey } from "../../../../../features/chat/config";
+import { consultationVoiceEnabled, voiceApiKey } from "../../../../../features/chat/config";
 
 export const maxDuration = 60;
 
@@ -33,7 +33,7 @@ async function generate(key: string, model: string, system: string, parts: Part[
 }
 
 export async function POST(request: Request) {
-  if (process.env.CONSULTATION_VOICE_BETA !== "1") return new Response(null, { status: 404 });
+  if (!consultationVoiceEnabled()) return new Response(null, { status: 404 });
   const access = await getAccess();
   if (access.status !== 200) return new Response(null, { status: 403 });
   const parsed = input.safeParse(await request.json().catch(() => null));

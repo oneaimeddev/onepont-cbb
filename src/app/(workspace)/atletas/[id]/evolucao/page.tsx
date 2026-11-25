@@ -16,6 +16,7 @@ import { consultationSpecialty } from "../../../../../features/clinical/consulta
 import { getAccess, requireProfile } from "../../../../../lib/profile";
 import { supabaseServer } from "../../../../../lib/supabase";
 import { ClinicalText } from "../../../../../components/clinical-text";
+import { consultationVoiceEnabled } from "../../../../../features/chat/config";
 
 type HistoryEntry = {
   version: number;
@@ -58,7 +59,7 @@ export default async function EvolutionPage({
     history = versions.data.versions;
   }
   const voiceAvailable = !registro && context.can_write
-    && process.env.CONSULTATION_VOICE_BETA === "1" && Boolean(consultationSpecialty(profile.profession));
+    && consultationVoiceEnabled() && Boolean(consultationSpecialty(profile.profession));
   const access = voiceAvailable && modo === "voz" ? await getAccess() : null;
   let voiceReview: { body: string; transcript: string; specialty: string } | null = null;
   if (access?.status === 200 && consulta) {

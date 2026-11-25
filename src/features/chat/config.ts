@@ -22,3 +22,8 @@ export function voiceApiKey() {
   const config = intelligenceModel();
   return config?.provider === "google" ? config.apiKey : null;
 }
+
+/** Live consultation recording. Accepts the usual ways of switching a flag on ("1", "true", "on", "sim"). */
+export function consultationVoiceEnabled() {
+  return ["1", "true", "on", "sim", "yes"].includes((process.env.CONSULTATION_VOICE_BETA ?? "").trim().toLowerCase());
+}
