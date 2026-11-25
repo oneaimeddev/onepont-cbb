@@ -98,3 +98,16 @@
 .confirmActions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; margin-top: 20px; }
 .confirmActions .confirmDiscard { background: var(--danger); color: #fff; }
 .confirmActions .confirmDiscard:hover { background: #851d27; }
+
+.guidance {
+  justify-self: stretch;
+  margin-top: 4px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--cbb-yellow);
+  border-radius: 10px;
+  background: var(--paper);
+  text-align: left;
+}
+.panel .monitor .guidanceTitle { margin: 0 0 6px; color: var(--ink); font-size: 14px; font-weight: 650; }
+.guidance ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; color: var(--muted); font-size: 14px; line-height: 1.45; }

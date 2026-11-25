@@ -351,6 +351,14 @@ export function ConsultationCapture({ athlete, owner, label }: { athlete: string
       {mode === "idle" ? <>
         <div className={styles.monitor}>
           <p>Inicie a gravação e conduza a consulta normalmente. Ao concluir, o áudio é transcrito e o relatório da consulta fica pronto para sua revisão.</p>
+          <div className={styles.guidance} role="note" aria-label="Antes de gravar">
+            <p className={styles.guidanceTitle}>Antes de começar</p>
+            <ul>
+              <li>Mantenha a tela do aparelho ligada durante toda a consulta.</li>
+              <li>Deixe o navegador em primeiro plano: não troque de aplicativo nem de aba enquanto grava.</li>
+              <li>Use uma internet estável, de preferência Wi-Fi. O áudio é enviado a cada minuto.</li>
+            </ul>
+          </div>
         </div>
         <button type="button" className={styles.primary} disabled={busy} onClick={() => void start()}>Iniciar gravação</button>
       </> : <>
