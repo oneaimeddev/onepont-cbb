@@ -57,7 +57,7 @@ export function ConsultationProcessing({ athlete, session, regenerate = false }:
       if (active.signal.aborted) return;
       if (cause instanceof Error && cause.message === "no_speech") {
         setRetryAudio(true);
-        setError("A transcrição não identificou fala no áudio salvo. Você pode tentar transcrever novamente. Se persistir, verifique o microfone e inicie uma nova gravação fictícia.");
+        setError("A transcrição não identificou fala no áudio salvo. Você pode tentar transcrever novamente. Se persistir, verifique o microfone e inicie uma nova gravação.");
       } else {
         setError("O processamento foi interrompido. Você pode tentar novamente a partir dos lotes já salvos.");
       }
@@ -84,7 +84,6 @@ export function ConsultationCapture({ athlete, owner, label }: { athlete: string
   const key = "cbb-consultation:" + owner + ":" + athlete;
   const [capture, setCapture] = useState<Capture | null>(null);
   const [mode, setMode] = useState<"idle" | "active" | "paused" | "interrupted" | "sending" | "ended">("idle");
-  const [accepted, setAccepted] = useState(false);
   const [busy, setBusy] = useState(false);
   const [discarding, setDiscarding] = useState(false);
   const [queued, setQueued] = useState(0);
@@ -322,7 +321,6 @@ export function ConsultationCapture({ athlete, owner, label }: { athlete: string
       setLevels([]);
       setQueued(0);
       setCapture(null);
-      setAccepted(false);
       setMode("idle");
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Não foi possível descartar a gravação.");
@@ -352,13 +350,9 @@ export function ConsultationCapture({ athlete, owner, label }: { athlete: string
       </header>
       {mode === "idle" ? <>
         <div className={styles.monitor}>
-          <p>Esta consulta será gravada. Use uma encenação com dados totalmente fictícios.</p>
-          <label className="check-label">
-            <input type="checkbox" checked={accepted} onChange={(event) => setAccepted(event.target.checked)} />
-            Confirmei com os participantes a gravação desta encenação.
-          </label>
+          <p>Inicie a gravação e conduza a consulta normalmente. Ao concluir, o áudio é transcrito e o relatório da consulta fica pronto para sua revisão.</p>
         </div>
-        <button type="button" className={styles.primary} disabled={!accepted || busy} onClick={() => void start()}>Iniciar gravação</button>
+        <button type="button" className={styles.primary} disabled={busy} onClick={() => void start()}>Iniciar gravação</button>
       </> : <>
         <div className={styles.monitor}>
           {(mode === "active" || mode === "paused") && <div className={styles.timer} aria-label="Tempo total em gravação">

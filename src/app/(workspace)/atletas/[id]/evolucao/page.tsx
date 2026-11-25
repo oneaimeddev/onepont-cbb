@@ -57,7 +57,7 @@ export default async function EvolutionPage({
       throw new Error("Não foi possível consultar o histórico da evolução.");
     history = versions.data.versions;
   }
-  const voiceAvailable = !registro && context.can_write && context.athlete.source === "demo"
+  const voiceAvailable = !registro && context.can_write
     && process.env.CONSULTATION_VOICE_BETA === "1" && Boolean(consultationSpecialty(profile.profession));
   const access = voiceAvailable && modo === "voz" ? await getAccess() : null;
   let voiceReview: { body: string; transcript: string; specialty: string } | null = null;
