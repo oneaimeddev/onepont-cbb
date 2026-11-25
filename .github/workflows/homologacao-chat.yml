@@ -1,12 +1,13 @@
 # Verificação do chat no link de homologação, num navegador real.
-# Roda sozinha quando a Vercel termina uma publicação da branch homologacao, e também pode ser
-# disparada à mão (Actions → Verificação do chat em homologação → Run workflow).
+# Roda a cada envio para a branch homologacao: espera a Vercel publicar aquele commit e verifica.
+# Para repetir, use "Re-run jobs" na execução (ou Run workflow, quando o arquivo estiver na main).
 # Segredos: HOMOLOG_EVALUATOR_PASSWORD (conta de avaliação) e VERCEL_AUTOMATION_BYPASS_SECRET
 # (Vercel → Settings → Deployment Protection → Protection Bypass for Automation).
 name: Verificação do chat em homologação
 
 on:
-  deployment_status:
+  push:
+    branches: [homologacao]
   workflow_dispatch:
     inputs:
       url:
@@ -15,6 +16,8 @@ on:
 
 permissions:
   contents: read
+  deployments: read
+  statuses: read
 
 concurrency:
   group: homologacao-chat
@@ -22,11 +25,8 @@ concurrency:
 
 jobs:
   chat:
-    if: >-
-      github.event_name == 'workflow_dispatch' ||
-      (github.event.deployment_status.state == 'success' && github.event.deployment.ref == 'homologacao')
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     env:
       HOMOLOG_URL: ${{ github.event_name == 'workflow_dispatch' && inputs.url || 'https://prontuario-cbb-beta-git-homologacao-one-ai-dev.vercel.app' }}
       EVALUATOR_PASSWORD: ${{ secrets.HOMOLOG_EVALUATOR_PASSWORD }}
@@ -40,6 +40,22 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium
+      - name: Esperar a Vercel publicar este commit
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for i in $(seq 1 60); do
+            state=$(gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/status" --jq '[.statuses[] | select(.context | test("Vercel"))][0].state // "none"')
+            if [ "$state" = "none" ]; then
+              state=$(gh api "repos/${{ github.repository }}/deployments?sha=${{ github.sha }}" --jq '.[0].statuses_url // ""' | xargs -r -I{} gh api {} --jq '.[0].state // "none"')
+              state=${state:-none}
+            fi
+            echo "Vercel: $state"
+            case "$state" in success) exit 0;; failure|error) echo "A publicação na Vercel falhou." >&2; exit 1;; esac
+            sleep 15
+          done
+          echo "A Vercel não confirmou a publicação em 15 minutos; verificando o link mesmo assim."
       - name: Verificar o chat
         run: node scripts/homolog/chat-check.mjs
       - name: Capturas de tela
