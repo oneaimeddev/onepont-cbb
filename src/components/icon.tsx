@@ -20,6 +20,8 @@ const paths = {
   micOff: <path d="M14.5 10V7a2.5 2.5 0 0 0-4.9-.7M9.5 9.5V11a2.5 2.5 0 0 0 4.1 1.9M7 11a5 5 0 0 0 8.4 3.7M17 11c0 .5-.1 1-.2 1.4M12 16v3.5M4.5 4.5l15 15" />,
   headphones: <><path d="M4.5 16v-3.5a7.5 7.5 0 0 1 15 0V16" /><rect x="4.5" y="14" width="3.5" height="5.5" rx="1.5" /><rect x="16" y="14" width="3.5" height="5.5" rx="1.5" /></>,
   stop: <rect x="7" y="7" width="10" height="10" rx="2" />,
+  record: <><circle cx="12" cy="12" r="7.5" /><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none" /></>,
+  pause: <path d="M9 6.5v11M15 6.5v11" />,
 } as const;
 
 export type IconName = keyof typeof paths;

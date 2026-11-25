@@ -12,6 +12,22 @@ type Job = { file: string; seconds: number; segments: Blob[]; texts: (string | n
 
 const concurrency = 3;
 
+/** One consultation segment (16 kHz mono WAV) through the transcription route. */
+export async function transcribeConsultationSegment(segment: Blob, signal: AbortSignal) {
+  const response = await fetch("/api/inteligencia/ditado?modo=consulta", {
+    method: "POST",
+    headers: { "content-type": "audio/wav" },
+    body: segment,
+    cache: "no-store",
+    signal,
+  });
+  const body = await response.json().catch(() => ({})) as { text?: unknown };
+  if (!response.ok || typeof body.text !== "string") {
+    throw new Error(typeof body.text === "string" ? body.text : "Não foi possível transcrever um trecho da gravação.");
+  }
+  return body.text;
+}
+
 export function useConsultationAudio({ onTranscript }: {
   onTranscript: (result: { transcript: string; fileName: string; duration: string }) => void | Promise<void>;
 }) {
@@ -22,21 +38,6 @@ export function useConsultationAudio({ onTranscript }: {
   const job = useRef<Job | null>(null);
   const controller = useRef<AbortController | null>(null);
   const generation = useRef(0);
-
-  async function transcribeSegment(segment: Blob, signal: AbortSignal) {
-    const response = await fetch("/api/inteligencia/ditado?modo=consulta", {
-      method: "POST",
-      headers: { "content-type": "audio/wav" },
-      body: segment,
-      cache: "no-store",
-      signal,
-    });
-    const body = await response.json().catch(() => ({})) as { text?: unknown };
-    if (!response.ok || typeof body.text !== "string") {
-      throw new Error(typeof body.text === "string" ? body.text : "Não foi possível transcrever um trecho da gravação.");
-    }
-    return body.text;
-  }
 
   async function run() {
     const current = job.current;
@@ -55,7 +56,7 @@ export function useConsultationAudio({ onTranscript }: {
       while (cursor < pending.length && !signal.aborted) {
         const index = pending[cursor++];
         try {
-          current!.texts[index] = await transcribeSegment(current!.segments[index], signal).catch(() => transcribeSegment(current!.segments[index], signal));
+          current!.texts[index] = await transcribeConsultationSegment(current!.segments[index], signal).catch(() => transcribeConsultationSegment(current!.segments[index], signal));
           if (ticket === generation.current) setProgress((value) => ({ ...value, done: value.done + 1 }));
         } catch (cause) {
           if (signal.aborted) return;

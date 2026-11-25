@@ -66,6 +66,7 @@ export default async function ChatPage({ searchParams }: {
       enabled={intelligenceEnabled()}
       voiceEnabled={Boolean(voiceApiKey())}
       contextAthleteId={active?.id ?? null}
+      contextAthleteName={activeName || null}
       consultationAvailable={consultationVoiceEnabled() && Boolean(
         context?.can_write && context.can_read_records && consultationSpecialty(profile.profession),
       )}

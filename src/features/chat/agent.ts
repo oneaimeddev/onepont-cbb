@@ -192,6 +192,15 @@ function presentationFrom(steps: ReadonlyArray<{ toolResults: ReadonlyArray<{ to
         const candidate = (output as { sessionId: string }).sessionId;
         if (uuidPattern.test(candidate)) sessionId = candidate;
       }
+      if (item.toolName === "openConsultationVoice" && output.status === "recording") {
+        // The recording panel opens in the chat for this athlete, who becomes the context.
+        const athlete = presentedAthletes([output.athlete])[0];
+        if (athlete) {
+          context = { id: athlete.id, name: athlete.name };
+          contextCleared = false;
+          kind = "narrative";
+        }
+      }
       if ((item.toolName === "navigateToAthlete" || item.toolName === "openConsultationVoice") && output.status === "ok") {
         const athlete = presentedAthletes([output.athlete])[0];
         const link = athlete ? presentedNavigation({ id: athlete.id, href: output.href, name: athlete.name }) : null;
@@ -320,6 +329,7 @@ async function prepareConversation(input: unknown) {
   // never empty, even when the model ends its turn right after the tool.
   // Opening the attachment form is a screen action: the professional picks the file and confirms.
   let uploadAction: { title: string; category: string; documentDate: string | null } | null = null;
+  let recordingAction: { athleteId: string; athleteName: string } | null = null;
   const openAttachmentUpload = tool({
     description: "Abre na tela o envio de anexo clínico (PDF ou imagem) para o atleta em contexto. Preencha title, category e documentDate somente com o que o profissional disse; o profissional escolhe o arquivo, revisa e confirma. Nada é anexado sem a confirmação dele.",
     inputSchema: z.object({
@@ -471,7 +481,7 @@ async function prepareConversation(input: unknown) {
   });
 
   const openConsultationVoice = tool({
-    description: "Oferece um link para Registrar evolução por voz ou revisar a última consulta gravada pelo profissional para esse atleta. Nunca inicia, salva ou finaliza a gravação. Use somente quando o profissional pedir a consulta gravada. Busque o atleta quando ele for nomeado e esclareça múltiplos resultados.",
+    description: "Com destination capture, abre aqui no chat o painel Gravar consulta do atleta, com as orientações e o botão Iniciar gravação; o profissional inicia, pausa e encerra a gravação, e ao final escolhe o relatório detalhado ou sintético. Com destination review, oferece o link da última consulta gravada na página de evolução. Nunca inicia a gravação sozinho. Busque o atleta quando ele for nomeado e esclareça múltiplos resultados.",
     inputSchema: z.object({ athleteId: z.string().optional(), destination: z.enum(["capture", "review"]) }),
     execute: async ({ athleteId: requested, destination }) => {
       // Each refusal says why, so the reply can guide the professional instead of saying the
@@ -492,6 +502,10 @@ async function prepareConversation(input: unknown) {
         return { status: "not_allowed" as const, hint: "A gravação de consulta exige perfil de Medicina, Fisioterapia, Nutrição, Psicologia ou Enfermagem e permissão de escrita no prontuário deste atleta." };
       }
       if (opened.error || access.error || !athlete || !base) return { status: "unavailable" as const, reason: opened.error || access.error ? "database" : "athlete" };
+      if (destination === "capture" && access.data.available === true) {
+        recordingAction = { athleteId, athleteName: athlete.name };
+        return { status: "recording" as const, athlete };
+      }
       const capture = base + "/evolucao?modo=voz";
       const href = destination === "capture" && access.data.available === true ? capture
         : destination === "review" && uuidPattern.test(access.data.recordId ?? "") ? base + "/evolucao?registro=" + access.data.recordId
@@ -1128,6 +1142,7 @@ async function prepareConversation(input: unknown) {
     attachmentView: () => attachmentPublished,
     repliesView: () => replyOptions,
     uploadView: () => uploadAction,
+    recordingView: () => recordingAction,
     replyMessageView: () => replyMessage,
     contextAthleteId,
     clinicalView: () => clinicalPublished,
@@ -1203,7 +1218,7 @@ async function prepareConversation(input: unknown) {
         "Quando o profissional pedir a análise do histórico, lesões ao longo do tempo, comparação entre especialidades ou as fontes dessa análise, use analyzeAthleteHistory. Não descreva queixas, doses, diagnósticos ou condutas. O cartão mostra a cronologia. Não diga que a análise diagnosticou, liberou ou prescreveu.",
         "Abrir uma prescrição, uma solicitação de exames ou um pedido cirúrgico e preencher seus detalhes são etapas separadas. Ao reconhecer um pedido explícito de abertura sem detalhes, chame a ferramenta de preparação do tipo correto com os campos vazios. Se a proposta estiver no chat, mantenha o mesmo cartão. Pergunte só pelo próximo dado necessário e trate cada dado clínico como informação do profissional, nunca como sugestão sua.",
         "A autoria é sempre do profissional autenticado. Não mude o atleta nem torne público um registro restrito.",
-        "Use openConsultationVoice para pedidos como vou começar o atendimento do João, quero iniciar a consulta, gravar a consulta, abrir a gravação de evolução ou revisar o relatório que acabamos de gerar. Resolva o atleta autorizado e ofereça o link. Se nenhum atleta estiver em contexto nem for nomeado, não diga que a gravação está indisponível: pergunte com offerReplies para qual atleta é a consulta. Se a ferramenta responder athlete_required, faça o mesmo; se responder not_allowed, explique o motivo em uma frase. O profissional inicia a gravação na página de atendimento, no botão Iniciar gravação. Se a ferramenta falhar, explique em uma frase e ofereça o caminho possível: anexar a gravação pelo botão Áudio da consulta, que transcreve e oferece o relatório.",
+        "Use openConsultationVoice para pedidos como vou começar o atendimento do João, quero iniciar a consulta, gravar a consulta, abrir a gravação de evolução ou revisar o relatório que acabamos de gerar. Resolva o atleta autorizado; com destination capture a ferramenta abre o painel Gravar consulta aqui no chat (status recording): diga em uma ou duas frases que o painel está aberto logo acima da caixa de mensagem, que basta tocar em Iniciar gravação e conduzir a consulta normalmente, e que ao encerrar a conversa é transcrita e ele escolhe o relatório detalhado ou sintético. Não mande para outra página. Se nenhum atleta estiver em contexto nem for nomeado, não diga que a gravação está indisponível: pergunte com offerReplies para qual atleta é a consulta. Se a ferramenta responder athlete_required, faça o mesmo; se responder not_allowed, explique o motivo em uma frase. Se a ferramenta falhar, explique em uma frase e ofereça o caminho possível: anexar a gravação pelo botão Áudio da consulta, que transcreve e oferece o relatório.",
         "Use as mensagens anteriores para resolver referências como dela, desse período ou essas informações. Não peça confirmações desnecessárias quando o contexto já é claro.",
         contextAthleteId
           ? `Atleta já selecionado pelo profissional: ${contextAthleteId}. Use esse identificador quando a fala se referir a essa pessoa.`
@@ -1346,6 +1361,7 @@ export async function openIntelligenceStream(input: unknown): Promise<{ stream: 
           sessionId: view.sessionId,
           replies: guidance?.replies ?? prepared.repliesView(),
           upload: prepared.uploadView(),
+          recording: prepared.recordingView(),
         });
       } catch (error) {
         send("error", { error: failureCode(error) });

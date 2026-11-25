@@ -42,6 +42,11 @@ export async function prepareAudioFile(file: File): Promise<PreparedAudio> {
     frames.push(frame);
   }
 
+  return { segments: segmentFrames(frames), seconds: decoded.duration };
+}
+
+/** Splits 100 ms PCM frames into WAV segments of up to 50 s, cut at quiet frames. */
+export function segmentFrames(frames: Int16Array[]): Blob[] {
   const segments: Blob[] = [];
   let rest = frames;
   while (rest.length) {
@@ -51,7 +56,7 @@ export async function prepareAudioFile(file: File): Promise<PreparedAudio> {
     segments.push(encodeWav(rest.slice(0, at)));
     rest = rest.slice(at);
   }
-  return { segments, seconds: decoded.duration };
+  return segments;
 }
 
 export function durationLabel(seconds: number) {

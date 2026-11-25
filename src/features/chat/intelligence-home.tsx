@@ -36,6 +36,8 @@ import { useDictation } from "./voice/use-dictation";
 import { DictationButton, DictationStatus } from "./voice/dictation-control";
 import { ConsultationAudioButton, ConsultationAudioStatus } from "./voice/consultation-audio-control";
 import { useConsultationAudio } from "./voice/use-consultation-audio";
+import { useConsultationRecording } from "./voice/use-consultation-recording";
+import { ConsultationRecordingPanel } from "./voice/consultation-recording";
 import { joinSegments } from "./voice/transcription";
 import "./intelligence.css";
 
@@ -193,6 +195,7 @@ export function IntelligenceHome({
   profile,
   context,
   contextAthleteId = null,
+  contextAthleteName = null,
   consultationAvailable = false,
   canFinalize = false,
   evolutionRestricted = false,
@@ -209,6 +212,7 @@ export function IntelligenceHome({
   profile: { displayName: string; profession: string; initials: string; canReadAudit: boolean };
   context?: ReactNode;
   contextAthleteId?: string | null;
+  contextAthleteName?: string | null;
   consultationAvailable?: boolean;
   canFinalize?: boolean;
   evolutionRestricted?: boolean;
@@ -283,9 +287,7 @@ export function IntelligenceHome({
   // A consultation recorded on another device: transcribed in segments, then offered as the
   // report-mode card for the athlete in context, exactly like a consultation sent as text.
   const audioAthlete = useRef<string | null>(null);
-  const consultationAudio = useConsultationAudio({
-    onTranscript: async ({ transcript, fileName, duration }) => {
-      const athleteId = audioAthlete.current;
+  async function deliverConsultation(athleteId: string | null, transcript: string, label: string, intro: string) {
       if (!athleteId) throw new Error("Coloque em contexto o atleta da consulta antes de anexar o áudio.");
       const offered = await offerConsultationFromAudio({ athleteId, transcript });
       if (!offered.ok) {
@@ -297,13 +299,45 @@ export function IntelligenceHome({
       const empty = { athletes: [], navigation: null, search: null, document: null, readings: null, analysis: null };
       patchTurns((current) => [
         ...current,
-        { ...empty, id: crypto.randomUUID(), role: "user", text: `Áudio da consulta anexado: ${fileName} · ${duration}`, draft: null },
-        { ...empty, id: crypto.randomUUID(), role: "assistant", text: `Transcrevi o áudio da consulta de ${offered.draft.athleteName}. Escolha no cartão o modo do relatório: detalhado ou sintético.`, draft: offered.draft },
+        { ...empty, id: crypto.randomUUID(), role: "user", text: label, draft: null },
+        { ...empty, id: crypto.randomUUID(), role: "assistant", text: `${intro} ${offered.draft.athleteName}. Escolha no cartão o modo do relatório: detalhado ou sintético.`, draft: offered.draft },
       ]);
       pinRef.current = true;
       queuePersist(athleteId, epochRef.current);
-    },
+  }
+  const consultationAudio = useConsultationAudio({
+    onTranscript: ({ transcript, fileName, duration }) =>
+      deliverConsultation(audioAthlete.current, transcript, `Áudio da consulta anexado: ${fileName} · ${duration}`, "Transcrevi o áudio da consulta de"),
   });
+
+  // A consultation recorded live in the chat ends in the same report card as an attached audio.
+  const recordAthlete = useRef<{ id: string; name: string } | null>(null);
+  const [recordName, setRecordName] = useState("");
+  const recording = useConsultationRecording({
+    onTranscript: ({ transcript, duration }) =>
+      deliverConsultation(recordAthlete.current?.id ?? null, transcript, `Consulta gravada no chat · ${duration}`, "Transcrevi a consulta de"),
+  });
+
+  function athleteNameFor(id: string) {
+    if (id === contextAthleteId && contextAthleteName) return contextAthleteName;
+    for (const turn of [...turns].reverse()) {
+      const found = turn.athletes.find((athlete) => athlete.id === id);
+      if (found) return found.name;
+    }
+    return "Atleta em contexto";
+  }
+
+  function openConsultationRecording(athleteId?: string | null, name?: string | null) {
+    const id = athleteId ?? currentAthlete();
+    if (!id) {
+      setFailure("Coloque em contexto o atleta da consulta antes de gravar.");
+      return;
+    }
+    setFailure(null);
+    recordAthlete.current = { id, name: name || athleteNameFor(id) };
+    setRecordName(recordAthlete.current.name);
+    recording.open();
+  }
 
   function attachConsultationAudio(file: File) {
     const athleteId = currentAthlete();
@@ -879,7 +913,7 @@ export function IntelligenceHome({
             continue;
           }
           const data = parsed.data;
-          const record = data && typeof data === "object" ? data as { text?: unknown; athletes?: unknown; navigation?: unknown; search?: unknown; draft?: unknown; document?: unknown; readings?: unknown; attachments?: unknown; clinicalSearch?: unknown; analysis?: unknown; replies?: unknown; upload?: unknown; context?: unknown; contextCleared?: unknown; sessionId?: unknown; error?: unknown } : {};
+          const record = data && typeof data === "object" ? data as { text?: unknown; athletes?: unknown; navigation?: unknown; search?: unknown; draft?: unknown; document?: unknown; readings?: unknown; attachments?: unknown; clinicalSearch?: unknown; analysis?: unknown; replies?: unknown; upload?: unknown; recording?: unknown; context?: unknown; contextCleared?: unknown; sessionId?: unknown; error?: unknown } : {};
           if (parsed.event === "delta" && typeof record.text === "string" && record.text) {
             patchTurns((current) => current.map((turn) => turn.id === assistantId && typeof record.text === "string" ? { ...turn, text: turn.text + record.text } : turn));
           } else if (parsed.event === "done") {
@@ -889,6 +923,11 @@ export function IntelligenceHome({
             // The assistant asked to open the attachment form, with the fields the professional said.
             const upload=presentedUpload(record.upload);
             if(upload){setAttachmentPrefill(upload);setAttachmentOpen(true);}
+            // The assistant prepared the consultation recording: the panel opens here, in the chat.
+            const recordRequest = record.recording && typeof record.recording === "object" ? record.recording as { athleteId?: unknown; athleteName?: unknown } : null;
+            if (recordRequest && typeof recordRequest.athleteId === "string" && uuidPattern.test(recordRequest.athleteId)) {
+              openConsultationRecording(recordRequest.athleteId, typeof recordRequest.athleteName === "string" ? recordRequest.athleteName : null);
+            }
             if (typeof record.sessionId === "string" && uuidPattern.test(record.sessionId) && !sessionRef.current) {
               sessionRef.current = record.sessionId;
               setOpenSessionId(record.sessionId);
@@ -1170,11 +1209,26 @@ export function IntelligenceHome({
               })}
             </div>
           ) : null}
+          <ConsultationRecordingPanel
+            state={recording.state}
+            athleteName={recordName}
+            elapsed={recording.elapsed}
+            levels={recording.levels}
+            warning={recording.warning}
+            error={recording.error}
+            canRetry={recording.canRetry}
+            progress={recording.progress}
+            onStart={recording.start}
+            onPause={recording.pause}
+            onResume={recording.resume}
+            onFinish={recording.finish}
+            onCancel={recording.cancel}
+          />
           <MessageComposer
             key="composer"
             onFocusChange={setComposerFocused}
             enabled={enabled}
-            pending={pending || attachmentPending || dictation.state === "transcribing"}
+            pending={pending || attachmentPending || dictation.state === "transcribing" || recording.active}
             attachmentControl={consultationAudio.state !== "idle" ? (
               <ConsultationAudioStatus
                 state={consultationAudio.state}
@@ -1197,7 +1251,12 @@ export function IntelligenceHome({
             ) : (
               <span className="ia-attach-group">
                 <button type="button" className="ia-attach" disabled={starting || pending} onClick={()=>{setAttachmentPrefill(null);setAttachmentOpen(true);}}><Icon name="clip" size={16}/>Anexar ao prontuário</button>
-                {voiceEnabled ? <ConsultationAudioButton disabled={!enabled || starting || pending} onFile={attachConsultationAudio} /> : null}
+                {voiceEnabled ? (
+                  <button type="button" className="ia-attach ia-attach-record" disabled={!enabled || starting || pending || recording.state !== "idle"} onClick={() => openConsultationRecording()} title="Gravar a consulta aqui no chat">
+                    <Icon name="record" size={16} />Gravar consulta
+                  </button>
+                ) : null}
+                {voiceEnabled ? <ConsultationAudioButton disabled={!enabled || starting || pending || recording.state !== "idle"} onFile={attachConsultationAudio} /> : null}
               </span>
             )}
             failure={failure}
@@ -1215,7 +1274,7 @@ export function IntelligenceHome({
             voiceControl={voiceEnabled ? (
               <DictationButton
                 state={dictation.state}
-                disabled={!enabled || starting || pending || attachmentPending || consultationAudio.busy}
+                disabled={!enabled || starting || pending || attachmentPending || consultationAudio.busy || recording.state !== "idle"}
                 onStart={() => void dictation.start()}
                 onStop={() => void dictation.stop()}
               />
@@ -1241,14 +1300,12 @@ export function IntelligenceHome({
               <button type="button" className="ia-panel-collapse" onClick={() => { storePanels({ ...readPanels(), context: true }); contextToggleRef.current?.focus(); }}>Recolher</button>
             </div>
             {visibleContext}
-            {consultationAvailable && selectedId ? (
-              <Link className="ia-open" href={`/atletas/${selectedId}/evolucao?modo=voz`} prefetch={false}
-                onNavigate={(event) => {
-                  event.preventDefault();
-                  leaveForClinicalPage(`/atletas/${selectedId}/evolucao?modo=voz`);
-                }}>
-                Registrar evolução por voz
-              </Link>
+            {consultationAvailable && voiceEnabled && selectedId ? (
+              <div className="ia-context-actions ia-context-record">
+                <button type="button" disabled={recording.state !== "idle"} onClick={() => { setContextFor(null); openConsultationRecording(selectedId); }}>
+                  Gravar consulta
+                </button>
+              </div>
             ) : null}
           </div>
         </aside>

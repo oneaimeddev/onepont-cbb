@@ -32,8 +32,12 @@ async function check(name, fn) {
   await page.screenshot({ path: join(out, `${String(results.length).padStart(2, "0")}.png`), fullPage: false }).catch(() => {});
 }
 
-const browser = await chromium.launch(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {});
-const context = await browser.newContext({ viewport: { width: 1360, height: 900 }, locale: "pt-BR", timezoneId: "America/Sao_Paulo" });
+// A fake microphone lets the check start the in-chat consultation recording.
+const browser = await chromium.launch({
+  ...(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {}),
+  args: ["--use-fake-ui-for-media-stream", "--use-fake-device-for-media-stream"],
+});
+const context = await browser.newContext({ viewport: { width: 1360, height: 900 }, locale: "pt-BR", timezoneId: "America/Sao_Paulo", permissions: ["microphone"] });
 if (bypass) {
   // The bypass header goes only to the preview host, never to fonts or other origins.
   await context.route("**/*", (route) => {
@@ -112,19 +116,34 @@ await check("Colocar atleta em contexto", async () => {
   await page.waitForTimeout(2500);
 });
 
-await check("Iniciar consulta com atleta em contexto: oferece a gravação", async () => {
-  const { turn, text, ms } = await say("quero iniciar a consulta");
+const panel = page.getByRole("region", { name: "Gravação da consulta" });
+
+await check("Iniciar consulta com atleta em contexto: abre a gravação no chat", async () => {
+  const { text, ms } = await say("quero iniciar a consulta");
   if (unavailable.test(text)) throw new Error(`Disse que está indisponível: ${short(text)}`);
-  const link = turn.getByRole("link", { name: /registrar evolução por voz/i });
-  if (!(await link.count())) throw new Error(`Não ofereceu Registrar evolução por voz: ${short(text)}`);
+  await panel.waitFor({ timeout: 10_000 }).catch(() => { throw new Error(`Painel de gravação não abriu: ${short(text)}`); });
+  if (!(await panel.getByText("Antes de começar").count())) throw new Error("Orientações não aparecem no painel.");
   return `${ms} ms`;
 });
 
-await check("Tela de gravação abre com as orientações", async () => {
-  const link = assistantTurns.last().getByRole("link", { name: /registrar evolução por voz/i }).first();
-  await link.click();
-  await page.getByRole("button", { name: "Iniciar gravação" }).waitFor({ timeout: 30_000 });
-  if (!(await page.getByText("Antes de começar").count())) throw new Error("Orientações não aparecem.");
+await check("Gravação no chat inicia, pausa e descarta", async () => {
+  await panel.getByRole("button", { name: "Iniciar gravação" }).click();
+  await panel.getByText("Gravando").waitFor({ timeout: 15_000 });
+  await page.waitForTimeout(2500);
+  await panel.getByRole("button", { name: "Pausar" }).click();
+  await panel.getByText("Gravação pausada").waitFor({ timeout: 5_000 });
+  const time = await panel.locator("time").innerText();
+  await panel.getByRole("button", { name: "Descartar" }).click();
+  await panel.getByRole("button", { name: "Confirmar descarte" }).click();
+  await panel.waitFor({ state: "detached", timeout: 5_000 });
+  return `tempo gravado ${time}`;
+});
+
+await check("Botão Gravar consulta na caixa de mensagem abre o painel", async () => {
+  await page.getByRole("button", { name: "Gravar consulta" }).first().click();
+  await panel.getByRole("button", { name: "Iniciar gravação" }).waitFor({ timeout: 5_000 });
+  await panel.getByRole("button", { name: "Cancelar" }).click();
+  await panel.waitFor({ state: "detached", timeout: 5_000 });
 });
 
 await browser.close();
