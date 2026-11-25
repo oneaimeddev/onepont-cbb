@@ -188,11 +188,15 @@ export function ConsultationCapture({ athlete, owner, label }: { athlete: string
     let context: AudioContext | undefined;
     try {
       if (!navigator.mediaDevices?.getUserMedia) throw new Error("Microfone indisponível neste navegador.");
-      context = new AudioContext({ sampleRate: 16000 });
-      if (context.sampleRate !== 16000 || !context.audioWorklet)
+      // Device-rate context; the worklet converts to 16 kHz (a forced 16 kHz context records
+      // silence on Safari).
+      context = new AudioContext();
+      if (!context.audioWorklet || context.sampleRate < 16000)
         throw new Error("Este navegador não oferece a captura de áudio necessária.");
       await context.resume();
-      stream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1 } });
+      stream = await navigator.mediaDevices.getUserMedia({
+        audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+      });
       await context.audioWorklet.addModule("/consultation-capture-worklet.js");
       const session = await command(crypto.randomUUID(), "start", { authorization_code: "staged_fictional_v1" });
       localStorage.setItem(key, session.id);
@@ -233,7 +237,9 @@ export function ConsultationCapture({ athlete, owner, label }: { athlete: string
           setError("O microfone ficou indisponível por um intervalo.");
         });
       }
-      context.createMediaStreamSource(stream).connect(node).connect(context.destination);
+      const sink = context.createGain();
+      sink.gain.value = 0.00001;
+      context.createMediaStreamSource(stream).connect(node).connect(sink).connect(context.destination);
       recorder.current = { stream, context, node };
       setMode("active");
     } catch (cause) {
