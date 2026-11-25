@@ -1,0 +1,51 @@
+# Verificação do chat no link de homologação, num navegador real.
+# Roda sozinha quando a Vercel termina uma publicação da branch homologacao, e também pode ser
+# disparada à mão (Actions → Verificação do chat em homologação → Run workflow).
+# Segredos: HOMOLOG_EVALUATOR_PASSWORD (conta de avaliação) e VERCEL_AUTOMATION_BYPASS_SECRET
+# (Vercel → Settings → Deployment Protection → Protection Bypass for Automation).
+name: Verificação do chat em homologação
+
+on:
+  deployment_status:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: "Endereço a verificar"
+        default: "https://prontuario-cbb-beta-git-homologacao-one-ai-dev.vercel.app"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: homologacao-chat
+  cancel-in-progress: true
+
+jobs:
+  chat:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.deployment_status.state == 'success' && github.event.deployment.ref == 'homologacao')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      HOMOLOG_URL: ${{ github.event_name == 'workflow_dispatch' && inputs.url || 'https://prontuario-cbb-beta-git-homologacao-one-ai-dev.vercel.app' }}
+      EVALUATOR_PASSWORD: ${{ secrets.HOMOLOG_EVALUATOR_PASSWORD }}
+      VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+      CHECK_OUT: homolog-check
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Verificar o chat
+        run: node scripts/homolog/chat-check.mjs
+      - name: Capturas de tela
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: verificacao-chat
+          path: homolog-check
+          retention-days: 7
