@@ -237,6 +237,16 @@ export async function generateConsultationReport(input: {
  * the browser. Access to the athlete is checked as for the agent's consultation offer; nothing is
  * generated or stored here.
  */
+/** Checked before a consultation recording starts, so a missing permission shows up front. */
+export async function canRecordConsultation(athleteId: string): Promise<boolean> {
+  await requireProfile();
+  if (!uuidPattern.test(athleteId)) return false;
+  const client = await supabaseServer();
+  const prepared = await client.rpc("agent_clinical_draft_prepare", { target: athleteId });
+  const names = prepared.data as { ok?: boolean } | null;
+  return !prepared.error && names?.ok === true;
+}
+
 export async function offerConsultationFromAudio(input: { athleteId: string; transcript: string }): Promise<ReportResult> {
   await requireProfile();
   if (!uuidPattern.test(input.athleteId)) return { ok: false, error: "invalid" };

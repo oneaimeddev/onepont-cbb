@@ -18,7 +18,7 @@ import { ClinicalDraftCard } from "./clinical-draft-card";
 import { draftSaveMessage, presentedDraft } from "./clinical-draft";
 import { DocumentDraftCard } from "./document-draft-card";
 import { displayedDocumentProposals, isDocumentKind, presentedDocument, type DocumentDraft } from "./document-draft";
-import { confirmSpokenDraft, offerConsultationFromAudio } from "./clinical-draft-actions";
+import { canRecordConsultation, confirmSpokenDraft, offerConsultationFromAudio } from "./clinical-draft-actions";
 import { athleteCardLine, compactDirectoryReply, presentedAthletes, presentedContext, presentedNavigation, presentedSearch, uuidPattern, type PresentedAthlete, type PresentedSearch } from "./guards";
 import { HomeGreeting } from "./home-greeting";
 import { ProcessingIndicator } from "./processing-indicator";
@@ -336,7 +336,10 @@ export function IntelligenceHome({
     setFailure(null);
     recordAthlete.current = { id, name: name || athleteNameFor(id) };
     setRecordName(recordAthlete.current.name);
-    recording.open();
+    void canRecordConsultation(id).then((allowed) => {
+      if (allowed) recording.open();
+      else setFailure("Você não tem permissão para registrar evolução deste atleta, então a consulta não pode ser gravada.");
+    }).catch(() => setFailure("Não foi possível verificar a permissão de gravação. Tente novamente."));
   }
 
   function attachConsultationAudio(file: File) {

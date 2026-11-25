@@ -45,6 +45,8 @@ const specialtyAliases: Record<string, Specialty> = {
   "Fisioterapia Esportiva": "Fisioterapia",
   "Nutrição Esportiva": "Nutrição",
   "Psicologia Esportiva": "Psicologia",
+  // The system administrator tests every feature with the medicine report model.
+  "Administrador do Sistema": "Medicina",
 };
 
 export function consultationSpecialty(profession: string): Specialty | null {
